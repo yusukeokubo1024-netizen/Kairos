@@ -41,25 +41,43 @@ class WeatherService {
   List<WeatherDay>? _cachedForecast;
   DateTime? _cacheTime;
 
-  Future<({double lat, double lon, String resolvedName})?> geocodeCity(String city) async {
+  /// Returns up to 5 candidate matches (most specific match first isn't
+  /// guaranteed, so callers should let the user pick) with full
+  /// 都道府県/市区町村-level names, so "渋谷区" doesn't silently resolve to
+  /// the wrong place of the same name elsewhere.
+  Future<List<({double lat, double lon, String resolvedName})>> geocodeCity(String city) async {
     final uri = Uri.https('geocoding-api.open-meteo.com', '/v1/search', {
       'name': city,
-      'count': '1',
+      'count': '5',
       'language': 'ja',
     });
     final response = await http.get(uri);
-    if (response.statusCode != 200) return null;
+    if (response.statusCode != 200) return [];
 
     final data = jsonDecode(response.body) as Map<String, dynamic>;
     final results = data['results'] as List<dynamic>?;
-    if (results == null || results.isEmpty) return null;
+    if (results == null || results.isEmpty) return [];
 
-    final first = results.first as Map<String, dynamic>;
-    return (
-      lat: (first['latitude'] as num).toDouble(),
-      lon: (first['longitude'] as num).toDouble(),
-      resolvedName: first['name'] as String? ?? city,
-    );
+    return [
+      for (final result in results.cast<Map<String, dynamic>>())
+        (
+          lat: (result['latitude'] as num).toDouble(),
+          lon: (result['longitude'] as num).toDouble(),
+          resolvedName: _formatPlaceName(result),
+        ),
+    ];
+  }
+
+  /// Builds a "地名（都道府県 市区町村）" style label without duplicating a
+  /// part that's already equal to the place name itself.
+  String _formatPlaceName(Map<String, dynamic> result) {
+    final name = result['name'] as String? ?? '';
+    final context = <String>{
+      if (result['admin2'] is String) result['admin2'] as String,
+      if (result['admin1'] is String) result['admin1'] as String,
+    }..remove(name);
+
+    return context.isEmpty ? name : '$name（${context.join(' ')}）';
   }
 
   /// Returns the forecast for [lat]/[lon], covering roughly the next two

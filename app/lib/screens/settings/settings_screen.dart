@@ -172,26 +172,47 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (city == null || city.isEmpty) return;
 
     setState(() => _isSettingWeatherLocation = true);
+    List<({double lat, double lon, String resolvedName})> candidates;
     try {
-      final location = await WeatherService.instance.geocodeCity(city);
-      if (location == null) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('地域が見つかりませんでした')),
-          );
-        }
-        return;
-      }
-      final uid = FirebaseAuth.instance.currentUser!.uid;
-      await FirebaseFirestore.instance.collection('users').doc(uid).update({
-        'uid': uid,
-        'weather_lat': location.lat,
-        'weather_lon': location.lon,
-        'weather_city': location.resolvedName,
-      });
+      candidates = await WeatherService.instance.geocodeCity(city);
     } finally {
       if (mounted) setState(() => _isSettingWeatherLocation = false);
     }
+
+    if (candidates.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('地域が見つかりませんでした')),
+        );
+      }
+      return;
+    }
+    if (!mounted) return;
+
+    // Same-named places exist in different prefectures, so always confirm
+    // which one (down to the 市区町村) before saving — even with one match.
+    final selected = await showDialog<({double lat, double lon, String resolvedName})>(
+      context: context,
+      builder: (context) => SimpleDialog(
+        title: const Text('この地域でよろしいですか？'),
+        children: [
+          for (final candidate in candidates)
+            SimpleDialogOption(
+              onPressed: () => Navigator.pop(context, candidate),
+              child: Text(candidate.resolvedName),
+            ),
+        ],
+      ),
+    );
+    if (selected == null) return;
+
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+    await FirebaseFirestore.instance.collection('users').doc(uid).update({
+      'uid': uid,
+      'weather_lat': selected.lat,
+      'weather_lon': selected.lon,
+      'weather_city': selected.resolvedName,
+    });
   }
 
   Future<void> _openUrl(String url) async {

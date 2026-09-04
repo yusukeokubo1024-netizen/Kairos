@@ -199,7 +199,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
     final weather = _weatherForDay(day);
     final events = _schedulesByDay[DateTime(day.year, day.month, day.day)] ?? const <Schedule>[];
-    const maxVisibleEvents = 2;
+    const maxVisibleEvents = 1;
 
     return Container(
       decoration: BoxDecoration(border: Border.all(color: Colors.grey.shade300, width: 0.5)),
@@ -514,7 +514,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
           child: Align(
             alignment: Alignment.centerRight,
             child: SegmentedButton<CalendarFormat>(
@@ -566,10 +566,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
           ),
           // table_calendar's default daysOfWeekHeight (16px) is too tight for
           // these labels and makes them visually overlap; give them more room.
-          daysOfWeekHeight: 28,
-          // Day cells now show up to 2 schedule titles directly, so they
-          // need more vertical room than table_calendar's 52px default.
-          rowHeight: 78,
+          daysOfWeekHeight: 22,
+          // Day cells now show 1 schedule title directly, so they need a
+          // bit more room than table_calendar's 52px default — but not so
+          // much that month view (6 rows) overflows into the bottom nav bar.
+          rowHeight: 58,
           daysOfWeekStyle: const DaysOfWeekStyle(
             weekendStyle: TextStyle(color: Color(0xFF2563EB)),
           ),

@@ -158,7 +158,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
         content: TextField(
           controller: controller,
           autofocus: true,
-          decoration: const InputDecoration(hintText: '例: 東京都渋谷区'),
+          decoration: const InputDecoration(
+            hintText: '例: 渋谷、横浜、札幌',
+            helperText: '「〜区」「〜都」などを付けずに地名だけで検索してください',
+          ),
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('キャンセル')),
@@ -175,6 +178,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
     List<({double lat, double lon, String resolvedName})> candidates;
     try {
       candidates = await WeatherService.instance.geocodeCity(city);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('地域の検索に失敗しました: $e')),
+        );
+      }
+      return;
     } finally {
       if (mounted) setState(() => _isSettingWeatherLocation = false);
     }

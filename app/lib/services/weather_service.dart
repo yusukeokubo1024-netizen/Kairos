@@ -46,8 +46,34 @@ class WeatherService {
   /// 都道府県/市区町村-level names, so "渋谷区" doesn't silently resolve to
   /// the wrong place of the same name elsewhere.
   Future<List<({double lat, double lon, String resolvedName})>> geocodeCity(String city) async {
+    var results = await _searchPlaces(city);
+
+    // Open-Meteo's geocoder indexes bare place names, so "渋谷区" or "東京都"
+    // often return nothing even though "渋谷"/"東京" would match. Retry with
+    // common 都道府県・市区町村 suffixes stripped before giving up.
+    if (results.isEmpty) {
+      const suffixes = ['都', '道', '府', '県', '市', '区', '町', '村'];
+      for (final suffix in suffixes) {
+        if (city.endsWith(suffix) && city.length > suffix.length) {
+          results = await _searchPlaces(city.substring(0, city.length - suffix.length));
+          if (results.isNotEmpty) break;
+        }
+      }
+    }
+
+    return [
+      for (final result in results)
+        (
+          lat: (result['latitude'] as num).toDouble(),
+          lon: (result['longitude'] as num).toDouble(),
+          resolvedName: _formatPlaceName(result),
+        ),
+    ];
+  }
+
+  Future<List<Map<String, dynamic>>> _searchPlaces(String name) async {
     final uri = Uri.https('geocoding-api.open-meteo.com', '/v1/search', {
-      'name': city,
+      'name': name,
       'count': '5',
       'language': 'ja',
     });
@@ -56,16 +82,8 @@ class WeatherService {
 
     final data = jsonDecode(response.body) as Map<String, dynamic>;
     final results = data['results'] as List<dynamic>?;
-    if (results == null || results.isEmpty) return [];
-
-    return [
-      for (final result in results.cast<Map<String, dynamic>>())
-        (
-          lat: (result['latitude'] as num).toDouble(),
-          lon: (result['longitude'] as num).toDouble(),
-          resolvedName: _formatPlaceName(result),
-        ),
-    ];
+    if (results == null) return [];
+    return results.cast<Map<String, dynamic>>();
   }
 
   /// Builds a "地名（都道府県 市区町村）" style label without duplicating a

@@ -3,7 +3,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../../models/schedule.dart';
+import '../../models/schedule_category.dart';
+import '../../models/schedule_prep_templates.dart';
 import '../../models/shared_group.dart';
+import '../../models/task.dart';
 import '../../services/notification_service.dart';
 
 /// Create or edit a schedule. Pass [schedule] to edit an existing one,
@@ -207,11 +210,68 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
             reminderMinutes: newSchedule.reminderMinutes,
           ),
         );
+        if (mounted) await _offerPrepTasks(ref.id, newSchedule.title);
       }
       if (mounted) Navigator.of(context).pop();
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }
+  }
+
+  /// After creating a schedule, offers keyword-matched prep items (e.g.
+  /// "参観" → 上履き・プリント確認) as tasks linked back to this schedule.
+  Future<void> _offerPrepTasks(String scheduleId, String title) async {
+    final suggestions = suggestPrepItems(title);
+    if (suggestions.isEmpty) return;
+
+    final selected = Set<String>.from(suggestions);
+    final confirmed = await showDialog<Set<String>>(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('準備するものはありますか？'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (final item in suggestions)
+                CheckboxListTile(
+                  title: Text(item),
+                  value: selected.contains(item),
+                  onChanged: (checked) {
+                    setDialogState(() {
+                      checked == true ? selected.add(item) : selected.remove(item);
+                    });
+                  },
+                ),
+            ],
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('追加しない')),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, selected),
+              child: const Text('タスクに追加'),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (confirmed == null || confirmed.isEmpty) return;
+
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+    final db = FirebaseFirestore.instance;
+    final batch = db.batch();
+    for (final item in confirmed) {
+      final task = Task(
+        id: '',
+        ownerId: uid,
+        title: item,
+        priority: TaskPriority.medium,
+        completed: false,
+        scheduleId: scheduleId,
+      );
+      batch.set(db.collection('tasks').doc(), task.toCreateMap());
+    }
+    await batch.commit();
   }
 
   String _formatDateTime(DateTime dt) {
@@ -336,7 +396,10 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
                     return DropdownButtonFormField<String?>(
                       initialValue: value,
                       items: [
-                        const DropdownMenuItem(value: null, child: Text('個人の予定')),
+                        const DropdownMenuItem(value: null, child: Text(personalCategoryDefaultLabel)),
+                        ...personalCategories.entries.map(
+                          (entry) => DropdownMenuItem(value: entry.key, child: Text(entry.value)),
+                        ),
                         ...groups.map(
                           (group) => DropdownMenuItem(value: group.id, child: Text(group.name)),
                         ),

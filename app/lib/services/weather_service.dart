@@ -7,12 +7,14 @@ class WeatherDay {
   final int weatherCode;
   final double maxTemp;
   final double minTemp;
+  final int? precipitationProbability;
 
   WeatherDay({
     required this.date,
     required this.weatherCode,
     required this.maxTemp,
     required this.minTemp,
+    this.precipitationProbability,
   });
 
   /// Maps Open-Meteo's WMO weather codes to a simple emoji.
@@ -114,7 +116,8 @@ class WeatherService {
     final uri = Uri.https('api.open-meteo.com', '/v1/forecast', {
       'latitude': '$lat',
       'longitude': '$lon',
-      'daily': 'weathercode,temperature_2m_max,temperature_2m_min',
+      'daily':
+          'weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_max',
       'timezone': 'Asia/Tokyo',
     });
     final response = await http.get(uri);
@@ -126,6 +129,7 @@ class WeatherService {
     final codes = daily['weathercode'] as List<dynamic>;
     final maxTemps = daily['temperature_2m_max'] as List<dynamic>;
     final minTemps = daily['temperature_2m_min'] as List<dynamic>;
+    final precipitationChances = daily['precipitation_probability_max'] as List<dynamic>?;
 
     final forecast = <WeatherDay>[
       for (var i = 0; i < dates.length; i++)
@@ -134,6 +138,7 @@ class WeatherService {
           weatherCode: codes[i] as int,
           maxTemp: (maxTemps[i] as num).toDouble(),
           minTemp: (minTemps[i] as num).toDouble(),
+          precipitationProbability: (precipitationChances?[i] as num?)?.toInt(),
         ),
     ];
 

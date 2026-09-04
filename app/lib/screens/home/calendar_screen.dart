@@ -7,6 +7,7 @@ import 'package:table_calendar/table_calendar.dart';
 
 import '../../models/anniversary.dart';
 import '../../models/schedule.dart';
+import '../../models/schedule_category.dart';
 import '../../models/shared_group.dart';
 import '../../services/weather_service.dart';
 import '../schedule/schedule_detail_screen.dart';
@@ -299,7 +300,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 CheckboxListTile(
-                  title: const Text('個人の予定'),
+                  title: Text(personalCategoryDefaultLabel),
                   value: !hidden.contains(null),
                   onChanged: (checked) {
                     setDialogState(() {
@@ -307,6 +308,17 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     });
                   },
                 ),
+                ...personalCategories.entries.map((entry) {
+                  return CheckboxListTile(
+                    title: Text(entry.value),
+                    value: !hidden.contains(entry.key),
+                    onChanged: (checked) {
+                      setDialogState(() {
+                        checked == true ? hidden.remove(entry.key) : hidden.add(entry.key);
+                      });
+                    },
+                  );
+                }),
                 ...groups.map((group) {
                   return CheckboxListTile(
                     title: Text(group.name),
@@ -519,6 +531,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
           // table_calendar's default daysOfWeekHeight (16px) is too tight for
           // these labels and makes them visually overlap; give them more room.
           daysOfWeekHeight: 28,
+          // Default day cells are cramped once a weather icon, holiday/
+          // anniversary label, and schedule-color dots all share one cell.
+          rowHeight: 64,
           daysOfWeekStyle: const DaysOfWeekStyle(
             weekendStyle: TextStyle(color: Color(0xFF2563EB)),
           ),
@@ -597,7 +612,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
             color: Colors.blue.shade50,
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             child: Text(
-              '${weather.emoji} 最高${weather.maxTemp.round()}° / 最低${weather.minTemp.round()}°',
+              '${weather.emoji} 最高${weather.maxTemp.round()}° / 最低${weather.minTemp.round()}°'
+              '${weather.precipitationProbability != null ? ' / 降水確率${weather.precipitationProbability}%' : ''}',
               style: const TextStyle(color: Color(0xFF2563EB)),
             ),
           ),

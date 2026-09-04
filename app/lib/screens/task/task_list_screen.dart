@@ -156,6 +156,7 @@ class _TaskList extends StatelessWidget {
                   ? const TextStyle(decoration: TextDecoration.lineThrough)
                   : null,
             ),
+            subtitle: task.scheduleId != null ? const Text('予定の準備リストから追加') : null,
             trailing: Container(
               width: 12,
               height: 12,

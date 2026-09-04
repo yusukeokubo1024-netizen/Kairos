@@ -50,10 +50,10 @@ class AuthService {
   /// public-facing `publicProfiles` doc that group/schedule members can see.
   Future<void> updateDisplayName(String newName) async {
     final uid = _auth.currentUser!.uid;
-    await _db.collection('users').doc(uid).update({
+    await _db.collection('users').doc(uid).set({
       'uid': uid,
       'display_name': newName,
-    });
+    }, SetOptions(merge: true));
     await _writePublicProfile(uid, newName);
   }
 

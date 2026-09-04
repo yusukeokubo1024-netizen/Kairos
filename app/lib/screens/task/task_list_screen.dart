@@ -36,9 +36,11 @@ class TaskListScreen extends StatelessWidget {
     await FirebaseFirestore.instance.collection('tasks').doc(task.id).delete();
     await NotificationService.instance.cancelForTask(task.id);
 
+    rootScaffoldMessengerKey.currentState?.clearSnackBars();
     rootScaffoldMessengerKey.currentState?.showSnackBar(
       SnackBar(
         content: const Text('タスクを削除しました'),
+        duration: const Duration(seconds: 4),
         action: SnackBarAction(
           label: '元に戻す',
           onPressed: () async {

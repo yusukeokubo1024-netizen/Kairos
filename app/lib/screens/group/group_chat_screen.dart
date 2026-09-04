@@ -16,9 +16,12 @@ class GroupChatScreen extends StatefulWidget {
 
 class _GroupChatScreenState extends State<GroupChatScreen> {
   static const _stamps = [
-    '👍', '❤️', '😂', '😢', '😮', '🎉', '🙏', '👏',
-    '😴', '🔥', '💦', '❓',
+    '👍', '👎', '❤️', '😂', '😢', '😮', '🎉', '🙏',
+    '👏', '😴', '🔥', '💦', '❓', '❗', '😆', '😭',
+    '😡', '🥳', '🤔', '😱', '👌', '💪', '🙌', '✨',
   ];
+
+  static const _quickReactions = ['👍', '❤️', '😂', '😮', '😢', '🙏'];
 
   final _textController = TextEditingController();
   final _scrollController = ScrollController();
@@ -66,6 +69,48 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     } finally {
       if (mounted) setState(() => _isSending = false);
     }
+  }
+
+  Future<void> _toggleReaction(ChatMessage message, String emoji) async {
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+    final alreadyReacted = message.reactions[emoji]?.contains(uid) ?? false;
+    final ref = FirebaseFirestore.instance
+        .collection('sharedGroups')
+        .doc(widget.group.id)
+        .collection('messages')
+        .doc(message.id);
+    await ref.update({
+      'reactions.$emoji':
+          alreadyReacted ? FieldValue.arrayRemove([uid]) : FieldValue.arrayUnion([uid]),
+    });
+  }
+
+  void _openReactionPicker(ChatMessage message) {
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Wrap(
+            spacing: 12,
+            children: [
+              for (final emoji in _quickReactions)
+                InkWell(
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    _toggleReaction(message, emoji);
+                  },
+                  borderRadius: BorderRadius.circular(24),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: Text(emoji, style: const TextStyle(fontSize: 28)),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   void _openStampPicker() {
@@ -130,7 +175,10 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                       return _MessageBubble(
                         message: message,
                         isMine: isMine,
+                        currentUid: uid,
                         resolveName: _resolveName,
+                        onLongPress: () => _openReactionPicker(message),
+                        onReactionTap: (emoji) => _toggleReaction(message, emoji),
                       );
                     },
                   );
@@ -175,12 +223,18 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
 class _MessageBubble extends StatelessWidget {
   final ChatMessage message;
   final bool isMine;
+  final String currentUid;
   final Future<String> Function(String uid) resolveName;
+  final VoidCallback onLongPress;
+  final ValueChanged<String> onReactionTap;
 
   const _MessageBubble({
     required this.message,
     required this.isMine,
+    required this.currentUid,
     required this.resolveName,
+    required this.onLongPress,
+    required this.onReactionTap,
   });
 
   String _formatTime(DateTime? dt) {
@@ -218,27 +272,30 @@ class _MessageBubble extends StatelessWidget {
                 ),
                 const SizedBox(width: 4),
               ],
-              if (message.isStamp)
-                Text(message.text, style: const TextStyle(fontSize: 48))
-              else
-                ConstrainedBox(
-                  constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.7),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: isMine
-                          ? Theme.of(context).colorScheme.primary
-                          : Theme.of(context).colorScheme.surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      message.text,
-                      style: TextStyle(
-                        color: isMine ? Theme.of(context).colorScheme.onPrimary : null,
+              GestureDetector(
+                onLongPress: onLongPress,
+                child: message.isStamp
+                    ? Text(message.text, style: const TextStyle(fontSize: 48))
+                    : ConstrainedBox(
+                        constraints:
+                            BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.7),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: isMine
+                                ? Theme.of(context).colorScheme.primary
+                                : Theme.of(context).colorScheme.surfaceContainerHighest,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            message.text,
+                            style: TextStyle(
+                              color: isMine ? Theme.of(context).colorScheme.onPrimary : null,
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                ),
+              ),
               if (!isMine) ...[
                 const SizedBox(width: 4),
                 Text(
@@ -248,7 +305,59 @@ class _MessageBubble extends StatelessWidget {
               ],
             ],
           ),
+          if (message.reactions.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: Wrap(
+                spacing: 4,
+                children: [
+                  for (final entry in message.reactions.entries)
+                    if (entry.value.isNotEmpty)
+                      _ReactionChip(
+                        emoji: entry.key,
+                        count: entry.value.length,
+                        isMine: entry.value.contains(currentUid),
+                        onTap: () => onReactionTap(entry.key),
+                      ),
+                ],
+              ),
+            ),
         ],
+      ),
+    );
+  }
+}
+
+class _ReactionChip extends StatelessWidget {
+  final String emoji;
+  final int count;
+  final bool isMine;
+  final VoidCallback onTap;
+
+  const _ReactionChip({
+    required this.emoji,
+    required this.count,
+    required this.isMine,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+        decoration: BoxDecoration(
+          color: isMine
+              ? Theme.of(context).colorScheme.primaryContainer
+              : Theme.of(context).colorScheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isMine ? Theme.of(context).colorScheme.primary : Colors.transparent,
+          ),
+        ),
+        child: Text('$emoji $count', style: const TextStyle(fontSize: 12)),
       ),
     );
   }

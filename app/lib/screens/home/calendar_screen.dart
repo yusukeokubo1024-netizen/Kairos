@@ -516,6 +516,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
             holidayTextStyle: TextStyle(color: Color(0xFFEF4444)),
             outsideTextStyle: TextStyle(color: Colors.grey),
           ),
+          // table_calendar's default daysOfWeekHeight (16px) is too tight for
+          // these labels and makes them visually overlap; give them more room.
+          daysOfWeekHeight: 28,
           daysOfWeekStyle: const DaysOfWeekStyle(
             weekendStyle: TextStyle(color: Color(0xFF2563EB)),
           ),

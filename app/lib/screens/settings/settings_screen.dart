@@ -52,10 +52,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _toggleNotifications(bool enabled) async {
     final uid = FirebaseAuth.instance.currentUser!.uid;
-    await FirebaseFirestore.instance.collection('users').doc(uid).update({
+    await FirebaseFirestore.instance.collection('users').doc(uid).set({
       'uid': uid,
       'notifications_enabled': enabled,
-    });
+    }, SetOptions(merge: true));
     if (!enabled) {
       await NotificationService.instance.cancelAll();
     }
@@ -105,7 +105,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
     );
     if (newName == null || newName.isEmpty) return;
-    await _authService.updateDisplayName(newName);
+    try {
+      await _authService.updateDisplayName(newName);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('表示名を「$newName」に変更しました')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('表示名の保存に失敗しました: $e')),
+        );
+      }
+    }
   }
 
   /// Uses a fixed anniversary document ID so re-saving the birthday updates
@@ -217,12 +230,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (selected == null) return;
 
     final uid = FirebaseAuth.instance.currentUser!.uid;
-    await FirebaseFirestore.instance.collection('users').doc(uid).update({
-      'uid': uid,
-      'weather_lat': selected.lat,
-      'weather_lon': selected.lon,
-      'weather_city': selected.resolvedName,
-    });
+    try {
+      await FirebaseFirestore.instance.collection('users').doc(uid).set({
+        'uid': uid,
+        'weather_lat': selected.lat,
+        'weather_lon': selected.lon,
+        'weather_city': selected.resolvedName,
+      }, SetOptions(merge: true));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${selected.resolvedName} を登録しました')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('地域の保存に失敗しました: $e')),
+        );
+      }
+    }
   }
 
   Future<void> _openUrl(String url) async {

@@ -38,9 +38,11 @@ class GroupDetailScreen extends StatelessWidget {
     await FirebaseFirestore.instance.collection('sharedGroups').doc(group.id).delete();
     if (context.mounted) Navigator.of(context).pop();
 
+    rootScaffoldMessengerKey.currentState?.clearSnackBars();
     rootScaffoldMessengerKey.currentState?.showSnackBar(
       SnackBar(
         content: const Text('グループを削除しました'),
+        duration: const Duration(seconds: 4),
         action: SnackBarAction(
           label: '元に戻す',
           onPressed: () async {

@@ -95,6 +95,10 @@ service cloud.firestore {
         allow read: if isAuthenticated() && isGroupMember();
         allow create: if isAuthenticated() && isGroupMember() &&
           request.resource.data.senderId == request.auth.uid;
+        // Any group member can react, but only the "reactions" field may
+        // change — the message text/sender can't be tampered with this way.
+        allow update: if isAuthenticated() && isGroupMember() &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reactions']);
         allow delete: if isAuthenticated() && resource.data.senderId == request.auth.uid;
       }
     }

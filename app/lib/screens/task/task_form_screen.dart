@@ -107,9 +107,11 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
     await NotificationService.instance.cancelForTask(task.id);
     if (mounted) Navigator.of(context).pop();
 
+    rootScaffoldMessengerKey.currentState?.clearSnackBars();
     rootScaffoldMessengerKey.currentState?.showSnackBar(
       SnackBar(
         content: const Text('タスクを削除しました'),
+        duration: const Duration(seconds: 4),
         action: SnackBarAction(
           label: '元に戻す',
           onPressed: () async {

@@ -104,9 +104,11 @@ class _AnniversaryFormScreenState extends State<AnniversaryFormScreen> {
     await NotificationService.instance.cancelForAnniversary(anniversary.id);
     if (mounted) Navigator.of(context).pop();
 
+    rootScaffoldMessengerKey.currentState?.clearSnackBars();
     rootScaffoldMessengerKey.currentState?.showSnackBar(
       SnackBar(
         content: const Text('記念日を削除しました'),
+        duration: const Duration(seconds: 4),
         action: SnackBarAction(
           label: '元に戻す',
           onPressed: () async {

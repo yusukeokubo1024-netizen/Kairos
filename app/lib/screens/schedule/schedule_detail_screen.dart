@@ -30,9 +30,11 @@ class ScheduleDetailScreen extends StatelessWidget {
     await NotificationService.instance.cancelForSchedule(schedule.id);
     if (context.mounted) Navigator.of(context).pop();
 
+    rootScaffoldMessengerKey.currentState?.clearSnackBars();
     rootScaffoldMessengerKey.currentState?.showSnackBar(
       SnackBar(
         content: const Text('予定を削除しました'),
+        duration: const Duration(seconds: 4),
         action: SnackBarAction(
           label: '元に戻す',
           onPressed: () async {

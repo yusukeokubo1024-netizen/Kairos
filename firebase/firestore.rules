@@ -82,6 +82,21 @@ service cloud.firestore {
         )
       );
       allow delete: if isAuthenticated() && resource.data.ownerId == request.auth.uid;
+
+      // ============================================
+      // messages サブコレクション（グループのトーク）
+      // ============================================
+      match /messages/{messageId} {
+        function isGroupMember() {
+          return request.auth.uid in
+            get(/databases/$(database)/documents/sharedGroups/$(groupId)).data.memberIds;
+        }
+
+        allow read: if isAuthenticated() && isGroupMember();
+        allow create: if isAuthenticated() && isGroupMember() &&
+          request.resource.data.senderId == request.auth.uid;
+        allow delete: if isAuthenticated() && resource.data.senderId == request.auth.uid;
+      }
     }
 
     // ============================================

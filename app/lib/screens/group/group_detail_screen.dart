@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 
 import '../../main.dart';
 import '../../models/shared_group.dart';
+import 'group_chat_screen.dart';
 
 class GroupDetailScreen extends StatelessWidget {
   final SharedGroup group;
@@ -85,6 +86,13 @@ class GroupDetailScreen extends StatelessWidget {
             ...group.memberIds.map((memberId) => _MemberTile(uid: memberId)),
           ],
         ),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => GroupChatScreen(group: group)),
+        ),
+        icon: const Icon(Icons.chat_bubble_outline),
+        label: const Text('トーク'),
       ),
     );
   }

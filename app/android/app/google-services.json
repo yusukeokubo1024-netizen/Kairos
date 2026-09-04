@@ -1,0 +1,118 @@
+{
+  "project_info": {
+    "project_number": "889968355663",
+    "project_id": "kairos-3d873",
+    "storage_bucket": "kairos-3d873.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:889968355663:android:298412f174215bee69fd3a",
+        "android_client_info": {
+          "package_name": "com.kairos.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "889968355663-gp9mkbbvmh063p0r9eau7hue6fju1hc2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDBXtU1lxBt96VRd28XgT9Nq3rjseBB6Xw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "889968355663-gp9mkbbvmh063p0r9eau7hue6fju1hc2.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "889968355663-0hfc16sl755thmldabek2gpg7sl9kg5l.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.mycompany.kairos"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:889968355663:android:589cec04ec9b378169fd3a",
+        "android_client_info": {
+          "package_name": "com.mycompany.calendarapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "889968355663-gp9mkbbvmh063p0r9eau7hue6fju1hc2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDBXtU1lxBt96VRd28XgT9Nq3rjseBB6Xw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "889968355663-gp9mkbbvmh063p0r9eau7hue6fju1hc2.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "889968355663-0hfc16sl755thmldabek2gpg7sl9kg5l.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.mycompany.kairos"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:889968355663:android:e44dd6fc74648a2169fd3a",
+        "android_client_info": {
+          "package_name": "com.mycompany.kairos"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "889968355663-gp9mkbbvmh063p0r9eau7hue6fju1hc2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDBXtU1lxBt96VRd28XgT9Nq3rjseBB6Xw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "889968355663-gp9mkbbvmh063p0r9eau7hue6fju1hc2.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "889968355663-0hfc16sl755thmldabek2gpg7sl9kg5l.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.mycompany.kairos"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

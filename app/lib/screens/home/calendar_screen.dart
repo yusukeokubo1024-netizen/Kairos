@@ -37,6 +37,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
   List<({String name, int month, int day})> _friendBirthdays = [];
   String? _friendBirthdaysMemberKey;
   List<WeatherDay> _forecast = [];
+  // Populated at the top of _buildCalendarView so _buildDayCell (called by
+  // table_calendar's synchronous builders) can look up each day's events.
+  Map<DateTime, List<Schedule>> _schedulesByDay = {};
 
   @override
   void initState() {
@@ -165,24 +168,24 @@ class _CalendarScreenState extends State<CalendarScreen> {
     if (mounted) setState(() => _friendBirthdays = birthdays);
   }
 
-  /// Renders a day cell showing the day number and, for holidays, the
-  /// holiday's name in small text underneath — used for today/selected/
-  /// holiday cells so the name doesn't get hidden by those states.
+  /// Renders a day cell as a small agenda: day number + weather at top,
+  /// then the day's schedule titles (colored to match each schedule), so
+  /// events are visible at a glance instead of just a dot marker.
   Widget _buildDayCell(
     BuildContext context, {
     required DateTime day,
     bool isToday = false,
     bool isSelected = false,
   }) {
-    Color textColor;
+    Color numberColor;
     if (isSelected) {
-      textColor = Colors.white;
+      numberColor = Colors.white;
     } else if (_isHolidayOrSunday(day)) {
-      textColor = const Color(0xFFEF4444);
+      numberColor = const Color(0xFFEF4444);
     } else if (day.weekday == DateTime.saturday) {
-      textColor = const Color(0xFF2563EB);
+      numberColor = const Color(0xFF2563EB);
     } else {
-      textColor = Theme.of(context).textTheme.bodyMedium?.color ?? Colors.black;
+      numberColor = Theme.of(context).textTheme.bodyMedium?.color ?? Colors.black;
     }
 
     final holidayName = holiday_jp.getHoliday(day)?.name;
@@ -190,53 +193,66 @@ class _CalendarScreenState extends State<CalendarScreen> {
     final labelName = holidayName ??
         (anniversaryNames.isNotEmpty ? anniversaryNames.first : null) ??
         _specialDayName(day);
-    final labelColor = isSelected
-        ? Colors.white
-        : (holidayName != null
-            ? const Color(0xFFEF4444)
-            : (anniversaryNames.isNotEmpty ? const Color(0xFFEC4899) : const Color(0xFFB45309)));
+    final labelColor = holidayName != null
+        ? const Color(0xFFEF4444)
+        : (anniversaryNames.isNotEmpty ? const Color(0xFFEC4899) : const Color(0xFFB45309));
 
     final weather = _weatherForDay(day);
+    final events = _schedulesByDay[DateTime(day.year, day.month, day.day)] ?? const <Schedule>[];
+    const maxVisibleEvents = 2;
 
-    // Outer cell fills the whole grid square and draws the マス目 grid lines;
-    // the inner circle is only for the today/selected highlight, and the
-    // weather emoji sits in the corner so it never fights the circle for space.
     return Container(
       decoration: BoxDecoration(border: Border.all(color: Colors.grey.shade300, width: 0.5)),
-      child: Stack(
-        alignment: Alignment.center,
+      padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          if (weather != null)
-            Positioned(
-              top: 2,
-              right: 2,
-              child: Text(weather.emoji, style: const TextStyle(fontSize: 9)),
+          Row(
+            children: [
+              Container(
+                width: 18,
+                height: 18,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: isSelected ? Theme.of(context).colorScheme.primary : null,
+                  border: isToday && !isSelected
+                      ? Border.all(color: Theme.of(context).colorScheme.primary)
+                      : null,
+                ),
+                child: Text('${day.day}', style: TextStyle(fontSize: 12, color: numberColor)),
+              ),
+              const Spacer(),
+              if (weather != null) Text(weather.emoji, style: const TextStyle(fontSize: 9)),
+            ],
+          ),
+          if (labelName != null)
+            Text(
+              labelName,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(fontSize: 7, color: labelColor),
             ),
-          Container(
-        margin: const EdgeInsets.all(4),
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: isSelected ? Theme.of(context).colorScheme.primary : null,
-          border: isToday && !isSelected
-              ? Border.all(color: Theme.of(context).colorScheme.primary)
-              : null,
-        ),
-        alignment: Alignment.center,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text('${day.day}', style: TextStyle(color: textColor)),
-            if (labelName != null)
-              Text(
-                labelName,
+          for (final schedule in events.take(maxVisibleEvents))
+            Container(
+              margin: const EdgeInsets.only(top: 1),
+              padding: const EdgeInsets.symmetric(horizontal: 2),
+              decoration: BoxDecoration(
+                color: schedule.color,
+                borderRadius: BorderRadius.circular(2),
+              ),
+              child: Text(
+                schedule.title,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(fontSize: 7, color: labelColor),
+                style: const TextStyle(fontSize: 8, color: Colors.white),
               ),
-          ],
-        ),
-      ),
+            ),
+          if (events.length > maxVisibleEvents)
+            Text(
+              '+${events.length - maxVisibleEvents}',
+              style: TextStyle(fontSize: 7, color: Colors.grey.shade600),
+            ),
         ],
       ),
     );
@@ -490,12 +506,28 @@ class _CalendarScreenState extends State<CalendarScreen> {
       );
       schedulesByDay.putIfAbsent(day, () => []).add(schedule);
     }
+    _schedulesByDay = schedulesByDay;
 
     final selectedDaySchedules =
         schedules.where((s) => _isSameDay(s.startTime, _selectedDay)).toList();
 
     return Column(
       children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: SegmentedButton<CalendarFormat>(
+              segments: const [
+                ButtonSegment(value: CalendarFormat.month, label: Text('月')),
+                ButtonSegment(value: CalendarFormat.week, label: Text('週')),
+              ],
+              selected: {_calendarFormat},
+              onSelectionChanged: (selection) =>
+                  setState(() => _calendarFormat = selection.first),
+            ),
+          ),
+        ),
         TableCalendar<Schedule>(
           locale: 'ja_JP',
           firstDay: DateTime.utc(2020, 1, 1),
@@ -516,7 +548,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
           onHeaderTapped: _openMonthPicker,
           headerStyle: const HeaderStyle(
             titleCentered: true,
-            formatButtonShowsNext: false,
+            // The SegmentedButton above already switches month/week.
+            formatButtonVisible: false,
           ),
           availableCalendarFormats: const {
             CalendarFormat.month: '月',
@@ -534,9 +567,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
           // table_calendar's default daysOfWeekHeight (16px) is too tight for
           // these labels and makes them visually overlap; give them more room.
           daysOfWeekHeight: 28,
-          // Default day cells are cramped once a weather icon, holiday/
-          // anniversary label, and schedule-color dots all share one cell.
-          rowHeight: 64,
+          // Day cells now show up to 2 schedule titles directly, so they
+          // need more vertical room than table_calendar's 52px default.
+          rowHeight: 78,
           daysOfWeekStyle: const DaysOfWeekStyle(
             weekendStyle: TextStyle(color: Color(0xFF2563EB)),
           ),
@@ -564,25 +597,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
             outsideBuilder: (context, day, focusedDay) => Container(
               decoration: BoxDecoration(border: Border.all(color: Colors.grey.shade300, width: 0.5)),
               alignment: Alignment.center,
-              child: Text('${day.day}', style: TextStyle(color: Colors.grey.shade400)),
+              child: Text('${day.day}', style: TextStyle(fontSize: 13, color: Colors.grey.shade400)),
             ),
-            markerBuilder: (context, day, events) {
-              if (events.isEmpty) return null;
-              return Positioned(
-                bottom: 4,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: events.take(4).map((schedule) {
-                    return Container(
-                      width: 6,
-                      height: 6,
-                      margin: const EdgeInsets.symmetric(horizontal: 1),
-                      decoration: BoxDecoration(color: schedule.color, shape: BoxShape.circle),
-                    );
-                  }).toList(),
-                ),
-              );
-            },
           ),
         ),
         if (holiday_jp.getHoliday(_selectedDay) case final holiday?)

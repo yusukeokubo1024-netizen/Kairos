@@ -1,0 +1,82 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ============================================
+    // ユーザー認証ユーティリティ
+    // ============================================
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return isAuthenticated() && request.auth.uid == uid;
+    }
+
+    // ============================================
+    // users コレクション
+    // ============================================
+    match /users/{uid} {
+      // UID を知っている相手（同じグループ/予定のメンバー）だけがプロフィールを取得できる。
+      // 一覧取得は禁止し、全ユーザーの列挙・スクレイピングを防ぐ。
+      allow get: if isAuthenticated();
+      allow list: if false;
+      allow create: if isAuthenticated() && request.auth.uid == uid;
+      allow update: if isOwner(uid) && request.resource.data.uid == resource.data.uid;
+      allow delete: if isOwner(uid);
+    }
+
+    // ============================================
+    // schedules コレクション（予定）
+    // ============================================
+    match /schedules/{scheduleId} {
+      // オーナーと参加者が閲覧可能。編集・削除はオーナーのみ。
+      allow read: if isAuthenticated() &&
+        (resource.data.ownerId == request.auth.uid || request.auth.uid in resource.data.participantIds);
+      allow create: if isAuthenticated() && request.resource.data.ownerId == request.auth.uid &&
+        request.auth.uid in request.resource.data.participantIds;
+      allow update: if isAuthenticated() && resource.data.ownerId == request.auth.uid &&
+        request.resource.data.ownerId == resource.data.ownerId;
+      allow delete: if isAuthenticated() && resource.data.ownerId == request.auth.uid;
+    }
+
+    // ============================================
+    // tasks コレクション
+    // ============================================
+    match /tasks/{taskId} {
+      allow read, delete: if isAuthenticated() && resource.data.ownerId == request.auth.uid;
+      allow update: if isAuthenticated() && resource.data.ownerId == request.auth.uid &&
+        request.resource.data.ownerId == resource.data.ownerId;
+      allow create: if isAuthenticated() && request.resource.data.ownerId == request.auth.uid;
+    }
+
+    // ============================================
+    // sharedGroups コレクション（共有グループ）
+    // ============================================
+    match /sharedGroups/{groupId} {
+      // グループID（招待コードとして共有）を知っていれば単体取得で参加前プレビューができる。
+      // 一覧取得（クエリ）は自分がメンバーのグループのみ。
+      allow get: if isAuthenticated();
+      allow list: if isAuthenticated() && request.auth.uid in resource.data.memberIds;
+      allow create: if isAuthenticated() && request.resource.data.ownerId == request.auth.uid &&
+        request.auth.uid in request.resource.data.memberIds;
+      allow update: if isAuthenticated() && (
+        // オーナーによる編集（オーナー自体の変更は不可）
+        (resource.data.ownerId == request.auth.uid && request.resource.data.ownerId == resource.data.ownerId) ||
+        // 招待コード（グループID）を知る本人が、自分自身だけをメンバーに追加する（参加）
+        (
+          !(request.auth.uid in resource.data.memberIds) &&
+          request.auth.uid in request.resource.data.memberIds &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberIds', 'updatedAt']) &&
+          request.resource.data.memberIds.size() == resource.data.memberIds.size() + 1
+        )
+      );
+      allow delete: if isAuthenticated() && resource.data.ownerId == request.auth.uid;
+    }
+
+    // デフォルト: アクセス拒否
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

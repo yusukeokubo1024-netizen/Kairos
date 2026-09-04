@@ -1,0 +1,35 @@
+{
+  "name": "functions",
+  "description": "Cloud Functions for Firebase",
+  "scripts": {
+    "build": "tsc",
+    "lint": "tsc --noEmit",
+    "test:schedule": "npm run build && node scripts/testScheduleCrud.js",
+    "test:task": "npm run build && node scripts/testTaskCrud.js",
+    "test:group": "npm run build && node scripts/testGroupCrud.js",
+    "test:location": "npm run build && node scripts/testLocationSharing.js",
+    "test:notification": "npm run build && node scripts/testNotificationService.js",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "shell": "npm run build && firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "npm run build && firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "24"
+  },
+  "main": "lib/index.js",
+  "dependencies": {
+    "firebase-admin": "^13.6.0",
+    "firebase-functions": "^7.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.4.0",
+    "eslint": "^8.15.0",
+    "eslint-config-google": "^0.14.0",
+    "firebase-functions-test": "^3.4.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^7.0.2"
+  },
+  "private": true
+}

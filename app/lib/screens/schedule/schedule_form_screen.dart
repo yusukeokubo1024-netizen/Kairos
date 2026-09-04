@@ -396,12 +396,27 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
                     return DropdownButtonFormField<String?>(
                       initialValue: value,
                       items: [
-                        const DropdownMenuItem(value: null, child: Text(personalCategoryDefaultLabel)),
+                        DropdownMenuItem(
+                          value: null,
+                          child: _CategoryOption(
+                            icon: Icons.label_outline,
+                            label: personalCategoryDefaultLabel,
+                          ),
+                        ),
                         ...personalCategories.entries.map(
-                          (entry) => DropdownMenuItem(value: entry.key, child: Text(entry.value)),
+                          (entry) => DropdownMenuItem(
+                            value: entry.key,
+                            child: _CategoryOption(icon: Icons.label_outline, label: entry.value),
+                          ),
                         ),
                         ...groups.map(
-                          (group) => DropdownMenuItem(value: group.id, child: Text(group.name)),
+                          (group) => DropdownMenuItem(
+                            value: group.id,
+                            child: _CategoryOption(
+                              icon: Icons.groups_outlined,
+                              label: '${group.name}（グループ）',
+                            ),
+                          ),
                         ),
                       ],
                       onChanged: (selected) {
@@ -487,6 +502,28 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// A dropdown item label with a small icon distinguishing a personal
+/// category from an actual shared group — they can share the same name
+/// (e.g. a "家族" category and a "家族" group) so the icon avoids confusion.
+class _CategoryOption extends StatelessWidget {
+  final IconData icon;
+  final String label;
+
+  const _CategoryOption({required this.icon, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 16, color: Colors.grey),
+        const SizedBox(width: 8),
+        Text(label),
+      ],
     );
   }
 }

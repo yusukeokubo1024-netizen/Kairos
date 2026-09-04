@@ -6,6 +6,8 @@ const personalCategories = <String, String>{
   'work': '仕事用',
   'partner': '彼女・彼氏用',
   'family': '家族',
+  'friend': '友人',
+  'other': 'その他',
 };
 
 const personalCategoryDefaultLabel = '個人の予定';

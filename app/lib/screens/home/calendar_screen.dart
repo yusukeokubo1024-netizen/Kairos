@@ -300,6 +300,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 CheckboxListTile(
+                  secondary: const Icon(Icons.label_outline, size: 20),
                   title: Text(personalCategoryDefaultLabel),
                   value: !hidden.contains(null),
                   onChanged: (checked) {
@@ -310,6 +311,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 ),
                 ...personalCategories.entries.map((entry) {
                   return CheckboxListTile(
+                    secondary: const Icon(Icons.label_outline, size: 20),
                     title: Text(entry.value),
                     value: !hidden.contains(entry.key),
                     onChanged: (checked) {
@@ -321,7 +323,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 }),
                 ...groups.map((group) {
                   return CheckboxListTile(
-                    title: Text(group.name),
+                    secondary: const Icon(Icons.groups_outlined, size: 20),
+                    title: Text('${group.name}（グループ）'),
                     value: !hidden.contains(group.id),
                     onChanged: (checked) {
                       setDialogState(() {

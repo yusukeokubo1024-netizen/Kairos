@@ -15,6 +15,11 @@ class GroupChatScreen extends StatefulWidget {
 }
 
 class _GroupChatScreenState extends State<GroupChatScreen> {
+  static const _stamps = [
+    '👍', '❤️', '😂', '😢', '😮', '🎉', '🙏', '👏',
+    '😴', '🔥', '💦', '❓',
+  ];
+
   final _textController = TextEditingController();
   final _scrollController = ScrollController();
   final Map<String, String> _nameCache = {};
@@ -39,12 +44,20 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
   Future<void> _send() async {
     final text = _textController.text.trim();
     if (text.isEmpty) return;
-    final uid = FirebaseAuth.instance.currentUser!.uid;
-
-    setState(() => _isSending = true);
     _textController.clear();
+    await _sendMessage(text, isStamp: false);
+  }
+
+  Future<void> _sendStamp(String emoji) async {
+    Navigator.of(context).pop(); // close the stamp picker sheet
+    await _sendMessage(emoji, isStamp: true);
+  }
+
+  Future<void> _sendMessage(String text, {required bool isStamp}) async {
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+    setState(() => _isSending = true);
     try {
-      final message = ChatMessage(id: '', senderId: uid, text: text);
+      final message = ChatMessage(id: '', senderId: uid, text: text, isStamp: isStamp);
       await FirebaseFirestore.instance
           .collection('sharedGroups')
           .doc(widget.group.id)
@@ -53,6 +66,31 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     } finally {
       if (mounted) setState(() => _isSending = false);
     }
+  }
+
+  void _openStampPicker() {
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: GridView.count(
+            crossAxisCount: 4,
+            shrinkWrap: true,
+            mainAxisSpacing: 8,
+            crossAxisSpacing: 8,
+            children: [
+              for (final stamp in _stamps)
+                InkWell(
+                  onTap: () => _sendStamp(stamp),
+                  borderRadius: BorderRadius.circular(8),
+                  child: Center(child: Text(stamp, style: const TextStyle(fontSize: 32))),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -104,6 +142,11 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
               padding: const EdgeInsets.all(8),
               child: Row(
                 children: [
+                  IconButton(
+                    onPressed: _openStampPicker,
+                    icon: const Icon(Icons.emoji_emotions_outlined),
+                    tooltip: 'スタンプ',
+                  ),
                   Expanded(
                     child: TextField(
                       controller: _textController,
@@ -175,24 +218,27 @@ class _MessageBubble extends StatelessWidget {
                 ),
                 const SizedBox(width: 4),
               ],
-              ConstrainedBox(
-                constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.7),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: isMine
-                        ? Theme.of(context).colorScheme.primary
-                        : Theme.of(context).colorScheme.surfaceContainerHighest,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    message.text,
-                    style: TextStyle(
-                      color: isMine ? Theme.of(context).colorScheme.onPrimary : null,
+              if (message.isStamp)
+                Text(message.text, style: const TextStyle(fontSize: 48))
+              else
+                ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.7),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: isMine
+                          ? Theme.of(context).colorScheme.primary
+                          : Theme.of(context).colorScheme.surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      message.text,
+                      style: TextStyle(
+                        color: isMine ? Theme.of(context).colorScheme.onPrimary : null,
+                      ),
                     ),
                   ),
                 ),
-              ),
               if (!isMine) ...[
                 const SizedBox(width: 4),
                 Text(

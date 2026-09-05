@@ -31,10 +31,10 @@ class BiometricService {
 
   /// Prompts Face ID / Touch ID / device biometrics. Returns false (instead
   /// of throwing) if the platform has no biometric support at all.
-  Future<bool> authenticate() async {
+  Future<bool> authenticate(String localizedReason) async {
     try {
       return await _auth.authenticate(
-        localizedReason: 'Kairosを開くには認証が必要です',
+        localizedReason: localizedReason,
         persistAcrossBackgrounding: true,
       );
     } catch (_) {

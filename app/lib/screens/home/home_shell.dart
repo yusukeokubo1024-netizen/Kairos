@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../group/group_list_screen.dart';
 import '../settings/settings_screen.dart';
 import '../task/task_list_screen.dart';
@@ -21,6 +22,7 @@ class _HomeShellState extends State<HomeShell> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final screens = [
       CalendarScreen(key: _calendarKey),
       const TaskListScreen(),
@@ -40,11 +42,13 @@ class _HomeShellState extends State<HomeShell> {
             _index = value;
           });
         },
-        destinations: const [
-          NavigationDestination(icon: Icon(Icons.calendar_month), label: 'ホーム'),
-          NavigationDestination(icon: Icon(Icons.check_circle_outline), label: 'タスク'),
-          NavigationDestination(icon: Icon(Icons.groups_outlined), label: 'グループ'),
-          NavigationDestination(icon: Icon(Icons.settings_outlined), label: '設定'),
+        destinations: [
+          NavigationDestination(icon: const Icon(Icons.calendar_month), label: l10n.tabHome),
+          NavigationDestination(
+              icon: const Icon(Icons.check_circle_outline), label: l10n.tabTasks),
+          NavigationDestination(icon: const Icon(Icons.groups_outlined), label: l10n.tabGroups),
+          NavigationDestination(
+              icon: const Icon(Icons.settings_outlined), label: l10n.tabSettings),
         ],
       ),
     );

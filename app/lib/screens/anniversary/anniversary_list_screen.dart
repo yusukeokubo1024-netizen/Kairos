@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../models/anniversary.dart';
 import 'anniversary_form_screen.dart';
 
@@ -10,13 +11,14 @@ class AnniversaryListScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final uid = FirebaseAuth.instance.currentUser!.uid;
     final query = FirebaseFirestore.instance
         .collection('anniversaries')
         .where('ownerId', isEqualTo: uid);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('大切な記念日')),
+      appBar: AppBar(title: Text(l10n.anniversaryListTitle)),
       body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
         stream: query.snapshots(),
         builder: (context, snapshot) {
@@ -31,7 +33,7 @@ class AnniversaryListScreen extends StatelessWidget {
                 });
 
           if (anniversaries.isEmpty) {
-            return const Center(child: Text('まだ記念日が登録されていません'));
+            return Center(child: Text(l10n.anniversaryListEmpty));
           }
 
           return ListView.builder(
@@ -41,7 +43,7 @@ class AnniversaryListScreen extends StatelessWidget {
               return ListTile(
                 leading: const Icon(Icons.cake_outlined),
                 title: Text(anniversary.title),
-                subtitle: Text('毎年 ${anniversary.month}月${anniversary.day}日'),
+                subtitle: Text(l10n.anniversaryListYearly(anniversary.month, anniversary.day)),
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (_) => AnniversaryFormScreen(anniversary: anniversary),

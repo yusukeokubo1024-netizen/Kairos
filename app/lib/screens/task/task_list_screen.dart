@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../main.dart';
 import '../../models/task.dart';
 import '../../services/notification_service.dart';
@@ -32,17 +33,21 @@ class TaskListScreen extends StatelessWidget {
     }
   }
 
-  Future<void> _delete(Task task) async {
+  Future<void> _delete(BuildContext context, Task task) async {
+    final l10n = AppLocalizations.of(context)!;
     await FirebaseFirestore.instance.collection('tasks').doc(task.id).delete();
     await NotificationService.instance.cancelForTask(task.id);
 
     rootScaffoldMessengerKey.currentState?.clearSnackBars();
-    rootScaffoldMessengerKey.currentState?.showSnackBar(
+    // Material 3's SnackBar pauses its auto-dismiss timer while hovered
+    // (desktop/web), so close it explicitly to guarantee it goes away after
+    // 5 seconds regardless of the pointer.
+    final snackBarController = rootScaffoldMessengerKey.currentState?.showSnackBar(
       SnackBar(
-        content: const Text('タスクを削除しました'),
-        duration: const Duration(seconds: 4),
+        content: Text(l10n.taskDeleted),
+        duration: const Duration(seconds: 5),
         action: SnackBarAction(
-          label: '元に戻す',
+          label: l10n.commonUndo,
           onPressed: () async {
             await FirebaseFirestore.instance.collection('tasks').doc(task.id).set(task.toCreateMap());
             if (!task.completed) {
@@ -52,10 +57,12 @@ class TaskListScreen extends StatelessWidget {
         ),
       ),
     );
+    Future.delayed(const Duration(seconds: 5), () => snackBarController?.close());
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final uid = FirebaseAuth.instance.currentUser!.uid;
     final tasksQuery = FirebaseFirestore.instance
         .collection('tasks')
@@ -65,8 +72,8 @@ class TaskListScreen extends StatelessWidget {
       length: 2,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('タスク'),
-          bottom: const TabBar(tabs: [Tab(text: '未完了'), Tab(text: '完了済み')]),
+          title: Text(l10n.taskListTitle),
+          bottom: TabBar(tabs: [Tab(text: l10n.taskListPending), Tab(text: l10n.taskListDone)]),
         ),
         body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
           stream: tasksQuery.snapshots(),
@@ -84,17 +91,17 @@ class TaskListScreen extends StatelessWidget {
               children: [
                 _TaskList(
                   tasks: pending,
-                  emptyText: '未完了のタスクはありません',
+                  emptyText: l10n.taskListEmptyPending,
                   priorityColor: _priorityColor,
                   onToggle: _toggleCompleted,
-                  onDelete: _delete,
+                  onDelete: (task) => _delete(context, task),
                 ),
                 _TaskList(
                   tasks: done,
-                  emptyText: '完了したタスクはありません',
+                  emptyText: l10n.taskListEmptyDone,
                   priorityColor: _priorityColor,
                   onToggle: _toggleCompleted,
-                  onDelete: _delete,
+                  onDelete: (task) => _delete(context, task),
                 ),
               ],
             );
@@ -128,6 +135,7 @@ class _TaskList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     if (tasks.isEmpty) {
       return Center(child: Text(emptyText));
     }
@@ -156,7 +164,7 @@ class _TaskList extends StatelessWidget {
                   ? const TextStyle(decoration: TextDecoration.lineThrough)
                   : null,
             ),
-            subtitle: task.scheduleId != null ? const Text('予定の準備リストから追加') : null,
+            subtitle: task.scheduleId != null ? Text(l10n.taskListFromSchedule) : null,
             trailing: Container(
               width: 12,
               height: 12,

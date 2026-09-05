@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../services/auth_service.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
@@ -27,6 +28,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
+    final l10n = AppLocalizations.of(context)!;
     setState(() {
       _isSubmitting = true;
       _message = null;
@@ -35,12 +37,12 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       await _authService.sendPasswordResetEmail(_emailController.text.trim());
       setState(() {
         _isError = false;
-        _message = 'パスワード再設定用のメールを送信しました';
+        _message = l10n.resetPasswordSuccess;
       });
     } on FirebaseAuthException {
       setState(() {
         _isError = true;
-        _message = '送信に失敗しました。メールアドレスをご確認ください';
+        _message = l10n.resetPasswordError;
       });
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
@@ -49,8 +51,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: const Text('パスワード再設定')),
+      appBar: AppBar(title: Text(l10n.resetPasswordTitle)),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -59,14 +62,14 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Text('登録済みのメールアドレスを入力してください。再設定用のリンクを送信します。'),
+                Text(l10n.resetPasswordInstructions),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
-                  decoration: const InputDecoration(labelText: 'メールアドレス'),
+                  decoration: InputDecoration(labelText: l10n.loginEmailLabel),
                   validator: (value) =>
-                      (value == null || value.trim().isEmpty) ? 'メールアドレスを入力してください' : null,
+                      (value == null || value.trim().isEmpty) ? l10n.loginEmailRequired : null,
                 ),
                 if (_message != null) ...[
                   const SizedBox(height: 16),
@@ -84,7 +87,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                           width: 20,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                      : const Text('送信する'),
+                      : Text(l10n.resetPasswordButton),
                 ),
               ],
             ),

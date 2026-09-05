@@ -5,9 +5,11 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 import 'firebase_options.dart';
+import 'l10n/app_localizations.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/home/home_shell.dart';
 import 'services/biometric_service.dart';
+import 'services/locale_service.dart';
 import 'services/notification_service.dart';
 
 /// App-wide messenger key so screens can show a SnackBar (e.g. an "undo"
@@ -19,7 +21,9 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await initializeDateFormatting('ja_JP');
+  await initializeDateFormatting('en_US');
   await NotificationService.instance.init();
+  await LocaleService.instance.load();
   runApp(const KairosApp());
 }
 
@@ -28,25 +32,31 @@ class KairosApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Kairos',
-      debugShowCheckedModeBanner: false,
-      scaffoldMessengerKey: rootScaffoldMessengerKey,
-      locale: const Locale('ja'),
-      supportedLocales: const [Locale('ja')],
-      localizationsDelegates: const [
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      theme: ThemeData(
-        colorSchemeSeed: const Color(0xFF2563EB),
-        useMaterial3: true,
-        inputDecorationTheme: const InputDecorationTheme(
-          border: OutlineInputBorder(),
-        ),
-      ),
-      home: const AuthGate(),
+    return ValueListenableBuilder<Locale>(
+      valueListenable: LocaleService.instance.locale,
+      builder: (context, locale, _) {
+        return MaterialApp(
+          title: 'Kairos',
+          debugShowCheckedModeBanner: false,
+          scaffoldMessengerKey: rootScaffoldMessengerKey,
+          locale: locale,
+          supportedLocales: AppLocalizations.supportedLocales,
+          localizationsDelegates: const [
+            ...AppLocalizations.localizationsDelegates,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          theme: ThemeData(
+            colorSchemeSeed: const Color(0xFF2563EB),
+            useMaterial3: true,
+            inputDecorationTheme: const InputDecorationTheme(
+              border: OutlineInputBorder(),
+            ),
+          ),
+          home: const AuthGate(),
+        );
+      },
     );
   }
 }
@@ -110,7 +120,8 @@ class _BiometricGateState extends State<BiometricGate> {
   }
 
   Future<void> _authenticate() async {
-    final success = await BiometricService.instance.authenticate();
+    final l10n = AppLocalizations.of(context)!;
+    final success = await BiometricService.instance.authenticate(l10n.biometricAuthReason);
     if (mounted) setState(() => _unlocked = success);
   }
 
@@ -122,6 +133,7 @@ class _BiometricGateState extends State<BiometricGate> {
     if (_unlocked) {
       return widget.child;
     }
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       body: Center(
         child: Column(
@@ -129,9 +141,9 @@ class _BiometricGateState extends State<BiometricGate> {
           children: [
             const Icon(Icons.lock_outline, size: 48),
             const SizedBox(height: 16),
-            const Text('Kairosはロックされています'),
+            Text(l10n.appLocked),
             const SizedBox(height: 16),
-            FilledButton(onPressed: _authenticate, child: const Text('認証する')),
+            FilledButton(onPressed: _authenticate, child: Text(l10n.authenticate)),
           ],
         ),
       ),

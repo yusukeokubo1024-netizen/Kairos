@@ -7,6 +7,7 @@ import 'package:timezone/timezone.dart' as tz;
 import '../models/anniversary.dart';
 import '../models/schedule.dart';
 import '../models/task.dart';
+import 'locale_service.dart';
 
 /// Wraps flutter_local_notifications for on-device reminders.
 /// No server-side push is used in the free v1 release.
@@ -43,6 +44,15 @@ class NotificationService {
     return '$prefix$docId'.hashCode & 0x7fffffff;
   }
 
+  bool get _isJa => LocaleService.instance.locale.value.languageCode == 'ja';
+
+  String get _scheduleReminderBody => _isJa ? 'まもなく予定の時間です' : 'Your schedule is coming up soon';
+  String get _scheduleChannelName => _isJa ? '予定のリマインダー' : 'Schedule reminders';
+  String get _taskReminderBody => _isJa ? '今日が期限のタスクです' : 'A task is due today';
+  String get _taskChannelName => _isJa ? 'タスクのリマインダー' : 'Task reminders';
+  String get _anniversaryChannelName => _isJa ? '記念日の通知' : 'Anniversary reminders';
+  String _anniversaryBody(String title) => _isJa ? '今日は「$title」の日です' : 'Today is "$title"';
+
   /// Whether the signed-in user has notifications turned on in Settings.
   /// Defaults to true (e.g. for signed-out callers, or if the field is unset).
   Future<bool> _notificationsEnabled() async {
@@ -70,16 +80,16 @@ class NotificationService {
     await _plugin.zonedSchedule(
       id: _scheduleNotificationId('schedule_', schedule.id),
       title: schedule.title,
-      body: 'まもなく予定の時間です',
+      body: _scheduleReminderBody,
       scheduledDate: tz.TZDateTime.from(reminderTime, tz.local),
-      notificationDetails: const NotificationDetails(
+      notificationDetails: NotificationDetails(
         android: AndroidNotificationDetails(
           'schedule_reminders',
-          '予定のリマインダー',
+          _scheduleChannelName,
           importance: Importance.high,
           priority: Priority.high,
         ),
-        iOS: DarwinNotificationDetails(),
+        iOS: const DarwinNotificationDetails(),
       ),
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
     );
@@ -99,16 +109,16 @@ class NotificationService {
     await _plugin.zonedSchedule(
       id: _scheduleNotificationId('task_', task.id),
       title: task.title,
-      body: '今日が期限のタスクです',
+      body: _taskReminderBody,
       scheduledDate: tz.TZDateTime.from(reminderTime, tz.local),
-      notificationDetails: const NotificationDetails(
+      notificationDetails: NotificationDetails(
         android: AndroidNotificationDetails(
           'task_reminders',
-          'タスクのリマインダー',
+          _taskChannelName,
           importance: Importance.high,
           priority: Priority.high,
         ),
-        iOS: DarwinNotificationDetails(),
+        iOS: const DarwinNotificationDetails(),
       ),
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
     );
@@ -137,16 +147,16 @@ class NotificationService {
     await _plugin.zonedSchedule(
       id: _scheduleNotificationId('anniversary_', anniversary.id),
       title: anniversary.title,
-      body: '今日は「${anniversary.title}」の日です',
+      body: _anniversaryBody(anniversary.title),
       scheduledDate: next,
-      notificationDetails: const NotificationDetails(
+      notificationDetails: NotificationDetails(
         android: AndroidNotificationDetails(
           'anniversary_reminders',
-          '記念日の通知',
+          _anniversaryChannelName,
           importance: Importance.high,
           priority: Priority.high,
         ),
-        iOS: DarwinNotificationDetails(),
+        iOS: const DarwinNotificationDetails(),
       ),
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       matchDateTimeComponents: DateTimeComponents.dateAndTime,

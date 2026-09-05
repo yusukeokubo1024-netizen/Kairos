@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:holiday_jp/holiday_jp.dart' as holiday_jp;
 import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'package:url_launcher/url_launcher.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../models/anniversary.dart';
 import '../../models/schedule.dart';
 import '../../models/schedule_category.dart';
@@ -37,6 +39,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
   List<({String name, int month, int day})> _friendBirthdays = [];
   String? _friendBirthdaysMemberKey;
   List<WeatherDay> _forecast = [];
+  String? _tenkiKeyword;
   // Populated at the top of _buildCalendarView so _buildDayCell (called by
   // table_calendar's synchronous builders) can look up each day's events.
   Map<DateTime, List<Schedule>> _schedulesByDay = {};
@@ -52,6 +55,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
     final userDoc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
     final lat = userDoc.data()?['weather_lat'] as num?;
     final lon = userDoc.data()?['weather_lon'] as num?;
+    _tenkiKeyword = userDoc.data()?['weather_tenki_keyword'] as String?;
     if (lat == null || lon == null) return;
 
     try {
@@ -71,13 +75,25 @@ class _CalendarScreenState extends State<CalendarScreen> {
     return null;
   }
 
+  /// Opens tenki.jp for more detail than the app's own simple high/low/rain
+  /// summary shows — deep-linked to the user's own region when known
+  /// (tenki.jp resolves wards our free geocoder has no data for at all,
+  /// like 大正区/浪速区), otherwise just the general weekly forecast.
+  Future<void> _openDetailedForecast() async {
+    final keyword = _tenkiKeyword;
+    final uri = (keyword == null || keyword.isEmpty)
+        ? Uri.parse('https://tenki.jp/week/')
+        : Uri.https('tenki.jp', '/search/', {'keyword': keyword});
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
+
   // Well-known annual observances that are not official Japanese public
   // holidays (so they don't get colored red), keyed by (month, day).
-  static const _specialDays = <(int, int), String>{
-    (12, 24): 'クリスマスイブ',
-    (12, 25): 'クリスマス',
-    (12, 31): '大晦日',
-  };
+  Map<(int, int), String> _specialDays(AppLocalizations l10n) => {
+        (12, 24): l10n.calendarChristmasEve,
+        (12, 25): l10n.calendarChristmas,
+        (12, 31): l10n.calendarNewYearsEve,
+      };
 
   bool _isSameDay(DateTime a, DateTime b) {
     return a.year == b.year && a.month == b.month && a.day == b.day;
@@ -91,21 +107,61 @@ class _CalendarScreenState extends State<CalendarScreen> {
     return firstOfMonth.add(Duration(days: offsetToFirstWeekday + 7 * (n - 1)));
   }
 
+  // holiday_jp ships a static table only through 2050, computed once at
+  // package-build time — Japan's government only officially confirms
+  // 春分の日/秋分の日 about a year ahead, so the package's guess for
+  // further-out years can drift a day off the real astronomical date.
+  // These use the standard approximation (accurate 1980–2099) instead, so
+  // the calendar doesn't show the wrong day for future years.
+  int _vernalEquinoxDay(int year) =>
+      (20.8431 + 0.242194 * (year - 1980)).floor() - ((year - 1980) / 4).floor();
+
+  int _autumnalEquinoxDay(int year) =>
+      (23.2488 + 0.242194 * (year - 1980)).floor() - ((year - 1980) / 4).floor();
+
+  /// Resolves the holiday for [day], preferring our own computed equinox
+  /// date over holiday_jp's for 春分の日/秋分の日 specifically.
+  holiday_jp.Holiday? _holidayFor(DateTime day) {
+    final isComputedVernalEquinox = day.month == 3 && day.day == _vernalEquinoxDay(day.year);
+    final isComputedAutumnalEquinox = day.month == 9 && day.day == _autumnalEquinoxDay(day.year);
+    if (isComputedVernalEquinox || isComputedAutumnalEquinox) {
+      final l10n = AppLocalizations.of(context)!;
+      return holiday_jp.Holiday(
+        date: '${day.year}-${day.month.toString().padLeft(2, '0')}-${day.day.toString().padLeft(2, '0')}',
+        week: '',
+        weekEn: '',
+        name: isComputedVernalEquinox ? l10n.calendarVernalEquinox : l10n.calendarAutumnalEquinox,
+        nameEn: isComputedVernalEquinox ? 'Vernal Equinox Day' : 'Autumnal Equinox Day',
+      );
+    }
+
+    final packageHoliday = holiday_jp.getHoliday(day);
+    // Suppress the package's own (possibly wrong, for future years) guess
+    // at the primary equinox day so it doesn't show alongside/instead of
+    // our computed one on the wrong date.
+    if (packageHoliday != null &&
+        (packageHoliday.name == '春分の日' || packageHoliday.name == '秋分の日')) {
+      return null;
+    }
+    return packageHoliday;
+  }
+
   bool _isHolidayOrSunday(DateTime day) {
-    return day.weekday == DateTime.sunday || holiday_jp.isHoliday(day);
+    return day.weekday == DateTime.sunday || _holidayFor(day) != null;
   }
 
   String? _specialDayName(DateTime day) {
-    final fixed = _specialDays[(day.month, day.day)];
+    final l10n = AppLocalizations.of(context)!;
+    final fixed = _specialDays(l10n)[(day.month, day.day)];
     if (fixed != null) return fixed;
 
     // 母の日 (5月第2日曜) and 父の日 (6月第3日曜) move every year, so they're
     // computed relative to `day.year` rather than stored as a fixed date.
     if (_isSameDay(day, _nthWeekdayOfMonth(day.year, 5, DateTime.sunday, 2))) {
-      return '母の日';
+      return l10n.calendarMothersDay;
     }
     if (_isSameDay(day, _nthWeekdayOfMonth(day.year, 6, DateTime.sunday, 3))) {
-      return '父の日';
+      return l10n.calendarFathersDay;
     }
     return null;
   }
@@ -113,6 +169,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
   /// Names of the signed-in user's own anniversaries, plus friends'/family's
   /// birthdays (shared via groups), that fall on [day] this year.
   List<String> _anniversaryNamesForDay(DateTime day) {
+    final l10n = AppLocalizations.of(context)!;
     final names = <String>[];
     for (final anniversary in _anniversaries) {
       if (anniversary.month == day.month && anniversary.day == day.day) {
@@ -121,7 +178,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
     }
     for (final birthday in _friendBirthdays) {
       if (birthday.month == day.month && birthday.day == day.day) {
-        names.add('${birthday.name}の誕生日');
+        names.add(l10n.calendarBirthdaySuffix(birthday.name));
       }
     }
     return names;
@@ -188,7 +245,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
       numberColor = Theme.of(context).textTheme.bodyMedium?.color ?? Colors.black;
     }
 
-    final holidayName = holiday_jp.getHoliday(day)?.name;
+    final holidayName = _holidayFor(day)?.name;
     final anniversaryNames = _anniversaryNamesForDay(day);
     final labelName = holidayName ??
         (anniversaryNames.isNotEmpty ? anniversaryNames.first : null) ??
@@ -261,12 +318,13 @@ class _CalendarScreenState extends State<CalendarScreen> {
   Future<void> _openMonthPicker(DateTime currentFocusedDay) async {
     var year = currentFocusedDay.year;
     var month = currentFocusedDay.month;
+    final l10n = AppLocalizations.of(context)!;
 
     final result = await showDialog<DateTime>(
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          title: const Text('年月を選択'),
+          title: Text(l10n.calendarMonthPickerTitle),
           content: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -274,7 +332,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 value: year,
                 items: [
                   for (var y = 2020; y <= 2035; y++)
-                    DropdownMenuItem(value: y, child: Text('$y年')),
+                    DropdownMenuItem(value: y, child: Text(l10n.calendarMonthPickerYear(y))),
                 ],
                 onChanged: (value) => setDialogState(() => year = value!),
               ),
@@ -282,17 +340,18 @@ class _CalendarScreenState extends State<CalendarScreen> {
               DropdownButton<int>(
                 value: month,
                 items: [
-                  for (var m = 1; m <= 12; m++) DropdownMenuItem(value: m, child: Text('$m月')),
+                  for (var m = 1; m <= 12; m++)
+                    DropdownMenuItem(value: m, child: Text(l10n.calendarMonthPickerMonth(m))),
                 ],
                 onChanged: (value) => setDialogState(() => month = value!),
               ),
             ],
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('キャンセル')),
+            TextButton(onPressed: () => Navigator.pop(context), child: Text(l10n.commonCancel)),
             FilledButton(
               onPressed: () => Navigator.pop(context, DateTime(year, month, 1)),
-              child: const Text('移動'),
+              child: Text(l10n.calendarMonthPickerGo),
             ),
           ],
         ),
@@ -306,18 +365,19 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   Future<void> _openCalendarFilter(List<SharedGroup> groups) async {
     final hidden = Set<String?>.from(_hiddenCalendarIds);
+    final l10n = AppLocalizations.of(context)!;
     await showDialog<void>(
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          title: const Text('表示するカレンダー'),
+          title: Text(l10n.calendarFilterTitle),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 CheckboxListTile(
                   secondary: const Icon(Icons.label_outline, size: 20),
-                  title: Text(personalCategoryDefaultLabel),
+                  title: Text(personalCategoryDefaultLabel(l10n)),
                   value: !hidden.contains(null),
                   onChanged: (checked) {
                     setDialogState(() {
@@ -325,7 +385,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     });
                   },
                 ),
-                ...personalCategories.entries.map((entry) {
+                ...personalCategories(l10n).entries.map((entry) {
                   return CheckboxListTile(
                     secondary: const Icon(Icons.label_outline, size: 20),
                     title: Text(entry.value),
@@ -340,7 +400,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 ...groups.map((group) {
                   return CheckboxListTile(
                     secondary: const Icon(Icons.groups_outlined, size: 20),
-                    title: Text('${group.name}（グループ）'),
+                    title: Text('${group.name}${l10n.scheduleFormGroupSuffix}'),
                     value: !hidden.contains(group.id),
                     onChanged: (checked) {
                       setDialogState(() {
@@ -362,7 +422,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 });
                 Navigator.pop(context);
               },
-              child: const Text('閉じる'),
+              child: Text(l10n.calendarFilterClose),
             ),
           ],
         ),
@@ -372,6 +432,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final uid = FirebaseAuth.instance.currentUser!.uid;
     final schedulesQuery = FirebaseFirestore.instance
         .collection('schedules')
@@ -382,14 +443,14 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Column(
+        title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('Kairos'),
+            Text(l10n.calendarTitle),
             Text(
-              '一瞬の時間の共有',
-              style: TextStyle(fontSize: 11, fontWeight: FontWeight.normal, color: Colors.grey),
+              l10n.calendarTagline,
+              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.normal, color: Colors.grey),
             ),
           ],
         ),
@@ -402,7 +463,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   : <SharedGroup>[];
               return IconButton(
                 icon: const Icon(Icons.filter_list),
-                tooltip: '表示するカレンダーを選ぶ',
+                tooltip: l10n.calendarFilterTooltip,
                 onPressed: () => _openCalendarFilter(groups),
               );
             },
@@ -411,7 +472,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
             icon: Icon(_viewMode == _ViewMode.calendar
                 ? Icons.view_list_outlined
                 : Icons.calendar_month_outlined),
-            tooltip: _viewMode == _ViewMode.calendar ? '一覧で表示' : 'カレンダーで表示',
+            tooltip: _viewMode == _ViewMode.calendar ? l10n.calendarViewList : l10n.calendarViewCalendar,
             onPressed: () {
               setState(() {
                 _viewMode =
@@ -464,9 +525,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       width: double.infinity,
                       color: Colors.red.shade50,
                       padding: const EdgeInsets.all(8),
-                      child: const Text(
-                        '予定の読み込みに失敗しました',
-                        style: TextStyle(color: Colors.red),
+                      child: Text(
+                        l10n.calendarLoadError,
+                        style: const TextStyle(color: Colors.red),
                         textAlign: TextAlign.center,
                       ),
                     ),
@@ -497,6 +558,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
   }
 
   Widget _buildCalendarView(List<Schedule> schedules) {
+    final l10n = AppLocalizations.of(context)!;
     final schedulesByDay = <DateTime, List<Schedule>>{};
     for (final schedule in schedules) {
       final day = DateTime(
@@ -511,16 +573,27 @@ class _CalendarScreenState extends State<CalendarScreen> {
     final selectedDaySchedules =
         schedules.where((s) => _isSameDay(s.startTime, _selectedDay)).toList();
 
-    return Column(
+    // Wrapped in a scroll view so a 6-row month (or a small screen) never
+    // overflows into the bottom navigation bar — it scrolls instead.
+    return LayoutBuilder(
+      builder: (context, constraints) => SingleChildScrollView(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minHeight: constraints.maxHeight),
+          child: Column(
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          padding: const EdgeInsets.fromLTRB(12, 2, 12, 0),
           child: Align(
             alignment: Alignment.centerRight,
             child: SegmentedButton<CalendarFormat>(
-              segments: const [
-                ButtonSegment(value: CalendarFormat.month, label: Text('月')),
-                ButtonSegment(value: CalendarFormat.week, label: Text('週')),
+              style: SegmentedButton.styleFrom(
+                visualDensity: VisualDensity.compact,
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
+                textStyle: const TextStyle(fontSize: 12),
+              ),
+              segments: [
+                ButtonSegment(value: CalendarFormat.month, label: Text(l10n.calendarFormatMonth)),
+                ButtonSegment(value: CalendarFormat.week, label: Text(l10n.calendarFormatWeek)),
               ],
               selected: {_calendarFormat},
               onSelectionChanged: (selection) =>
@@ -529,7 +602,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
           ),
         ),
         TableCalendar<Schedule>(
-          locale: 'ja_JP',
+          locale: Localizations.localeOf(context).toString(),
           firstDay: DateTime.utc(2020, 1, 1),
           lastDay: DateTime.utc(2035, 12, 31),
           focusedDay: _focusedDay,
@@ -551,9 +624,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
             // The SegmentedButton above already switches month/week.
             formatButtonVisible: false,
           ),
-          availableCalendarFormats: const {
-            CalendarFormat.month: '月',
-            CalendarFormat.week: '週',
+          availableCalendarFormats: {
+            CalendarFormat.month: l10n.calendarFormatMonth,
+            CalendarFormat.week: l10n.calendarFormatWeek,
           },
           // Sunday and national holidays in red, Saturday in blue — the
           // conventional Japanese calendar color scheme.
@@ -579,7 +652,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
               // Sunday's day-of-week header should read in red like holidays,
               // not the Saturday blue that daysOfWeekStyle.weekendStyle gives it.
               if (day.weekday != DateTime.sunday) return null;
-              final label = DateFormat.E('ja_JP').format(day);
+              final label = DateFormat.E(Localizations.localeOf(context).toString()).format(day);
               return Center(
                 child: Text(label, style: const TextStyle(color: Color(0xFFEF4444))),
               );
@@ -602,7 +675,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
             ),
           ),
         ),
-        if (holiday_jp.getHoliday(_selectedDay) case final holiday?)
+        if (_holidayFor(_selectedDay) case final holiday?)
           Container(
             width: double.infinity,
             color: Colors.red.shade50,
@@ -627,33 +700,53 @@ class _CalendarScreenState extends State<CalendarScreen> {
             ),
           ),
         if (_weatherForDay(_selectedDay) case final weather?)
-          Container(
-            width: double.infinity,
-            color: Colors.blue.shade50,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            child: Text(
-              '${weather.emoji} 最高${weather.maxTemp.round()}° / 最低${weather.minTemp.round()}°'
-              '${weather.precipitationProbability != null ? ' / 降水確率${weather.precipitationProbability}%' : ''}',
-              style: const TextStyle(color: Color(0xFF2563EB)),
+          InkWell(
+            onTap: _openDetailedForecast,
+            child: Container(
+              width: double.infinity,
+              color: Colors.blue.shade50,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      '${weather.emoji} '
+                      '${l10n.calendarWeatherLine(weather.maxTemp.round(), weather.minTemp.round())}'
+                      '${weather.precipitationProbability != null ? l10n.calendarWeatherPrecipitation(weather.precipitationProbability!) : ''}',
+                      style: const TextStyle(color: Color(0xFF2563EB)),
+                    ),
+                  ),
+                  const Icon(Icons.chevron_right, size: 18, color: Color(0xFF2563EB)),
+                ],
+              ),
             ),
           ),
         const Divider(height: 1),
-        Expanded(
-          child: selectedDaySchedules.isEmpty
-              ? const Center(child: Text('この日の予定はありません'))
-              : _ScheduleListView(schedules: selectedDaySchedules, showDate: false),
+        selectedDaySchedules.isEmpty
+            ? Padding(
+                padding: const EdgeInsets.all(24),
+                child: Center(child: Text(l10n.calendarNoScheduleThisDay)),
+              )
+            : _ScheduleListView(
+                schedules: selectedDaySchedules,
+                showDate: false,
+                shrinkWrap: true,
+              ),
+          ],
+          ),
         ),
-      ],
+      ),
     );
   }
 
   Widget _buildListView(List<Schedule> schedules) {
+    final l10n = AppLocalizations.of(context)!;
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final upcoming = schedules.where((s) => !s.startTime.isBefore(today)).toList();
 
     if (upcoming.isEmpty) {
-      return const Center(child: Text('今後の予定はありません'));
+      return Center(child: Text(l10n.calendarNoUpcoming));
     }
     return _ScheduleListView(schedules: upcoming, showDate: true);
   }
@@ -662,8 +755,15 @@ class _CalendarScreenState extends State<CalendarScreen> {
 class _ScheduleListView extends StatelessWidget {
   final List<Schedule> schedules;
   final bool showDate;
+  // true when embedded inside another scrollable (the calendar view), so it
+  // must not try to scroll/size itself independently.
+  final bool shrinkWrap;
 
-  const _ScheduleListView({required this.schedules, required this.showDate});
+  const _ScheduleListView({
+    required this.schedules,
+    required this.showDate,
+    this.shrinkWrap = false,
+  });
 
   String _formatTime(DateTime dateTime) {
     final hour = dateTime.hour.toString().padLeft(2, '0');
@@ -677,13 +777,18 @@ class _ScheduleListView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return ListView.builder(
+      shrinkWrap: shrinkWrap,
+      physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
       itemCount: schedules.length,
       itemBuilder: (context, index) {
         final schedule = schedules[index];
         final String timeLabel;
         if (schedule.isAllDay) {
-          timeLabel = showDate ? '${_formatDate(schedule.startTime)}  終日' : '終日';
+          timeLabel = showDate
+              ? '${_formatDate(schedule.startTime)}  ${l10n.calendarAllDay}'
+              : l10n.calendarAllDay;
         } else {
           timeLabel = showDate
               ? '${_formatDate(schedule.startTime)}  ${_formatTime(schedule.startTime)} - ${_formatTime(schedule.endTime)}'

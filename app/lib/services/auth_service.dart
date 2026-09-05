@@ -84,30 +84,6 @@ class AuthService {
     await user.linkWithCredential(credential);
   }
 
-  /// Signs in directly with Google (used for accounts that already have
-  /// Google linked, or for new sign-ups via Google).
-  Future<void> signInWithGoogle() async {
-    await _ensureGoogleSignInInitialized();
-    final account = await GoogleSignIn.instance.authenticate();
-    final idToken = account.authentication.idToken;
-    final credential = GoogleAuthProvider.credential(idToken: idToken);
-    final result = await _auth.signInWithCredential(credential);
-
-    final uid = result.user!.uid;
-    final existing = await _db.collection('users').doc(uid).get();
-    if (!existing.exists) {
-      final displayName = result.user!.displayName ?? account.displayName ?? '';
-      final newUser = AppUser(
-        uid: uid,
-        email: result.user!.email ?? account.email,
-        displayName: displayName,
-        createdTime: DateTime.now(),
-      );
-      await _db.collection('users').doc(uid).set(newUser.toCreateMap());
-      await _writePublicProfile(uid, displayName);
-    }
-  }
-
   /// Whether the current user already has a Google account linked.
   bool get isGoogleLinked {
     final user = _auth.currentUser;

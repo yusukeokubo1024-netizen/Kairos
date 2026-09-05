@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../main.dart';
 import '../../models/task.dart';
 import '../../services/notification_service.dart';
@@ -103,17 +104,21 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
   Future<void> _delete() async {
     final task = widget.task;
     if (task == null) return;
+    final l10n = AppLocalizations.of(context)!;
     await FirebaseFirestore.instance.collection('tasks').doc(task.id).delete();
     await NotificationService.instance.cancelForTask(task.id);
     if (mounted) Navigator.of(context).pop();
 
     rootScaffoldMessengerKey.currentState?.clearSnackBars();
-    rootScaffoldMessengerKey.currentState?.showSnackBar(
+    // Material 3's SnackBar pauses its auto-dismiss timer while hovered
+    // (desktop/web), so close it explicitly to guarantee it goes away after
+    // 5 seconds regardless of the pointer.
+    final snackBarController = rootScaffoldMessengerKey.currentState?.showSnackBar(
       SnackBar(
-        content: const Text('タスクを削除しました'),
-        duration: const Duration(seconds: 4),
+        content: Text(l10n.taskDeleted),
+        duration: const Duration(seconds: 5),
         action: SnackBarAction(
-          label: '元に戻す',
+          label: l10n.commonUndo,
           onPressed: () async {
             await FirebaseFirestore.instance.collection('tasks').doc(task.id).set(task.toCreateMap());
             if (!task.completed) {
@@ -123,13 +128,15 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
         ),
       ),
     );
+    Future.delayed(const Duration(seconds: 5), () => snackBarController?.close());
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: Text(_isEditing ? 'タスクを編集' : 'タスクを作成'),
+        title: Text(_isEditing ? l10n.taskFormTitleEdit : l10n.taskFormTitleNew),
         actions: _isEditing
             ? [IconButton(icon: const Icon(Icons.delete_outline), onPressed: _delete)]
             : null,
@@ -144,17 +151,17 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
               children: [
                 TextFormField(
                   controller: _titleController,
-                  decoration: const InputDecoration(labelText: 'タイトル'),
+                  decoration: InputDecoration(labelText: l10n.taskFormTitleLabel),
                   validator: (value) =>
-                      (value == null || value.trim().isEmpty) ? 'タイトルを入力してください' : null,
+                      (value == null || value.trim().isEmpty) ? l10n.taskFormTitleRequired : null,
                 ),
                 const SizedBox(height: 16),
-                const Text('優先度', style: TextStyle(fontWeight: FontWeight.bold)),
+                Text(l10n.taskFormPriority, style: const TextStyle(fontWeight: FontWeight.bold)),
                 SegmentedButton<TaskPriority>(
-                  segments: const [
-                    ButtonSegment(value: TaskPriority.low, label: Text('低')),
-                    ButtonSegment(value: TaskPriority.medium, label: Text('中')),
-                    ButtonSegment(value: TaskPriority.high, label: Text('高')),
+                  segments: [
+                    ButtonSegment(value: TaskPriority.low, label: Text(l10n.taskFormPriorityLow)),
+                    ButtonSegment(value: TaskPriority.medium, label: Text(l10n.taskFormPriorityMedium)),
+                    ButtonSegment(value: TaskPriority.high, label: Text(l10n.taskFormPriorityHigh)),
                   ],
                   selected: {_priority},
                   onSelectionChanged: (selection) => setState(() => _priority = selection.first),
@@ -162,10 +169,10 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                 const SizedBox(height: 16),
                 ListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: const Text('期限'),
+                  title: Text(l10n.taskFormDueDate),
                   subtitle: Text(
                     _dueDate == null
-                        ? '設定なし'
+                        ? l10n.taskFormDueDateNotSet
                         : '${_dueDate!.year}/${_dueDate!.month.toString().padLeft(2, '0')}/${_dueDate!.day.toString().padLeft(2, '0')}',
                   ),
                   trailing: Row(
@@ -190,7 +197,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                           width: 20,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                      : const Text('保存'),
+                      : Text(l10n.commonSave),
                 ),
               ],
             ),

@@ -3,12 +3,17 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../data/admin_regions.dart';
+import '../../data/countries.dart';
+import '../../l10n/app_localizations.dart';
 import '../../models/anniversary.dart';
 import '../../services/auth_service.dart';
 import '../../services/biometric_service.dart';
+import '../../services/locale_service.dart';
 import '../../services/notification_service.dart';
 import '../../services/weather_service.dart';
 import '../anniversary/anniversary_list_screen.dart';
+import 'support_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -43,7 +48,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _toggleBiometricLock(bool enabled) async {
     if (enabled) {
-      final success = await BiometricService.instance.authenticate();
+      final l10n = AppLocalizations.of(context)!;
+      final success = await BiometricService.instance.authenticate(l10n.biometricAuthReason);
       if (!success) return;
     }
     await BiometricService.instance.setLockEnabled(enabled);
@@ -61,26 +67,60 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
+  String _languageLabel(AppLocalizations l10n, Locale locale) {
+    switch (locale.languageCode) {
+      case 'ja':
+        return l10n.settingsLanguageJapanese;
+      case 'ko':
+        return l10n.settingsLanguageKorean;
+      case 'zh':
+        return l10n.settingsLanguageChinese;
+      default:
+        return l10n.settingsLanguageEnglish;
+    }
+  }
+
+  Future<void> _pickLanguage() async {
+    final l10n = AppLocalizations.of(context)!;
+    final selected = await showDialog<Locale>(
+      context: context,
+      builder: (context) => SimpleDialog(
+        title: Text(l10n.settingsLanguage),
+        children: [
+          for (final locale in LocaleService.supportedLocales)
+            SimpleDialogOption(
+              onPressed: () => Navigator.pop(context, locale),
+              child: Text(_languageLabel(l10n, locale)),
+            ),
+        ],
+      ),
+    );
+    if (selected != null) {
+      await LocaleService.instance.setLocale(selected);
+    }
+  }
+
   Future<void> _linkGoogle() async {
+    final l10n = AppLocalizations.of(context)!;
     setState(() => _isLinkingGoogle = true);
     try {
       await _authService.linkGoogleAccount();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Googleアカウントと連携しました')),
+          SnackBar(content: Text(l10n.settingsGoogleLinkSuccess)),
         );
       }
     } on FirebaseAuthException catch (e) {
       if (mounted) {
         final message = e.code == 'credential-already-in-use'
-            ? 'このGoogleアカウントは既に別のKairosアカウントで使われています'
-            : 'Google連携に失敗しました';
+            ? l10n.settingsGoogleLinkInUse
+            : l10n.settingsGoogleLinkFailed;
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
       }
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Google連携に失敗しました')),
+          SnackBar(content: Text(l10n.settingsGoogleLinkFailed)),
         );
       }
     } finally {
@@ -89,17 +129,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _editDisplayName(String currentName) async {
+    final l10n = AppLocalizations.of(context)!;
     final controller = TextEditingController(text: currentName);
     final newName = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('表示名を編集'),
+        title: Text(l10n.settingsEditDisplayName),
         content: TextField(controller: controller, autofocus: true),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('キャンセル')),
+          TextButton(onPressed: () => Navigator.pop(context), child: Text(l10n.commonCancel)),
           TextButton(
             onPressed: () => Navigator.pop(context, controller.text.trim()),
-            child: const Text('保存'),
+            child: Text(l10n.commonSave),
           ),
         ],
       ),
@@ -109,13 +150,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
       await _authService.updateDisplayName(newName);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('表示名を「$newName」に変更しました')),
+          SnackBar(content: Text(l10n.settingsDisplayNameSaved(newName))),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('表示名の保存に失敗しました: $e')),
+          SnackBar(content: Text(l10n.settingsDisplayNameSaveFailed('$e'))),
         );
       }
     }
@@ -125,13 +166,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
   /// the same entry instead of creating duplicates.
   String _birthdayAnniversaryId(String uid) => 'birthday_$uid';
 
-  Future<void> _setBirthday(DateTime? current) async {
+  Future<void> _setBirthday(DateTime? current, String displayName) async {
+    final l10n = AppLocalizations.of(context)!;
     final picked = await showDatePicker(
       context: context,
       initialDate: current ?? DateTime(2000, 1, 1),
       firstDate: DateTime(1900),
       lastDate: DateTime.now(),
-      helpText: '生年月日を選択',
+      helpText: l10n.settingsBirthdayPick,
     );
     if (picked == null) return;
 
@@ -149,7 +191,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final anniversary = Anniversary(
       id: _birthdayAnniversaryId(uid),
       ownerId: uid,
-      title: '誕生日',
+      title: displayName.isNotEmpty ? l10n.calendarBirthdaySuffix(displayName) : l10n.settingsBirthday,
       month: picked.month,
       day: picked.day,
     );
@@ -162,39 +204,238 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   bool _isSettingWeatherLocation = false;
 
-  Future<void> _setWeatherLocation(String? current) async {
+  /// Lets the user narrow the search to one country/region first, so
+  /// same-named places in different countries don't collide with Japanese
+  /// ward/city names like 千代田区.
+  Future<Country?> _pickCountry() async {
+    final l10n = AppLocalizations.of(context)!;
+    var query = '';
+    return showDialog<Country>(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          final filtered = query.isEmpty
+              ? kCountries
+              : kCountries
+                  .where((c) =>
+                      c.nameJa.contains(query) ||
+                      c.nameEn.toLowerCase().contains(query.toLowerCase()))
+                  .toList();
+          return AlertDialog(
+            title: Text(l10n.settingsWeatherLocationCountryTitle),
+            content: SizedBox(
+              width: double.maxFinite,
+              height: 420,
+              child: Column(
+                children: [
+                  TextField(
+                    autofocus: true,
+                    decoration: InputDecoration(
+                      hintText: l10n.settingsWeatherLocationCountrySearchHint,
+                      prefixIcon: const Icon(Icons.search),
+                    ),
+                    onChanged: (value) => setDialogState(() => query = value),
+                  ),
+                  const SizedBox(height: 8),
+                  Expanded(
+                    child: filtered.isEmpty
+                        ? Center(child: Text(l10n.settingsWeatherLocationCountryNotFound))
+                        : ListView.builder(
+                            itemCount: filtered.length,
+                            itemBuilder: (context, index) {
+                              final country = filtered[index];
+                              return ListTile(
+                                title: Text(country.nameJa),
+                                subtitle: Text(country.nameEn),
+                                onTap: () => Navigator.pop(context, country),
+                              );
+                            },
+                          ),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(context), child: Text(l10n.commonCancel)),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  /// Sentinel returned by [_pickAdminCity] when the user wants to type a
+  /// name instead of choosing from the region's city list.
+  static const _manualEntrySentinel = '__manual__';
+
+  /// A searchable, single-choice list dialog shared by the region/city/ward
+  /// pickers. Pass [showManualEntry] to add a trailing "type it myself"
+  /// row, returned as [_manualEntrySentinel].
+  Future<String?> _pickFromList({
+    required String title,
+    required String searchHint,
+    required List<String> items,
+    bool showManualEntry = false,
+  }) async {
+    final l10n = AppLocalizations.of(context)!;
+    var query = '';
+    return showDialog<String>(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          final filtered =
+              query.isEmpty ? items : items.where((c) => c.contains(query)).toList();
+          return AlertDialog(
+            title: Text(title),
+            content: SizedBox(
+              width: double.maxFinite,
+              height: 420,
+              child: Column(
+                children: [
+                  TextField(
+                    autofocus: true,
+                    decoration: InputDecoration(
+                      hintText: searchHint,
+                      prefixIcon: const Icon(Icons.search),
+                    ),
+                    onChanged: (value) => setDialogState(() => query = value),
+                  ),
+                  const SizedBox(height: 8),
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: filtered.length + (showManualEntry ? 1 : 0),
+                      itemBuilder: (context, index) {
+                        if (showManualEntry && index == filtered.length) {
+                          return ListTile(
+                            title: Text(l10n.settingsWeatherLocationManualEntry),
+                            onTap: () => Navigator.pop(context, _manualEntrySentinel),
+                          );
+                        }
+                        final item = filtered[index];
+                        return ListTile(
+                          title: Text(item),
+                          onTap: () => Navigator.pop(context, item),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(context), child: Text(l10n.commonCancel)),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Future<AdminRegion?> _pickAdminRegion(String countryCode) async {
+    final l10n = AppLocalizations.of(context)!;
+    final regions = await AdminRegions.load(countryCode);
+    if (!mounted) return null;
+    final picked = await _pickFromList(
+      title: l10n.settingsWeatherLocationPrefectureTitle,
+      searchHint: l10n.settingsWeatherLocationPrefectureSearchHint,
+      items: [for (final region in regions) region.name],
+    );
+    if (picked == null) return null;
+    return regions.firstWhere((region) => region.name == picked);
+  }
+
+  /// Walks region → city → (ward, for Japan's 政令指定都市 only). Returns
+  /// the final place name (city, or "city+ward" combined so the existing
+  /// geocoding fallback logic still recognizes it), [_manualEntrySentinel],
+  /// or null if the user backed out.
+  Future<String?> _pickAdminCity(AdminRegion region) async {
+    final l10n = AppLocalizations.of(context)!;
+    final cityPick = await _pickFromList(
+      title: region.name,
+      searchHint: l10n.settingsWeatherLocationCitySearchHint,
+      items: [for (final city in region.cities) city.name],
+      showManualEntry: true,
+    );
+    if (cityPick == null || cityPick == _manualEntrySentinel) return cityPick;
+
+    final city = region.cities.firstWhere((c) => c.name == cityPick);
+    if (!city.hasWards) return city.name;
+    if (!mounted) return null;
+
+    final wardPick = await _pickFromList(
+      title: city.name,
+      searchHint: l10n.settingsWeatherLocationCitySearchHint,
+      items: city.wards,
+      showManualEntry: true,
+    );
+    if (wardPick == null) return null;
+    if (wardPick == _manualEntrySentinel) return _manualEntrySentinel;
+    return '${city.name}$wardPick';
+  }
+
+  Future<String?> _promptCityName(String? current) async {
+    final l10n = AppLocalizations.of(context)!;
     final controller = TextEditingController(text: current ?? '');
-    final city = await showDialog<String>(
+    return showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('お住まいの地域'),
+        title: Text(l10n.settingsWeatherLocationTitle),
         content: TextField(
           controller: controller,
           autofocus: true,
-          decoration: const InputDecoration(
-            hintText: '例: 渋谷、横浜、札幌',
-            helperText: '「〜区」「〜都」などを付けずに地名だけで検索してください',
+          decoration: InputDecoration(
+            hintText: l10n.settingsWeatherLocationHint,
+            helperText: l10n.settingsWeatherLocationHelper,
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('キャンセル')),
+          TextButton(onPressed: () => Navigator.pop(context), child: Text(l10n.commonCancel)),
           TextButton(
             onPressed: () => Navigator.pop(context, controller.text.trim()),
-            child: const Text('保存'),
+            child: Text(l10n.commonSave),
           ),
         ],
       ),
     );
+  }
+
+  Future<void> _setWeatherLocation(String? current) async {
+    final l10n = AppLocalizations.of(context)!;
+    final country = await _pickCountry();
+    if (country == null || !mounted) return;
+
+    String? city;
+    String? prefectureHint;
+    var isStructuredPick = false;
+    if (kAdminRegionAssets.containsKey(country.code)) {
+      final region = await _pickAdminRegion(country.code);
+      if (region == null || !mounted) return;
+      prefectureHint = region.name;
+      final picked = await _pickAdminCity(region);
+      if (picked == null || !mounted) return;
+      if (picked == _manualEntrySentinel) {
+        city = await _promptCityName(current);
+      } else {
+        city = picked;
+        isStructuredPick = true;
+      }
+    } else {
+      city = await _promptCityName(current);
+    }
     if (city == null || city.isEmpty) return;
 
     setState(() => _isSettingWeatherLocation = true);
     List<({double lat, double lon, String resolvedName})> candidates;
     try {
-      candidates = await WeatherService.instance.geocodeCity(city);
+      candidates = await WeatherService.instance.geocodeCity(
+        city,
+        countryCode: country.code,
+        prefectureHint: prefectureHint,
+      );
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('地域の検索に失敗しました: $e')),
+          SnackBar(content: Text(l10n.settingsWeatherLocationSearchFailed('$e'))),
         );
       }
       return;
@@ -205,7 +446,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (candidates.isEmpty) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('地域が見つかりませんでした')),
+          SnackBar(content: Text(l10n.settingsWeatherLocationNotFound)),
         );
       }
       return;
@@ -217,7 +458,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final selected = await showDialog<({double lat, double lon, String resolvedName})>(
       context: context,
       builder: (context) => SimpleDialog(
-        title: const Text('この地域でよろしいですか？'),
+        title: Text(l10n.settingsWeatherLocationConfirmTitle),
         children: [
           for (final candidate in candidates)
             SimpleDialogOption(
@@ -229,54 +470,73 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
     if (selected == null) return;
 
+    // When picked from the region→city→ward list, show exactly what the
+    // user selected (e.g. "大阪市中央区") even if the coordinates had to
+    // fall back to the parent city — Open-Meteo's free data has no
+    // ward-level entry at all for many 政令指定都市, nationwide.
+    final displayName = isStructuredPick
+        ? city
+        : (country.code == 'JP'
+            ? selected.resolvedName
+            : '${selected.resolvedName}（${country.nameJa}）');
+
     final uid = FirebaseAuth.instance.currentUser!.uid;
     try {
       await FirebaseFirestore.instance.collection('users').doc(uid).set({
         'uid': uid,
         'weather_lat': selected.lat,
         'weather_lon': selected.lon,
-        'weather_city': selected.resolvedName,
+        'weather_city': displayName,
+        'weather_country_code': country.code,
+        // The exact string the user picked (e.g. "大阪市大正区"), used to
+        // deep-link to tenki.jp's own search — it resolves wards our free
+        // geocoder has no data for at all, like 大正区/浪速区.
+        'weather_tenki_keyword': country.code == 'JP' ? city : null,
       }, SetOptions(merge: true));
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${selected.resolvedName} を登録しました')),
+          SnackBar(content: Text(l10n.settingsWeatherLocationSaved(displayName))),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('地域の保存に失敗しました: $e')),
+          SnackBar(content: Text(l10n.settingsWeatherLocationSaveFailed('$e'))),
         );
       }
     }
   }
 
   Future<void> _openUrl(String url) async {
+    final l10n = AppLocalizations.of(context)!;
     final uri = Uri.parse(url);
     if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('ページを開けませんでした')),
+          SnackBar(content: Text(l10n.settingsCouldNotOpenPage)),
         );
       }
     }
   }
 
   Future<void> _confirmDeleteAccount() async {
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('アカウントを削除しますか？'),
-        content: const Text(
-          'プロフィール、所有する予定・タスク・グループを含むすべてのデータが削除されます。'
-          'この操作は取り消せません。複数人で共有しているグループがある場合は、'
-          '先にメンバーを整理してください。',
-        ),
+        title: Text(l10n.settingsDeleteAccountConfirmTitle),
+        content: Text(l10n.settingsDeleteAccountConfirmBody),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('キャンセル')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(l10n.commonCancel),
+          ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('削除する', style: TextStyle(color: Colors.red)),
+            child: Text(
+              l10n.settingsDeleteAccountConfirmButton,
+              style: const TextStyle(color: Colors.red),
+            ),
           ),
         ],
       ),
@@ -289,8 +549,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     } on FirebaseAuthException catch (e) {
       if (mounted) {
         final message = e.code == 'requires-recent-login'
-            ? 'セキュリティのため、一度ログアウトしてから再度ログインし、もう一度お試しください'
-            : 'アカウントの削除に失敗しました';
+            ? l10n.settingsDeleteAccountRequiresRecentLogin
+            : l10n.settingsDeleteAccountFailed;
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
       }
     } finally {
@@ -300,11 +560,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final uid = FirebaseAuth.instance.currentUser!.uid;
     final userDoc = FirebaseFirestore.instance.collection('users').doc(uid);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('設定')),
+      appBar: AppBar(title: Text(l10n.settingsTitle)),
       body: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
         stream: userDoc.snapshots(),
         builder: (context, snapshot) {
@@ -313,12 +574,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
           final email = data?['email'] as String? ?? FirebaseAuth.instance.currentUser?.email ?? '';
           final notificationsEnabled = data?['notifications_enabled'] as bool? ?? true;
           final isGoogleLinked = _authService.isGoogleLinked;
+          final currentLocale = LocaleService.instance.locale.value;
 
           return ListView(
             children: [
               ListTile(
                 leading: const CircleAvatar(child: Icon(Icons.person_outline)),
-                title: Text(displayName.isNotEmpty ? displayName : '(表示名未設定)'),
+                title: Text(displayName.isNotEmpty ? displayName : l10n.settingsDisplayNameUnset),
                 subtitle: Text(email),
                 trailing: const Icon(Icons.edit_outlined),
                 onTap: () => _editDisplayName(displayName),
@@ -334,26 +596,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       : null;
                   return ListTile(
                     leading: const Icon(Icons.cake_outlined),
-                    title: const Text('生年月日'),
+                    title: Text(l10n.settingsBirthday),
                     subtitle: Text(
-                      current == null ? '未設定' : '$birthMonth月$birthDay日',
+                      current == null
+                          ? l10n.commonNotSet
+                          : l10n.settingsBirthdayValue(birthMonth!, birthDay!),
                     ),
                     trailing: const Icon(Icons.edit_outlined),
-                    onTap: () => _setBirthday(current),
+                    onTap: () => _setBirthday(current, displayName),
                   );
                 },
               ),
-              const Padding(
-                padding: EdgeInsets.fromLTRB(16, 0, 16, 8),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
                 child: Text(
-                  '生年月日を登録すると、毎年カレンダーとグループの友人・家族にも誕生日として表示されます',
-                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                  l10n.settingsBirthdayHint,
+                  style: const TextStyle(fontSize: 12, color: Colors.grey),
                 ),
               ),
               ListTile(
                 leading: const Icon(Icons.wb_sunny_outlined),
-                title: const Text('お住まいの地域（天気予報）'),
-                subtitle: Text((data?['weather_city'] as String?) ?? '未設定'),
+                title: Text(l10n.settingsWeatherLocation),
+                subtitle: Text((data?['weather_city'] as String?) ?? l10n.commonNotSet),
                 trailing: _isSettingWeatherLocation
                     ? const SizedBox(
                         height: 20,
@@ -364,14 +628,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 onTap: () => _setWeatherLocation(data?['weather_city'] as String?),
               ),
               const Divider(),
-              const Padding(
-                padding: EdgeInsets.fromLTRB(16, 8, 16, 0),
-                child: Text('アカウント連携', style: TextStyle(fontWeight: FontWeight.bold)),
+              ListTile(
+                leading: const Icon(Icons.language_outlined),
+                title: Text(l10n.settingsLanguage),
+                subtitle: Text(_languageLabel(l10n, currentLocale)),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: _pickLanguage,
+              ),
+              const Divider(),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                child: Text(l10n.settingsAccountLinking, style: const TextStyle(fontWeight: FontWeight.bold)),
               ),
               ListTile(
                 leading: const Icon(Icons.account_circle_outlined),
-                title: const Text('Googleと連携'),
-                subtitle: Text(isGoogleLinked ? '連携済み' : '未連携'),
+                title: Text(l10n.settingsGoogleLink),
+                subtitle: Text(isGoogleLinked ? l10n.settingsGoogleLinked : l10n.settingsGoogleNotLinked),
                 trailing: isGoogleLinked
                     ? const Icon(Icons.check_circle, color: Colors.green)
                     : (_isLinkingGoogle
@@ -386,23 +658,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
               const Divider(),
               SwitchListTile(
                 secondary: const Icon(Icons.notifications_outlined),
-                title: const Text('通知'),
-                subtitle: const Text('予定・タスク・記念日のリマインダー通知'),
+                title: Text(l10n.settingsNotifications),
+                subtitle: Text(l10n.settingsNotificationsSubtitle),
                 value: notificationsEnabled,
                 onChanged: _toggleNotifications,
               ),
               if (_biometricSupported)
                 SwitchListTile(
                   secondary: const Icon(Icons.fingerprint),
-                  title: const Text('Face ID / 指紋認証でロック'),
-                  subtitle: const Text('アプリを開くたびに認証を求めます'),
+                  title: Text(l10n.settingsBiometricLock),
+                  subtitle: Text(l10n.settingsBiometricLockSubtitle),
                   value: _biometricEnabled,
                   onChanged: _toggleBiometricLock,
                 ),
               ListTile(
                 leading: const Icon(Icons.cake_outlined),
-                title: const Text('大切な記念日'),
-                subtitle: const Text('毎年通知したい記念日を登録'),
+                title: Text(l10n.settingsAnniversaries),
+                subtitle: Text(l10n.settingsAnniversariesSubtitle),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => const AnniversaryListScreen()),
@@ -411,23 +683,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
               const Divider(),
               ListTile(
                 leading: const Icon(Icons.privacy_tip_outlined),
-                title: const Text('プライバシーポリシー'),
+                title: Text(l10n.settingsPrivacyPolicy),
                 onTap: () => _openUrl('https://kairos-3d873.web.app/privacy-policy.html'),
               ),
               ListTile(
                 leading: const Icon(Icons.description_outlined),
-                title: const Text('利用規約'),
+                title: Text(l10n.settingsTermsOfService),
                 onTap: () => _openUrl('https://kairos-3d873.web.app/terms-of-service.html'),
               ),
               ListTile(
                 leading: const Icon(Icons.support_agent_outlined),
-                title: const Text('サポート'),
-                onTap: () => _openUrl('https://kairos-3d873.web.app/'),
+                title: Text(l10n.settingsSupport),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const SupportScreen()),
+                ),
               ),
               const Divider(),
               ListTile(
                 leading: const Icon(Icons.logout),
-                title: const Text('ログアウト'),
+                title: Text(l10n.settingsLogout),
                 onTap: () => _authService.signOut(),
               ),
               ListTile(
@@ -438,7 +712,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
                     : const Icon(Icons.delete_forever_outlined, color: Colors.red),
-                title: const Text('アカウントを削除', style: TextStyle(color: Colors.red)),
+                title: Text(l10n.settingsDeleteAccount, style: const TextStyle(color: Colors.red)),
                 onTap: _isDeleting ? null : _confirmDeleteAccount,
               ),
             ],

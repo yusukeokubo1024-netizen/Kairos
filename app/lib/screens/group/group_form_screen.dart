@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../models/shared_group.dart';
 
 class GroupFormScreen extends StatefulWidget {
@@ -44,8 +45,9 @@ class _GroupFormScreenState extends State<GroupFormScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: const Text('グループを作成')),
+      appBar: AppBar(title: Text(l10n.groupFormTitle)),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -56,9 +58,9 @@ class _GroupFormScreenState extends State<GroupFormScreen> {
               children: [
                 TextFormField(
                   controller: _nameController,
-                  decoration: const InputDecoration(labelText: 'グループ名'),
+                  decoration: InputDecoration(labelText: l10n.groupFormNameLabel),
                   validator: (value) =>
-                      (value == null || value.trim().isEmpty) ? 'グループ名を入力してください' : null,
+                      (value == null || value.trim().isEmpty) ? l10n.groupFormNameRequired : null,
                 ),
                 const SizedBox(height: 24),
                 FilledButton(
@@ -69,7 +71,7 @@ class _GroupFormScreenState extends State<GroupFormScreen> {
                           width: 20,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                      : const Text('作成する'),
+                      : Text(l10n.groupFormCreateButton),
                 ),
               ],
             ),

@@ -1,7 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../services/auth_service.dart';
+import 'biometric_offer.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -40,6 +42,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
         password: _passwordController.text,
         displayName: _nameController.text.trim(),
       );
+      if (mounted) await offerBiometricLock(context);
       if (mounted) Navigator.of(context).pop();
     } on FirebaseAuthException catch (e) {
       setState(() => _errorMessage = _messageForError(e.code));
@@ -49,22 +52,24 @@ class _SignUpScreenState extends State<SignUpScreen> {
   }
 
   String _messageForError(String code) {
+    final l10n = AppLocalizations.of(context)!;
     switch (code) {
       case 'email-already-in-use':
-        return 'このメールアドレスは既に登録されています';
+        return l10n.signUpErrorEmailInUse;
       case 'invalid-email':
-        return 'メールアドレスの形式が正しくありません';
+        return l10n.loginErrorInvalidEmail;
       case 'weak-password':
-        return 'パスワードは6文字以上で設定してください';
+        return l10n.signUpPasswordTooShort;
       default:
-        return '登録に失敗しました。しばらくしてから再度お試しください';
+        return l10n.signUpErrorGeneric;
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: const Text('新規登録')),
+      appBar: AppBar(title: Text(l10n.signUpTitle)),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
@@ -75,26 +80,26 @@ class _SignUpScreenState extends State<SignUpScreen> {
               children: [
                 TextFormField(
                   controller: _nameController,
-                  decoration: const InputDecoration(labelText: '表示名'),
+                  decoration: InputDecoration(labelText: l10n.signUpNameLabel),
                   validator: (value) =>
-                      (value == null || value.trim().isEmpty) ? '表示名を入力してください' : null,
+                      (value == null || value.trim().isEmpty) ? l10n.signUpNameRequired : null,
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
-                  decoration: const InputDecoration(labelText: 'メールアドレス'),
+                  decoration: InputDecoration(labelText: l10n.loginEmailLabel),
                   validator: (value) =>
-                      (value == null || value.trim().isEmpty) ? 'メールアドレスを入力してください' : null,
+                      (value == null || value.trim().isEmpty) ? l10n.loginEmailRequired : null,
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _passwordController,
                   obscureText: true,
-                  decoration: const InputDecoration(labelText: 'パスワード（6文字以上）'),
+                  decoration: InputDecoration(labelText: l10n.signUpPasswordLabel),
                   validator: (value) {
-                    if (value == null || value.isEmpty) return 'パスワードを入力してください';
-                    if (value.length < 6) return 'パスワードは6文字以上で設定してください';
+                    if (value == null || value.isEmpty) return l10n.loginPasswordRequired;
+                    if (value.length < 6) return l10n.signUpPasswordTooShort;
                     return null;
                   },
                 ),
@@ -111,7 +116,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           width: 20,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                      : const Text('登録する'),
+                      : Text(l10n.signUpButton),
                 ),
               ],
             ),

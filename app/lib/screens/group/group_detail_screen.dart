@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../main.dart';
 import '../../models/shared_group.dart';
 import 'group_chat_screen.dart';
@@ -13,23 +14,25 @@ class GroupDetailScreen extends StatelessWidget {
   const GroupDetailScreen({super.key, required this.group});
 
   Future<void> _copyInviteCode(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
     await Clipboard.setData(ClipboardData(text: group.id));
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('招待コードをコピーしました')),
+        SnackBar(content: Text(l10n.groupDetailInviteCodeCopied)),
       );
     }
   }
 
   Future<void> _delete(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('グループを削除しますか？'),
-        content: const Text('削除してもすぐ後なら元に戻せます。'),
+        title: Text(l10n.groupDeleteConfirmTitle),
+        content: Text(l10n.groupDeleteConfirmBody),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('キャンセル')),
-          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('削除')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(l10n.commonCancel)),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: Text(l10n.commonDelete)),
         ],
       ),
     );
@@ -39,12 +42,15 @@ class GroupDetailScreen extends StatelessWidget {
     if (context.mounted) Navigator.of(context).pop();
 
     rootScaffoldMessengerKey.currentState?.clearSnackBars();
-    rootScaffoldMessengerKey.currentState?.showSnackBar(
+    // Material 3's SnackBar pauses its auto-dismiss timer while hovered
+    // (desktop/web), so close it explicitly to guarantee it goes away after
+    // 5 seconds regardless of the pointer.
+    final snackBarController = rootScaffoldMessengerKey.currentState?.showSnackBar(
       SnackBar(
-        content: const Text('グループを削除しました'),
-        duration: const Duration(seconds: 4),
+        content: Text(l10n.groupDeleted),
+        duration: const Duration(seconds: 5),
         action: SnackBarAction(
-          label: '元に戻す',
+          label: l10n.commonUndo,
           onPressed: () async {
             await FirebaseFirestore.instance
                 .collection('sharedGroups')
@@ -54,10 +60,12 @@ class GroupDetailScreen extends StatelessWidget {
         ),
       ),
     );
+    Future.delayed(const Duration(seconds: 5), () => snackBarController?.close());
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final uid = FirebaseAuth.instance.currentUser!.uid;
     final isOwner = group.ownerId == uid;
 
@@ -74,7 +82,7 @@ class GroupDetailScreen extends StatelessWidget {
           children: [
             Card(
               child: ListTile(
-                title: const Text('招待コード'),
+                title: Text(l10n.groupDetailInviteCode),
                 subtitle: Text(group.id),
                 trailing: IconButton(
                   icon: const Icon(Icons.copy_outlined),
@@ -83,7 +91,7 @@ class GroupDetailScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            const Text('メンバー', style: TextStyle(fontWeight: FontWeight.bold)),
+            Text(l10n.groupDetailMembers, style: const TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             ...group.memberIds.map((memberId) => _MemberTile(uid: memberId)),
           ],
@@ -94,7 +102,7 @@ class GroupDetailScreen extends StatelessWidget {
           MaterialPageRoute(builder: (_) => GroupChatScreen(group: group)),
         ),
         icon: const Icon(Icons.chat_bubble_outline),
-        label: const Text('トーク'),
+        label: Text(l10n.groupDetailChat),
       ),
     );
   }
@@ -110,10 +118,11 @@ class _MemberTile extends StatelessWidget {
     return FutureBuilder<DocumentSnapshot<Map<String, dynamic>>>(
       future: FirebaseFirestore.instance.collection('publicProfiles').doc(uid).get(),
       builder: (context, snapshot) {
+        final l10n = AppLocalizations.of(context)!;
         final name = snapshot.data?.data()?['displayName'] as String?;
         return ListTile(
           leading: const CircleAvatar(child: Icon(Icons.person_outline)),
-          title: Text(name?.isNotEmpty == true ? name! : '読み込み中...'),
+          title: Text(name?.isNotEmpty == true ? name! : l10n.scheduleFormLoadingName),
         );
       },
     );

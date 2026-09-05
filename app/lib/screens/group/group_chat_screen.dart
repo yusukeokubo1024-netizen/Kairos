@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../models/chat_message.dart';
 import '../../models/shared_group.dart';
 
@@ -140,6 +141,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final uid = FirebaseAuth.instance.currentUser!.uid;
     final messagesQuery = FirebaseFirestore.instance
         .collection('sharedGroups')
@@ -148,7 +150,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
         .orderBy('createdAt', descending: true);
 
     return Scaffold(
-      appBar: AppBar(title: Text('${widget.group.name} のトーク')),
+      appBar: AppBar(title: Text(l10n.groupChatTitle(widget.group.name))),
       body: SafeArea(
         child: Column(
           children: [
@@ -162,7 +164,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                   final messages =
                       snapshot.data!.docs.map((doc) => ChatMessage.fromFirestore(doc)).toList();
                   if (messages.isEmpty) {
-                    return const Center(child: Text('まだメッセージはありません'));
+                    return Center(child: Text(l10n.groupChatEmpty));
                   }
                   return ListView.builder(
                     controller: _scrollController,
@@ -193,12 +195,12 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                   IconButton(
                     onPressed: _openStampPicker,
                     icon: const Icon(Icons.emoji_emotions_outlined),
-                    tooltip: 'スタンプ',
+                    tooltip: l10n.groupChatStampTooltip,
                   ),
                   Expanded(
                     child: TextField(
                       controller: _textController,
-                      decoration: const InputDecoration(hintText: 'メッセージを入力'),
+                      decoration: InputDecoration(hintText: l10n.groupChatInputHint),
                       minLines: 1,
                       maxLines: 4,
                       textInputAction: TextInputAction.send,

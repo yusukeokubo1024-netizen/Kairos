@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../models/shared_group.dart';
 
 /// Lets a user join a group by entering its invite code (the group's
@@ -29,6 +30,7 @@ class _GroupJoinScreenState extends State<GroupJoinScreen> {
   Future<void> _lookupCode() async {
     final code = _codeController.text.trim();
     if (code.isEmpty) return;
+    final l10n = AppLocalizations.of(context)!;
 
     setState(() {
       _isLoading = true;
@@ -39,12 +41,12 @@ class _GroupJoinScreenState extends State<GroupJoinScreen> {
     try {
       final doc = await FirebaseFirestore.instance.collection('sharedGroups').doc(code).get();
       if (!doc.exists) {
-        setState(() => _errorMessage = 'コードが見つかりませんでした。入力内容をご確認ください');
+        setState(() => _errorMessage = l10n.groupJoinNotFound);
         return;
       }
       setState(() => _preview = SharedGroup.fromFirestore(doc));
     } catch (_) {
-      setState(() => _errorMessage = 'コードが見つかりませんでした。入力内容をご確認ください');
+      setState(() => _errorMessage = l10n.groupJoinNotFound);
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -53,6 +55,7 @@ class _GroupJoinScreenState extends State<GroupJoinScreen> {
   Future<void> _join() async {
     final group = _preview;
     if (group == null) return;
+    final l10n = AppLocalizations.of(context)!;
     final uid = FirebaseAuth.instance.currentUser!.uid;
 
     setState(() {
@@ -67,7 +70,7 @@ class _GroupJoinScreenState extends State<GroupJoinScreen> {
       });
       if (mounted) Navigator.of(context).pop();
     } catch (_) {
-      setState(() => _errorMessage = '参加に失敗しました。時間をおいて再度お試しください');
+      setState(() => _errorMessage = l10n.groupJoinFailed);
     } finally {
       if (mounted) setState(() => _isJoining = false);
     }
@@ -75,23 +78,24 @@ class _GroupJoinScreenState extends State<GroupJoinScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final uid = FirebaseAuth.instance.currentUser!.uid;
     final preview = _preview;
     final alreadyMember = preview != null && preview.memberIds.contains(uid);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('グループに参加')),
+      appBar: AppBar(title: Text(l10n.groupJoinTitle)),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text('グループのオーナーから共有された招待コードを入力してください。'),
+              Text(l10n.groupJoinInstructions),
               const SizedBox(height: 16),
               TextField(
                 controller: _codeController,
-                decoration: const InputDecoration(labelText: '招待コード'),
+                decoration: InputDecoration(labelText: l10n.groupJoinCodeLabel),
               ),
               const SizedBox(height: 12),
               FilledButton.tonal(
@@ -102,7 +106,7 @@ class _GroupJoinScreenState extends State<GroupJoinScreen> {
                         width: 20,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : const Text('確認'),
+                    : Text(l10n.groupJoinConfirmButton),
               ),
               if (_errorMessage != null) ...[
                 const SizedBox(height: 16),
@@ -114,12 +118,12 @@ class _GroupJoinScreenState extends State<GroupJoinScreen> {
                   child: ListTile(
                     leading: const Icon(Icons.groups_outlined),
                     title: Text(preview.name),
-                    subtitle: Text('メンバー ${preview.memberIds.length}人'),
+                    subtitle: Text(l10n.groupJoinMembers(preview.memberIds.length)),
                   ),
                 ),
                 const SizedBox(height: 16),
                 if (alreadyMember)
-                  const Text('すでにこのグループのメンバーです')
+                  Text(l10n.groupJoinAlreadyMember)
                 else
                   FilledButton(
                     onPressed: _isJoining ? null : _join,
@@ -129,7 +133,7 @@ class _GroupJoinScreenState extends State<GroupJoinScreen> {
                             width: 20,
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
-                        : const Text('このグループに参加する'),
+                        : Text(l10n.groupJoinButton),
                   ),
               ],
             ],

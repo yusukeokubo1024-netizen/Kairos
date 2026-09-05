@@ -1,7 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../models/schedule.dart';
 import '../../models/schedule_category.dart';
 import '../../models/schedule_prep_templates.dart';
@@ -50,14 +52,14 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
   // Used only for show/hide filtering on the home calendar.
   String? _groupId;
 
-  static const _reminderOptions = <int?, String>{
-    null: '通知しない',
-    5: '5分前',
-    15: '15分前',
-    30: '30分前',
-    60: '1時間前',
-    1440: '1日前',
-  };
+  Map<int?, String> _reminderOptions(AppLocalizations l10n) => {
+        null: l10n.scheduleFormReminderNone,
+        5: l10n.scheduleFormReminder5,
+        15: l10n.scheduleFormReminder15,
+        30: l10n.scheduleFormReminder30,
+        60: l10n.scheduleFormReminder60,
+        1440: l10n.scheduleFormReminder1440,
+      };
 
   bool get _isEditing => widget.schedule != null;
 
@@ -112,10 +114,8 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
           ? DateTime(date.year, date.month, date.day)
           : DateTime(date.year, date.month, date.day, 23, 59, 59);
     } else {
-      final time = await showTimePicker(
-        context: context,
-        initialTime: TimeOfDay.fromDateTime(current),
-      );
+      if (!mounted) return;
+      final time = await _pickTime(TimeOfDay.fromDateTime(current));
       if (time == null) return;
       combined = DateTime(date.year, date.month, date.day, time.hour, time.minute);
     }
@@ -130,6 +130,44 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
         _end = combined;
       }
     });
+  }
+
+  /// A scrollable wheel time picker in 24-hour format (no AM/PM section,
+  /// which users found confusing in the default Material dial picker).
+  Future<TimeOfDay?> _pickTime(TimeOfDay initialTime) async {
+    final l10n = AppLocalizations.of(context)!;
+    var selected = DateTime(2000, 1, 1, initialTime.hour, initialTime.minute);
+    final confirmed = await showModalBottomSheet<bool>(
+      context: context,
+      builder: (context) => SafeArea(
+        child: SizedBox(
+          height: 260,
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, true),
+                    child: Text(l10n.commonDone),
+                  ),
+                ],
+              ),
+              Expanded(
+                child: CupertinoDatePicker(
+                  mode: CupertinoDatePickerMode.time,
+                  use24hFormat: true,
+                  initialDateTime: selected,
+                  onDateTimeChanged: (value) => selected = value,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (confirmed != true) return null;
+    return TimeOfDay(hour: selected.hour, minute: selected.minute);
   }
 
   void _onAllDayChanged(bool value) {
@@ -147,9 +185,10 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
 
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
+    final l10n = AppLocalizations.of(context)!;
     if (_end.isBefore(_start)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('終了時刻は開始時刻より後にしてください')),
+        SnackBar(content: Text(l10n.scheduleFormEndBeforeStart)),
       );
       return;
     }
@@ -223,13 +262,14 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
   Future<void> _offerPrepTasks(String scheduleId, String title) async {
     final suggestions = suggestPrepItems(title);
     if (suggestions.isEmpty) return;
+    final l10n = AppLocalizations.of(context)!;
 
     final selected = Set<String>.from(suggestions);
     final confirmed = await showDialog<Set<String>>(
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          title: const Text('準備するものはありますか？'),
+          title: Text(l10n.scheduleFormPrepDialogTitle),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -246,10 +286,13 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
             ],
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('追加しない')),
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(l10n.scheduleFormPrepDialogSkip),
+            ),
             FilledButton(
               onPressed: () => Navigator.pop(context, selected),
-              child: const Text('タスクに追加'),
+              child: Text(l10n.scheduleFormPrepDialogAdd),
             ),
           ],
         ),
@@ -285,12 +328,15 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final uid = FirebaseAuth.instance.currentUser!.uid;
     final groupsQuery =
         FirebaseFirestore.instance.collection('sharedGroups').where('memberIds', arrayContains: uid);
 
     return Scaffold(
-      appBar: AppBar(title: Text(_isEditing ? '予定を編集' : '予定を作成')),
+      appBar: AppBar(
+        title: Text(_isEditing ? l10n.scheduleFormTitleEdit : l10n.scheduleFormTitleNew),
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
@@ -301,27 +347,27 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
               children: [
                 TextFormField(
                   controller: _titleController,
-                  decoration: const InputDecoration(labelText: 'タイトル'),
+                  decoration: InputDecoration(labelText: l10n.scheduleFormTitleLabel),
                   validator: (value) =>
-                      (value == null || value.trim().isEmpty) ? 'タイトルを入力してください' : null,
+                      (value == null || value.trim().isEmpty) ? l10n.scheduleFormTitleRequired : null,
                 ),
                 const SizedBox(height: 8),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: const Text('終日'),
+                  title: Text(l10n.scheduleFormAllDay),
                   value: _isAllDay,
                   onChanged: _onAllDayChanged,
                 ),
                 ListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: const Text('開始'),
+                  title: Text(l10n.scheduleFormStart),
                   subtitle: Text(_isAllDay ? _formatDate(_start) : _formatDateTime(_start)),
                   trailing: const Icon(Icons.edit_calendar_outlined),
                   onTap: () => _pickDateTime(isStart: true),
                 ),
                 ListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: const Text('終了'),
+                  title: Text(l10n.scheduleFormEnd),
                   subtitle: Text(_isAllDay ? _formatDate(_end) : _formatDateTime(_end)),
                   trailing: const Icon(Icons.edit_calendar_outlined),
                   onTap: () => _pickDateTime(isStart: false),
@@ -329,23 +375,23 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _locationController,
-                  decoration: const InputDecoration(
-                    labelText: '場所',
-                    prefixIcon: Icon(Icons.location_on_outlined),
+                  decoration: InputDecoration(
+                    labelText: l10n.scheduleFormLocation,
+                    prefixIcon: const Icon(Icons.location_on_outlined),
                   ),
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _notesController,
                   maxLines: 3,
-                  decoration: const InputDecoration(
-                    labelText: 'メモ',
+                  decoration: InputDecoration(
+                    labelText: l10n.scheduleFormNotes,
                     alignLabelWithHint: true,
-                    prefixIcon: Icon(Icons.notes_outlined),
+                    prefixIcon: const Icon(Icons.notes_outlined),
                   ),
                 ),
                 const SizedBox(height: 16),
-                const Text('色', style: TextStyle(fontWeight: FontWeight.bold)),
+                Text(l10n.scheduleFormColor, style: const TextStyle(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
                 Wrap(
                   spacing: 12,
@@ -364,20 +410,21 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
                   }).toList(),
                 ),
                 const SizedBox(height: 16),
-                const Text('通知', style: TextStyle(fontWeight: FontWeight.bold)),
+                Text(l10n.scheduleFormNotification, style: const TextStyle(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
                 DropdownButtonFormField<int?>(
                   initialValue: _reminderMinutes,
-                  items: _reminderOptions.entries
+                  items: _reminderOptions(l10n)
+                      .entries
                       .map((entry) => DropdownMenuItem(value: entry.key, child: Text(entry.value)))
                       .toList(),
                   onChanged: (value) => setState(() => _reminderMinutes = value),
                 ),
                 const SizedBox(height: 16),
-                const Text('カレンダー', style: TextStyle(fontWeight: FontWeight.bold)),
-                const Text(
-                  'ホーム画面のフィルターで表示/非表示を切り替えるための分類です',
-                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                Text(l10n.scheduleFormCalendar, style: const TextStyle(fontWeight: FontWeight.bold)),
+                Text(
+                  l10n.scheduleFormCalendarHint,
+                  style: const TextStyle(fontSize: 12, color: Colors.grey),
                 ),
                 const SizedBox(height: 8),
                 StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
@@ -400,10 +447,10 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
                           value: null,
                           child: _CategoryOption(
                             icon: Icons.label_outline,
-                            label: personalCategoryDefaultLabel,
+                            label: personalCategoryDefaultLabel(l10n),
                           ),
                         ),
-                        ...personalCategories.entries.map(
+                        ...personalCategories(l10n).entries.map(
                           (entry) => DropdownMenuItem(
                             value: entry.key,
                             child: _CategoryOption(icon: Icons.label_outline, label: entry.value),
@@ -414,7 +461,7 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
                             value: group.id,
                             child: _CategoryOption(
                               icon: Icons.groups_outlined,
-                              label: '${group.name}（グループ）',
+                              label: '${group.name}${l10n.scheduleFormGroupSuffix}',
                             ),
                           ),
                         ),
@@ -436,10 +483,10 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
                   },
                 ),
                 const SizedBox(height: 16),
-                const Text('共有する相手', style: TextStyle(fontWeight: FontWeight.bold)),
-                const Text(
-                  'グループのメンバーの中から、この予定を共有する人だけを選べます',
-                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                Text(l10n.scheduleFormShareWith, style: const TextStyle(fontWeight: FontWeight.bold)),
+                Text(
+                  l10n.scheduleFormShareWithHint,
+                  style: const TextStyle(fontSize: 12, color: Colors.grey),
                 ),
                 StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
                   stream: groupsQuery.snapshots(),
@@ -461,9 +508,9 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
                     candidateIds.remove(uid);
 
                     if (candidateIds.isEmpty) {
-                      return const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 8),
-                        child: Text('共有できる相手がいません。まずグループでメンバーを増やしてください。'),
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: Text(l10n.scheduleFormNoCandidates),
                       );
                     }
 
@@ -495,7 +542,7 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
                           width: 20,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                      : const Text('保存'),
+                      : Text(l10n.commonSave),
                 ),
               ],
             ),
@@ -540,10 +587,11 @@ class _PersonCheckbox extends StatelessWidget {
     return FutureBuilder<DocumentSnapshot<Map<String, dynamic>>>(
       future: FirebaseFirestore.instance.collection('publicProfiles').doc(uid).get(),
       builder: (context, snapshot) {
+        final l10n = AppLocalizations.of(context)!;
         final name = snapshot.data?.data()?['displayName'] as String?;
         return CheckboxListTile(
           contentPadding: EdgeInsets.zero,
-          title: Text(name?.isNotEmpty == true ? name! : '読み込み中...'),
+          title: Text(name?.isNotEmpty == true ? name! : l10n.scheduleFormLoadingName),
           value: value,
           onChanged: onChanged,
         );

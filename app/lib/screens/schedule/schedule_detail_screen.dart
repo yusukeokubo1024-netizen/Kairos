@@ -1,7 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../main.dart';
 import '../../models/schedule.dart';
 import '../../services/notification_service.dart';
@@ -13,14 +15,15 @@ class ScheduleDetailScreen extends StatelessWidget {
   const ScheduleDetailScreen({super.key, required this.schedule});
 
   Future<void> _delete(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('予定を削除しますか？'),
-        content: const Text('削除してもすぐ後なら元に戻せます。'),
+        title: Text(l10n.scheduleDeleteConfirmTitle),
+        content: Text(l10n.scheduleDeleteConfirmBody),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('キャンセル')),
-          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('削除')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(l10n.commonCancel)),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: Text(l10n.commonDelete)),
         ],
       ),
     );
@@ -31,12 +34,15 @@ class ScheduleDetailScreen extends StatelessWidget {
     if (context.mounted) Navigator.of(context).pop();
 
     rootScaffoldMessengerKey.currentState?.clearSnackBars();
-    rootScaffoldMessengerKey.currentState?.showSnackBar(
+    // Material 3's SnackBar pauses its auto-dismiss timer while hovered
+    // (desktop/web), so close it explicitly to guarantee it goes away after
+    // 5 seconds regardless of the pointer.
+    final snackBarController = rootScaffoldMessengerKey.currentState?.showSnackBar(
       SnackBar(
-        content: const Text('予定を削除しました'),
-        duration: const Duration(seconds: 4),
+        content: Text(l10n.scheduleDeleted),
+        duration: const Duration(seconds: 5),
         action: SnackBarAction(
-          label: '元に戻す',
+          label: l10n.commonUndo,
           onPressed: () async {
             await FirebaseFirestore.instance
                 .collection('schedules')
@@ -47,6 +53,7 @@ class ScheduleDetailScreen extends StatelessWidget {
         ),
       ),
     );
+    Future.delayed(const Duration(seconds: 5), () => snackBarController?.close());
   }
 
   String _formatDateTime(DateTime dt) {
@@ -58,14 +65,30 @@ class ScheduleDetailScreen extends StatelessWidget {
     return '${dt.year}/${dt.month.toString().padLeft(2, '0')}/${dt.day.toString().padLeft(2, '0')}';
   }
 
+  Future<void> _openInMaps(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
+    final uri = Uri.https('www.google.com', '/maps/search/', {
+      'api': '1',
+      'query': schedule.location,
+    });
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.scheduleCouldNotOpenMap)),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final uid = FirebaseAuth.instance.currentUser!.uid;
     final isOwner = schedule.ownerId == uid;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('予定の詳細'),
+        title: Text(l10n.scheduleDetailTitle),
         actions: isOwner
             ? [
                 IconButton(
@@ -107,19 +130,31 @@ class ScheduleDetailScreen extends StatelessWidget {
                   const SizedBox(width: 8),
                   Text(
                     schedule.isAllDay
-                        ? '${_formatDate(schedule.startTime)} 〜 ${_formatDate(schedule.endTime)} (終日)'
+                        ? '${_formatDate(schedule.startTime)} 〜 ${_formatDate(schedule.endTime)} ${l10n.scheduleAllDaySuffix}'
                         : '${_formatDateTime(schedule.startTime)} 〜 ${_formatDateTime(schedule.endTime)}',
                   ),
                 ],
               ),
               if (schedule.location.isNotEmpty) ...[
                 const SizedBox(height: 8),
-                Row(
-                  children: [
-                    const Icon(Icons.location_on_outlined, size: 20),
-                    const SizedBox(width: 8),
-                    Expanded(child: Text(schedule.location)),
-                  ],
+                InkWell(
+                  onTap: () => _openInMaps(context),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.location_on_outlined, size: 20),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          schedule.location,
+                          style: const TextStyle(
+                            color: Color(0xFF2563EB),
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ),
+                      const Icon(Icons.chevron_right, size: 18, color: Colors.grey),
+                    ],
+                  ),
                 ),
               ],
               const SizedBox(height: 8),
@@ -127,7 +162,7 @@ class ScheduleDetailScreen extends StatelessWidget {
                 children: [
                   const Icon(Icons.people_outline, size: 20),
                   const SizedBox(width: 8),
-                  Text('参加者 ${schedule.participantIds.length}人'),
+                  Text(l10n.scheduleParticipants(schedule.participantIds.length)),
                 ],
               ),
               const SizedBox(height: 8),
@@ -137,8 +172,8 @@ class ScheduleDetailScreen extends StatelessWidget {
                   const SizedBox(width: 8),
                   Text(
                     schedule.reminderMinutes == null
-                        ? '通知しない'
-                        : '${schedule.reminderMinutes}分前に通知',
+                        ? l10n.scheduleReminderNone
+                        : l10n.scheduleReminderBefore(schedule.reminderMinutes!),
                   ),
                 ],
               ),

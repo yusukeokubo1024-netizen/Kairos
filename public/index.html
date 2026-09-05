@@ -14,16 +14,195 @@
       <nav><a href="/privacy-policy.html">プライバシーポリシー</a><a href="/terms-of-service.html">利用規約</a></nav>
     </header>
     <main>
+      <h2>よくある質問</h2>
+      <details>
+        <summary>パスワードを忘れてしまいました</summary>
+        <p>ログイン画面の「パスワードをお忘れですか？」からご登録のメールアドレスを入力すると、再設定用のメールが届きます。</p>
+      </details>
+      <details>
+        <summary>アプリを開くたびにパスワードを入力したくありません</summary>
+        <p>設定画面の「Face ID / 指紋でロック」をオンにすると、次回以降は生体認証だけでアプリを開けるようになります（端末が対応している場合）。</p>
+      </details>
+      <details>
+        <summary>グループに参加するにはどうすればいいですか？</summary>
+        <p>グループのオーナーから共有された招待コードを、グループ画面右上のアイコンから入力してください。</p>
+      </details>
+      <details>
+        <summary>天気予報の地域を変更したい</summary>
+        <p>設定画面の「お住まいの地域」から、国・都道府県（州・省）・市区町村の順に選択できます。天気の詳細はタップすると外部サイトで確認できます。</p>
+      </details>
+      <details>
+        <summary>通知が届きません</summary>
+        <p>設定画面で通知がオンになっているかご確認のうえ、お使いの端末・ブラウザ側の通知許可もあわせてご確認ください。</p>
+      </details>
+      <details>
+        <summary>アプリの表示言語を変えたい</summary>
+        <p>設定画面の「言語」から、日本語・English・한국어・中文の中から選べます。切り替えるとアプリ全体に反映されます。</p>
+      </details>
+      <details>
+        <summary>アカウントやデータを削除したい</summary>
+        <p>設定画面の「アカウント削除」から、ご自身で削除できます。ご不明な点があれば下記の連絡先までお問い合わせください。</p>
+      </details>
+      <h2>AIに質問する</h2>
+      <p>上記のよくある質問に載っていない内容も、下の欄に入力すると自動で回答します（24時間対応）。回答が見つからない場合や、アカウント・データの削除など個別対応が必要な場合は、下記のメールアドレスへご連絡ください。</p>
+      <div id="ai-chat">
+        <div id="ai-chat-log" role="log" aria-live="polite"></div>
+        <form id="ai-chat-form">
+          <input id="ai-chat-input" type="text" placeholder="質問を入力してください" autocomplete="off" required>
+          <button type="submit">送信</button>
+        </form>
+        <p id="ai-chat-status" class="notice" hidden></p>
+      </div>
       <h2>お問い合わせ</h2>
-      <p>Kairos に関するお問い合わせ、アカウントまたはデータの削除依頼は、次のメールアドレスで受け付けます。</p>
-      <p><a href="mailto:kairos20180927@gmail.com">kairos20180927@gmail.com</a></p>
-      <h2>対応内容</h2>
-      <ul>
-        <li>アカウントおよびデータ削除の依頼</li>
-        <li>不具合の報告</li>
-        <li>プライバシーに関するお問い合わせ</li>
-      </ul>
+      <p>上記で解決しない場合や、不具合の報告・プライバシーに関するお問い合わせは、次のメールアドレスで受け付けます。</p>
+      <p><a href="mailto:kairos19900927@gmail.com">kairos19900927@gmail.com</a></p>
     </main>
     <footer>© Kairos</footer>
+    <script>
+      // Google AI Studio (https://aistudio.google.com/apikey) の無料枠のAPIキーを
+      // ここに設定してください。公開ページに埋め込まれるため、Google Cloud Console の
+      // 「APIキーの制限」で、このサイトのドメイン（kairos-3d873.web.app）にHTTPリファラーを
+      // 制限しておくことを強く推奨します。
+      const GEMINI_API_KEY = 'YOUR_GEMINI_API_KEY_HERE';
+      const GEMINI_MODEL = 'gemini-flash-latest';
+
+      const SYSTEM_INSTRUCTION = `あなたはカレンダー共有アプリ「Kairos」に組み込まれたAIアシスタントです。
+Kairosに関する質問には、以下の情報を根拠に日本語で簡潔に答えてください。Kairosに関する質問で分からないことが
+あれば、正直に「分かりかねますので kairos19900927@gmail.com までお問い合わせください」と答えてください。
+Kairosと無関係な一般的な質問にも、できる範囲で答えて構いません。
+
+【Kairosの主な機能】
+- カレンダー・予定の共有、グループでの予定共有（招待コードで参加）
+- タスク（ToDo）管理、予定の準備リストからのタスク自動追加
+- 記念日・誕生日の管理と毎年の通知
+- グループチャット（スタンプ・リアクション対応）
+- 天気予報（設定の「お住まいの地域」から国・都道府県（州・省）・市区町村を選択）
+- Face ID / 指紋によるアプリロック
+- 日本語・English・한국어・中文の4言語対応（設定の「言語」から切り替え）
+- ログインはメール・パスワード方式（Googleログインは廃止済み。設定から連携は可能）
+
+【よくある質問と回答】
+Q. パスワードを忘れました
+A. ログイン画面の「パスワードをお忘れですか？」から登録メールアドレスを入力すると再設定メールが届きます。
+Q. アプリを開くたびにパスワードを入力したくない
+A. 設定画面の「Face ID / 指紋でロック」をオンにすると、次回以降は生体認証だけで開けます（対応端末のみ）。
+Q. グループに参加する方法は？
+A. グループのオーナーから共有された招待コードを、グループ画面右上のアイコンから入力してください。
+Q. 天気予報の地域を変更したい
+A. 設定画面の「お住まいの地域」から、国→都道府県（州・省）→市区町村の順に選択します。
+Q. 通知が届かない
+A. アプリの設定で通知がオンか確認し、端末・ブラウザ側の通知許可もあわせて確認してください。
+Q. アカウントやデータを削除したい
+A. 設定画面の「アカウント削除」から本人が削除できます。`;
+
+      const form = document.getElementById('ai-chat-form');
+      const input = document.getElementById('ai-chat-input');
+      const sendButton = form.querySelector('button');
+      const log = document.getElementById('ai-chat-log');
+      const status = document.getElementById('ai-chat-status');
+      const history = [];
+
+      function appendMessage(role, text) {
+        const isUser = role === 'user';
+        const row = document.createElement('div');
+        row.className = 'ai-msg-row ' + (isUser ? 'ai-msg-row-user' : 'ai-msg-row-ai');
+
+        if (!isUser) {
+          const avatar = document.createElement('div');
+          avatar.className = 'ai-msg-avatar';
+          avatar.textContent = 'AI';
+          row.appendChild(avatar);
+        }
+
+        const col = document.createElement('div');
+        col.className = 'ai-msg-col';
+        const bubble = document.createElement('p');
+        bubble.className = isUser ? 'ai-msg-user' : 'ai-msg-ai';
+        bubble.textContent = text;
+        const time = document.createElement('span');
+        time.className = 'ai-msg-time';
+        time.textContent = new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
+        col.appendChild(bubble);
+        col.appendChild(time);
+        row.appendChild(col);
+
+        log.appendChild(row);
+        log.scrollTop = log.scrollHeight;
+      }
+
+      function setStatus(message) {
+        if (message) {
+          status.textContent = message;
+          status.hidden = false;
+        } else {
+          status.hidden = true;
+        }
+      }
+
+      // Greets right away so the box reads as an open chat, not a blank form.
+      appendMessage('ai', 'こんにちは！Kairosについて何でも聞いてください。');
+
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const question = input.value.trim();
+        if (!question) return;
+        if (!GEMINI_API_KEY || GEMINI_API_KEY === 'YOUR_GEMINI_API_KEY_HERE') {
+          setStatus('AI質問機能は準備中です。下記のメールアドレスまでお問い合わせください。');
+          return;
+        }
+
+        appendMessage('user', question);
+        input.value = '';
+        input.disabled = true;
+        sendButton.disabled = true;
+        setStatus('回答を作成しています…');
+
+        history.push({ role: 'user', parts: [{ text: question }] });
+
+        try {
+          const data = await callGemini();
+          const answer = data.candidates?.[0]?.content?.parts?.[0]?.text
+            || '回答を取得できませんでした。下記のメールアドレスまでお問い合わせください。';
+          history.push({ role: 'model', parts: [{ text: answer }] });
+          appendMessage('ai', answer);
+          setStatus(null);
+        } catch (error) {
+          appendMessage('ai', '申し訳ありません、混み合っているため回答を取得できませんでした。少し時間をおいて再度お試しいただくか、下記のメールアドレスまでお問い合わせください。');
+          setStatus(null);
+        } finally {
+          input.disabled = false;
+          sendButton.disabled = false;
+          input.focus();
+        }
+      });
+
+      // Google's free-tier flash model occasionally returns 503 (temporary
+      // overload) rather than an actual problem with the request — retrying
+      // once after a short pause clears most of these automatically.
+      async function callGemini() {
+        const maxAttempts = 3;
+        for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+          const response = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-goog-api-key': GEMINI_API_KEY,
+              },
+              body: JSON.stringify({
+                system_instruction: { parts: [{ text: SYSTEM_INSTRUCTION }] },
+                contents: history,
+              }),
+            }
+          );
+          if (response.ok) return response.json();
+          const isRetryable = (response.status === 503 || response.status === 429) && attempt < maxAttempts;
+          if (!isRetryable) throw new Error('status ' + response.status);
+          setStatus(`混み合っています。再試行しています…（${attempt}/${maxAttempts}）`);
+          await new Promise((resolve) => setTimeout(resolve, 1200 * attempt));
+        }
+      }
+    </script>
   </body>
 </html>

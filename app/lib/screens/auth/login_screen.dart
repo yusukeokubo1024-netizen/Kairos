@@ -1,7 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../services/auth_service.dart';
+import 'biometric_offer.dart';
 import 'reset_password_screen.dart';
 import 'signup_screen.dart';
 
@@ -19,7 +21,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final _authService = AuthService();
 
   bool _isSubmitting = false;
-  bool _isGoogleSubmitting = false;
   String? _errorMessage;
 
   @override
@@ -40,6 +41,7 @@ class _LoginScreenState extends State<LoginScreen> {
         email: _emailController.text.trim(),
         password: _passwordController.text,
       );
+      if (mounted) await offerBiometricLock(context);
     } on FirebaseAuthException catch (e) {
       setState(() => _errorMessage = _messageForError(e.code));
     } finally {
@@ -47,39 +49,25 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  Future<void> _submitWithGoogle() async {
-    setState(() {
-      _isGoogleSubmitting = true;
-      _errorMessage = null;
-    });
-    try {
-      await _authService.signInWithGoogle();
-    } on FirebaseAuthException catch (_) {
-      setState(() => _errorMessage = 'Googleログインに失敗しました');
-    } catch (_) {
-      setState(() => _errorMessage = 'Googleログインに失敗しました');
-    } finally {
-      if (mounted) setState(() => _isGoogleSubmitting = false);
-    }
-  }
-
   String _messageForError(String code) {
+    final l10n = AppLocalizations.of(context)!;
     switch (code) {
       case 'user-not-found':
       case 'wrong-password':
       case 'invalid-credential':
-        return 'メールアドレスまたはパスワードが正しくありません';
+        return l10n.loginErrorWrongCredentials;
       case 'invalid-email':
-        return 'メールアドレスの形式が正しくありません';
+        return l10n.loginErrorInvalidEmail;
       case 'user-disabled':
-        return 'このアカウントは無効化されています';
+        return l10n.loginErrorUserDisabled;
       default:
-        return 'ログインに失敗しました。しばらくしてから再度お試しください';
+        return l10n.loginErrorGeneric;
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       body: SafeArea(
         child: Center(
@@ -97,26 +85,26 @@ class _LoginScreenState extends State<LoginScreen> {
                     style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
-                    '大切な人と、瞬間を共有する',
+                  Text(
+                    l10n.loginTagline,
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 14, color: Colors.grey),
+                    style: const TextStyle(fontSize: 14, color: Colors.grey),
                   ),
                   const SizedBox(height: 32),
                   TextFormField(
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
-                    decoration: const InputDecoration(labelText: 'メールアドレス'),
+                    decoration: InputDecoration(labelText: l10n.loginEmailLabel),
                     validator: (value) =>
-                        (value == null || value.trim().isEmpty) ? 'メールアドレスを入力してください' : null,
+                        (value == null || value.trim().isEmpty) ? l10n.loginEmailRequired : null,
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: _passwordController,
                     obscureText: true,
-                    decoration: const InputDecoration(labelText: 'パスワード'),
+                    decoration: InputDecoration(labelText: l10n.loginPasswordLabel),
                     validator: (value) =>
-                        (value == null || value.isEmpty) ? 'パスワードを入力してください' : null,
+                        (value == null || value.isEmpty) ? l10n.loginPasswordRequired : null,
                   ),
                   if (_errorMessage != null) ...[
                     const SizedBox(height: 16),
@@ -131,44 +119,21 @@ class _LoginScreenState extends State<LoginScreen> {
                             width: 20,
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
-                        : const Text('ログイン'),
+                        : Text(l10n.loginButton),
                   ),
                   const SizedBox(height: 8),
                   TextButton(
                     onPressed: () => Navigator.of(context).push(
                       MaterialPageRoute(builder: (_) => const ResetPasswordScreen()),
                     ),
-                    child: const Text('パスワードをお忘れですか？'),
+                    child: Text(l10n.loginForgotPassword),
                   ),
                   const Divider(height: 32),
                   OutlinedButton(
                     onPressed: () => Navigator.of(context).push(
                       MaterialPageRoute(builder: (_) => const SignUpScreen()),
                     ),
-                    child: const Text('新規登録はこちら'),
-                  ),
-                  const SizedBox(height: 16),
-                  const Row(
-                    children: [
-                      Expanded(child: Divider()),
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 8),
-                        child: Text('または', style: TextStyle(color: Colors.grey)),
-                      ),
-                      Expanded(child: Divider()),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  OutlinedButton.icon(
-                    onPressed: _isGoogleSubmitting ? null : _submitWithGoogle,
-                    icon: _isGoogleSubmitting
-                        ? const SizedBox(
-                            height: 16,
-                            width: 16,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Icon(Icons.account_circle_outlined),
-                    label: const Text('Googleでログイン（パスワード不要）'),
+                    child: Text(l10n.loginSignUpLink),
                   ),
                 ],
               ),

@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../main.dart';
 import '../../models/anniversary.dart';
 import '../../services/notification_service.dart';
@@ -43,12 +44,13 @@ class _AnniversaryFormScreenState extends State<AnniversaryFormScreen> {
   }
 
   Future<void> _pickDate() async {
+    final l10n = AppLocalizations.of(context)!;
     final picked = await showDatePicker(
       context: context,
       initialDate: _date,
       firstDate: DateTime(1900),
       lastDate: DateTime(2100),
-      helpText: '月日を選択（年は使いません）',
+      helpText: l10n.anniversaryFormDatePickerHelp,
     );
     if (picked != null) {
       setState(() => _date = picked);
@@ -100,17 +102,21 @@ class _AnniversaryFormScreenState extends State<AnniversaryFormScreen> {
   Future<void> _delete() async {
     final anniversary = widget.anniversary;
     if (anniversary == null) return;
+    final l10n = AppLocalizations.of(context)!;
     await FirebaseFirestore.instance.collection('anniversaries').doc(anniversary.id).delete();
     await NotificationService.instance.cancelForAnniversary(anniversary.id);
     if (mounted) Navigator.of(context).pop();
 
     rootScaffoldMessengerKey.currentState?.clearSnackBars();
-    rootScaffoldMessengerKey.currentState?.showSnackBar(
+    // Material 3's SnackBar pauses its auto-dismiss timer while hovered
+    // (desktop/web), so close it explicitly to guarantee it goes away after
+    // 5 seconds regardless of the pointer.
+    final snackBarController = rootScaffoldMessengerKey.currentState?.showSnackBar(
       SnackBar(
-        content: const Text('記念日を削除しました'),
-        duration: const Duration(seconds: 4),
+        content: Text(l10n.anniversaryDeleted),
+        duration: const Duration(seconds: 5),
         action: SnackBarAction(
-          label: '元に戻す',
+          label: l10n.commonUndo,
           onPressed: () async {
             await FirebaseFirestore.instance
                 .collection('anniversaries')
@@ -121,13 +127,15 @@ class _AnniversaryFormScreenState extends State<AnniversaryFormScreen> {
         ),
       ),
     );
+    Future.delayed(const Duration(seconds: 5), () => snackBarController?.close());
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: Text(_isEditing ? '記念日を編集' : '記念日を追加'),
+        title: Text(_isEditing ? l10n.anniversaryFormTitleEdit : l10n.anniversaryFormTitleNew),
         actions: _isEditing
             ? [IconButton(icon: const Icon(Icons.delete_outline), onPressed: _delete)]
             : null,
@@ -142,21 +150,21 @@ class _AnniversaryFormScreenState extends State<AnniversaryFormScreen> {
               children: [
                 TextFormField(
                   controller: _titleController,
-                  decoration: const InputDecoration(labelText: '名前（例：結婚記念日、誕生日）'),
+                  decoration: InputDecoration(labelText: l10n.anniversaryFormNameLabel),
                   validator: (value) =>
-                      (value == null || value.trim().isEmpty) ? '名前を入力してください' : null,
+                      (value == null || value.trim().isEmpty) ? l10n.anniversaryFormNameRequired : null,
                 ),
                 const SizedBox(height: 16),
                 ListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: const Text('日付（毎年）'),
-                  subtitle: Text('${_date.month}月${_date.day}日'),
+                  title: Text(l10n.anniversaryFormDate),
+                  subtitle: Text(l10n.anniversaryFormDateValue(_date.month, _date.day)),
                   trailing: const Icon(Icons.edit_calendar_outlined),
                   onTap: _pickDate,
                 ),
-                const Text(
-                  '毎年この日の朝9時に通知します',
-                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                Text(
+                  l10n.anniversaryFormNotifyHint,
+                  style: const TextStyle(fontSize: 12, color: Colors.grey),
                 ),
                 const SizedBox(height: 24),
                 FilledButton(
@@ -167,7 +175,7 @@ class _AnniversaryFormScreenState extends State<AnniversaryFormScreen> {
                           width: 20,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                      : const Text('保存'),
+                      : Text(l10n.commonSave),
                 ),
               ],
             ),

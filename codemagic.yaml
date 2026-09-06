@@ -50,16 +50,15 @@ workflows:
       flutter: stable
       java: 17
       # The keystore itself is committed (encrypted) at
-      # app/android/release-keystore.enc. Add CM_KEYSTORE_DECRYPT_PASSWORD,
-      # CM_KEYSTORE_PASSWORD, CM_KEY_ALIAS, CM_KEY_PASSWORD as plain
-      # (ungrouped) application environment variables in the Codemagic UI —
-      # no variable group needed since only this workflow uses them.
+      # app/android/release-keystore.enc. CM_KEYSTORE_DECRYPT_PASSWORD,
+      # CM_KEYSTORE_PASSWORD, CM_KEY_ALIAS, CM_KEY_PASSWORD live in the
+      # "android_signing" variable group in the Codemagic UI — importing
+      # the group (not a plain vars self-reference) is what actually
+      # exposes them to this workflow.
+      groups:
+        - android_signing
       vars:
         GEMINI_API_KEY: $GEMINI_API_KEY
-        CM_KEYSTORE_DECRYPT_PASSWORD: $CM_KEYSTORE_DECRYPT_PASSWORD
-        CM_KEYSTORE_PASSWORD: $CM_KEYSTORE_PASSWORD
-        CM_KEY_ALIAS: $CM_KEY_ALIAS
-        CM_KEY_PASSWORD: $CM_KEY_PASSWORD
     scripts:
       - name: Get Flutter packages
         script: |

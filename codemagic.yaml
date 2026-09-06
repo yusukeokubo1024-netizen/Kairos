@@ -67,14 +67,9 @@ workflows:
       - name: Set up Android release signing
         script: |
           cd app
-          openssl version
           # Strip any accidental trailing whitespace/newline picked up when
           # the passphrase was copy-pasted into the Codemagic UI.
           TRIMMED_PASSWORD=$(printf '%s' "$CM_KEYSTORE_DECRYPT_PASSWORD" | tr -d '[:space:]')
-          # TEMPORARY DIAGNOSTIC — remove once decryption works. Expected:
-          # length=24, sha256=bfad2e5d91126413b5d7c4718cf0ac9f1d24eff5ef7a68db6d7a4306fb8ceb09
-          echo "password length: ${#TRIMMED_PASSWORD}"
-          printf '%s' "$TRIMMED_PASSWORD" | openssl dgst -sha256
           openssl enc -aes-256-cbc -d -pbkdf2 -iter 100000 -md sha256 \
             -in android/release-keystore.enc \
             -out /tmp/kairos-release.keystore -pass "pass:$TRIMMED_PASSWORD"

@@ -35,16 +35,17 @@ workflows:
   ios-release:
     name: iOS release build (signed)
     # Signing files (certificate, provisioning profile, App Store Connect
-    # API key) are committed encrypted at app/ios/signing/*.enc. Add
-    # IOS_SIGNING_DECRYPT_PASSWORD and IOS_P12_PASSWORD as plain (ungrouped)
-    # application environment variables in the Codemagic UI — same pattern
-    # as GEMINI_API_KEY, not the android_signing group.
+    # API key) are committed encrypted at app/ios/signing/*.enc.
+    # IOS_SIGNING_DECRYPT_PASSWORD and IOS_P12_PASSWORD live in the
+    # "ios_signing" variable group in the Codemagic UI.
     max_build_duration: 120
     instance_type: mac_mini_m2
     environment:
       flutter: stable
       xcode: latest
       cocoapods: default
+      groups:
+        - ios_signing
       vars:
         GEMINI_API_KEY: $GEMINI_API_KEY
         IOS_SIGNING_DECRYPT_PASSWORD: $IOS_SIGNING_DECRYPT_PASSWORD

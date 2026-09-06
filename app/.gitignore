@@ -51,3 +51,9 @@ app.*.map.json
 android/key.properties
 *.keystore
 *.jks
+
+# iOS release signing — never commit unencrypted (only the .enc files
+# under ios/signing/ should ever be committed)
+*.p12
+*.mobileprovision
+*.p8

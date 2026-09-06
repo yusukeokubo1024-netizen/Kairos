@@ -32,6 +32,55 @@ workflows:
     artifacts:
       - app/build/ios/iphoneos/*.app
 
+  ios-release:
+    name: iOS release build (signed)
+    # Signing files (certificate, provisioning profile, App Store Connect
+    # API key) are committed encrypted at app/ios/signing/*.enc. Add
+    # IOS_SIGNING_DECRYPT_PASSWORD and IOS_P12_PASSWORD as plain (ungrouped)
+    # application environment variables in the Codemagic UI — same pattern
+    # as GEMINI_API_KEY, not the android_signing group.
+    max_build_duration: 120
+    instance_type: mac_mini_m2
+    environment:
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+      vars:
+        GEMINI_API_KEY: $GEMINI_API_KEY
+        IOS_SIGNING_DECRYPT_PASSWORD: $IOS_SIGNING_DECRYPT_PASSWORD
+        IOS_P12_PASSWORD: $IOS_P12_PASSWORD
+    scripts:
+      - name: Get Flutter packages
+        script: |
+          cd app
+          flutter pub get
+      - name: Decrypt and install signing files
+        script: |
+          cd app
+          mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
+          openssl enc -aes-256-cbc -d -pbkdf2 -iter 100000 -md sha256 \
+            -in ios/signing/distribution.p12.enc -out /tmp/distribution.p12 \
+            -pass "pass:$IOS_SIGNING_DECRYPT_PASSWORD"
+          openssl enc -aes-256-cbc -d -pbkdf2 -iter 100000 -md sha256 \
+            -in ios/signing/Kairos_App_Store.mobileprovision.enc \
+            -out "$HOME/Library/MobileDevice/Provisioning Profiles/Kairos_App_Store.mobileprovision" \
+            -pass "pass:$IOS_SIGNING_DECRYPT_PASSWORD"
+          keychain initialize
+          keychain add-certificates -c /tmp/distribution.p12 --certificate-password "$IOS_P12_PASSWORD"
+          xcode-project use-profiles --project=ios/Runner.xcodeproj --archive-method=app-store
+      - name: Install CocoaPods dependencies
+        script: |
+          cd app/ios
+          pod install
+      - name: Build signed IPA
+        script: |
+          cd app
+          flutter build ipa --release \
+            --export-options-plist="$HOME/export_options.plist" \
+            --dart-define=GEMINI_API_KEY="$GEMINI_API_KEY"
+    artifacts:
+      - app/build/ios/ipa/*.ipa
+
   android-release:
     name: Android release build
     max_build_duration: 60

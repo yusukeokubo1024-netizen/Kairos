@@ -21,15 +21,6 @@ workflows:
         script: |
           cd app
           flutter pub get
-      - name: Re-wire Firebase iOS config into the Xcode project
-        script: |
-          cd app
-          dart pub global activate flutterfire_cli
-          dart pub global run flutterfire_cli:flutterfire configure \
-            --project=kairos-3d873 \
-            --platforms=ios \
-            --ios-bundle-id=com.kairos.app.ios \
-            --yes
       - name: Install CocoaPods dependencies
         script: |
           cd app/ios

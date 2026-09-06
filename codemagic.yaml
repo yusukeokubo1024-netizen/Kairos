@@ -64,7 +64,9 @@ workflows:
       - name: Set up Android release signing
         script: |
           cd app
-          openssl enc -aes-256-cbc -d -pbkdf2 -in android/release-keystore.enc \
+          openssl version
+          openssl enc -aes-256-cbc -d -pbkdf2 -iter 100000 -md sha256 \
+            -in android/release-keystore.enc \
             -out /tmp/kairos-release.keystore -pass "pass:$CM_KEYSTORE_DECRYPT_PASSWORD"
           cat > android/key.properties <<EOF
           storePassword=$CM_KEYSTORE_PASSWORD

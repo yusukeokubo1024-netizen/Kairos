@@ -26,6 +26,11 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<!-- Only standard HTTPS/TLS is used (Firebase, Gemini API, Open-Meteo) —
+	     no proprietary encryption — so this is exempt from export compliance
+	     and Connect won't ask the encryption question on future submissions. -->
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>NSFaceIDUsageDescription</key>
 	<string>Kairosを開くときに、パスワードの代わりにFace IDでご本人確認を行うために使用します。</string>
 	<key>CFBundleURLTypes</key>

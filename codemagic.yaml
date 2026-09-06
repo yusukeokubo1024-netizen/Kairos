@@ -49,7 +49,8 @@ workflows:
     environment:
       flutter: stable
       java: 17
-      # Add CM_KEYSTORE (base64 of kairos-release.keystore),
+      # The keystore itself is committed (encrypted) at
+      # app/android/release-keystore.enc. Add CM_KEYSTORE_DECRYPT_PASSWORD,
       # CM_KEYSTORE_PASSWORD, CM_KEY_ALIAS, CM_KEY_PASSWORD as plain
       # (ungrouped) application environment variables in the Codemagic UI —
       # no variable group needed since only this workflow uses them.
@@ -63,7 +64,8 @@ workflows:
       - name: Set up Android release signing
         script: |
           cd app
-          echo "$CM_KEYSTORE" | base64 --decode > /tmp/kairos-release.keystore
+          openssl enc -aes-256-cbc -d -pbkdf2 -in android/release-keystore.enc \
+            -out /tmp/kairos-release.keystore -pass "pass:$CM_KEYSTORE_DECRYPT_PASSWORD"
           cat > android/key.properties <<EOF
           storePassword=$CM_KEYSTORE_PASSWORD
           keyPassword=$CM_KEY_PASSWORD

@@ -56,6 +56,10 @@ workflows:
       # no variable group needed since only this workflow uses them.
       vars:
         GEMINI_API_KEY: $GEMINI_API_KEY
+        CM_KEYSTORE_DECRYPT_PASSWORD: $CM_KEYSTORE_DECRYPT_PASSWORD
+        CM_KEYSTORE_PASSWORD: $CM_KEYSTORE_PASSWORD
+        CM_KEY_ALIAS: $CM_KEY_ALIAS
+        CM_KEY_PASSWORD: $CM_KEY_PASSWORD
     scripts:
       - name: Get Flutter packages
         script: |

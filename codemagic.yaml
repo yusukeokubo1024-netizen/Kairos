@@ -59,6 +59,10 @@ workflows:
         script: |
           cd app
           mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
+          # TEMPORARY DIAGNOSTIC — remove once decryption works. Expected:
+          # length=24, sha256=5859203e4ff1eafcbfd3657d360f687648e9d42a7b7a2d003905ca013832b8b4
+          echo "IOS_SIGNING_DECRYPT_PASSWORD length: ${#IOS_SIGNING_DECRYPT_PASSWORD}"
+          printf '%s' "$IOS_SIGNING_DECRYPT_PASSWORD" | openssl dgst -sha256
           openssl enc -aes-256-cbc -d -pbkdf2 -iter 100000 -md sha256 \
             -in ios/signing/distribution.p12.enc -out /tmp/distribution.p12 \
             -pass "pass:$IOS_SIGNING_DECRYPT_PASSWORD"

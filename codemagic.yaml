@@ -1,12 +1,11 @@
 workflows:
   ios-unsigned-check:
     name: iOS build check (unsigned)
-    # No Apple Developer account wired up yet — this just verifies the iOS
-    # side actually compiles on a real Mac, since that can't be tested on
-    # Windows at all. Once the Apple Developer account + certificates are
-    # ready, add code signing (App Store Connect integration) and switch to
+    # Verifies the iOS side actually compiles on a real Mac, since that
+    # can't be tested on Windows at all. Still unsigned — once code signing
+    # (App Store Connect integration/certificates) is set up, switch to
     # `flutter build ipa` for a real submittable archive.
-    max_build_duration: 60
+    max_build_duration: 120
     instance_type: mac_mini_m2
     environment:
       flutter: stable

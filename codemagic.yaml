@@ -29,7 +29,7 @@ workflows:
           dart pub global run flutterfire_cli:flutterfire configure \
             --project=kairos-3d873 \
             --platforms=ios \
-            --ios-bundle-id=com.kairos.app \
+            --ios-bundle-id=com.kairos.app.ios \
             --yes
       - name: Install CocoaPods dependencies
         script: |

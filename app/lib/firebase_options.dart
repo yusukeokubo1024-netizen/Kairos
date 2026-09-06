@@ -65,11 +65,11 @@ class DefaultFirebaseOptions {
   );
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyAkVHpAXZkZ4G0-6Kfg93nw9fRqMso13yw',
-    appId: '1:889968355663:ios:4525b80728e85e4d69fd3a',
+    appId: '1:889968355663:ios:8c05bbae95151a9369fd3a',
     messagingSenderId: '889968355663',
     projectId: 'kairos-3d873',
     storageBucket: 'kairos-3d873.firebasestorage.app',
-    iosClientId: '889968355663-f7si4m8mcraenomv9ne80rrk8jraja0l.apps.googleusercontent.com',
-    iosBundleId: 'com.kairos.app',
+    iosClientId: '889968355663-1fcdmllp4fnmdmml5lc81okt9088qurp.apps.googleusercontent.com',
+    iosBundleId: 'com.kairos.app.ios',
   );
 }

@@ -38,7 +38,7 @@
 				<!-- REVERSED_CLIENT_ID from GoogleService-Info.plist — required
 				     for the Google Sign-In OAuth redirect (Settings > link
 				     Google account) to complete on iOS. -->
-				<string>com.googleusercontent.apps.889968355663-f7si4m8mcraenomv9ne80rrk8jraja0l</string>
+				<string>com.googleusercontent.apps.889968355663-1fcdmllp4fnmdmml5lc81okt9088qurp</string>
 			</array>
 		</dict>
 	</array>

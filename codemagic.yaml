@@ -65,9 +65,12 @@ workflows:
         script: |
           cd app
           openssl version
+          # Strip any accidental trailing whitespace/newline picked up when
+          # the passphrase was copy-pasted into the Codemagic UI.
+          TRIMMED_PASSWORD=$(printf '%s' "$CM_KEYSTORE_DECRYPT_PASSWORD" | tr -d '[:space:]')
           openssl enc -aes-256-cbc -d -pbkdf2 -iter 100000 -md sha256 \
             -in android/release-keystore.enc \
-            -out /tmp/kairos-release.keystore -pass "pass:$CM_KEYSTORE_DECRYPT_PASSWORD"
+            -out /tmp/kairos-release.keystore -pass "pass:$TRIMMED_PASSWORD"
           cat > android/key.properties <<EOF
           storePassword=$CM_KEYSTORE_PASSWORD
           keyPassword=$CM_KEY_PASSWORD

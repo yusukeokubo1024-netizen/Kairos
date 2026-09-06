@@ -1,0 +1,79 @@
+workflows:
+  ios-unsigned-check:
+    name: iOS build check (unsigned)
+    # No Apple Developer account wired up yet — this just verifies the iOS
+    # side actually compiles on a real Mac, since that can't be tested on
+    # Windows at all. Once the Apple Developer account + certificates are
+    # ready, add code signing (App Store Connect integration) and switch to
+    # `flutter build ipa` for a real submittable archive.
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    environment:
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+      vars:
+        # Add GEMINI_API_KEY as an encrypted environment variable in the
+        # Codemagic UI (Workflow settings > Environment variables) — never
+        # commit it here.
+        GEMINI_API_KEY: $GEMINI_API_KEY
+    scripts:
+      - name: Get Flutter packages
+        script: |
+          cd app
+          flutter pub get
+      - name: Re-wire Firebase iOS config into the Xcode project
+        script: |
+          cd app
+          dart pub global activate flutterfire_cli
+          dart pub global run flutterfire_cli:flutterfire configure \
+            --project=kairos-3d873 \
+            --platforms=ios \
+            --ios-bundle-id=com.kairos.app \
+            --yes
+      - name: Install CocoaPods dependencies
+        script: |
+          cd app/ios
+          pod install
+      - name: Build iOS (unsigned)
+        script: |
+          cd app
+          flutter build ios --release --no-codesign --dart-define=GEMINI_API_KEY="$GEMINI_API_KEY"
+    artifacts:
+      - app/build/ios/iphoneos/*.app
+
+  android-release:
+    name: Android release build
+    max_build_duration: 60
+    instance_type: linux_x2
+    environment:
+      flutter: stable
+      java: 17
+      vars:
+        GEMINI_API_KEY: $GEMINI_API_KEY
+        # Add these as encrypted group "android_signing" in the Codemagic UI:
+        # CM_KEYSTORE (base64 of kairos-release.keystore), CM_KEYSTORE_PASSWORD,
+        # CM_KEY_ALIAS, CM_KEY_PASSWORD — see docs.codemagic.io/yaml-code-signing/signing-android
+        groups:
+          - android_signing
+    scripts:
+      - name: Get Flutter packages
+        script: |
+          cd app
+          flutter pub get
+      - name: Set up Android release signing
+        script: |
+          cd app
+          echo "$CM_KEYSTORE" | base64 --decode > /tmp/kairos-release.keystore
+          cat > android/key.properties <<EOF
+          storePassword=$CM_KEYSTORE_PASSWORD
+          keyPassword=$CM_KEY_PASSWORD
+          keyAlias=$CM_KEY_ALIAS
+          storeFile=/tmp/kairos-release.keystore
+          EOF
+      - name: Build Android App Bundle
+        script: |
+          cd app
+          flutter build appbundle --release --dart-define=GEMINI_API_KEY="$GEMINI_API_KEY"
+    artifacts:
+      - app/build/app/outputs/bundle/release/*.aab

@@ -63,7 +63,6 @@ class DefaultFirebaseOptions {
     projectId: 'kairos-3d873',
     storageBucket: 'kairos-3d873.firebasestorage.app',
   );
-
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyAkVHpAXZkZ4G0-6Kfg93nw9fRqMso13yw',
     appId: '1:889968355663:ios:4525b80728e85e4d69fd3a',

@@ -49,11 +49,10 @@ workflows:
     environment:
       flutter: stable
       java: 17
-      # Add these as encrypted group "android_signing" in the Codemagic UI:
-      # CM_KEYSTORE (base64 of kairos-release.keystore), CM_KEYSTORE_PASSWORD,
-      # CM_KEY_ALIAS, CM_KEY_PASSWORD — see docs.codemagic.io/yaml-code-signing/signing-android
-      groups:
-        - android_signing
+      # Add CM_KEYSTORE (base64 of kairos-release.keystore),
+      # CM_KEYSTORE_PASSWORD, CM_KEY_ALIAS, CM_KEY_PASSWORD as plain
+      # (ungrouped) application environment variables in the Codemagic UI —
+      # no variable group needed since only this workflow uses them.
       vars:
         GEMINI_API_KEY: $GEMINI_API_KEY
     scripts:

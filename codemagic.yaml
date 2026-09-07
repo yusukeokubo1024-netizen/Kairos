@@ -1,4 +1,38 @@
 workflows:
+  ios-screenshots:
+    name: iOS App Store screenshots
+    # Boots an iPhone 13 Pro Max simulator (6.5" — one of the accepted App
+    # Store screenshot sizes) and drives the app with integration_test to
+    # capture screenshots of the main tabs, logged into a dedicated seeded
+    # test account. No code signing needed — simulator builds are unsigned.
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    environment:
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+      groups:
+        - ios_signing
+    scripts:
+      - name: Get Flutter packages
+        script: |
+          cd app
+          flutter pub get
+      - name: Install CocoaPods dependencies
+        script: |
+          cd app/ios
+          pod install
+      - name: Run screenshot capture
+        script: |
+          cd app
+          flutter drive \
+            --driver=test_driver/integration_test.dart \
+            --target=integration_test/screenshot_test.dart \
+            -d "iPhone 13 Pro Max" \
+            --dart-define=SCREENSHOT_ACCOUNT_PASSWORD="$SCREENSHOT_ACCOUNT_PASSWORD"
+    artifacts:
+      - app/build/*.png
+
   ios-unsigned-check:
     name: iOS build check (unsigned)
     # Verifies the iOS side actually compiles on a real Mac, since that

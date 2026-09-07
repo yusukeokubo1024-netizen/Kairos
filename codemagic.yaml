@@ -48,8 +48,6 @@ workflows:
         - ios_signing
       vars:
         GEMINI_API_KEY: $GEMINI_API_KEY
-        IOS_SIGNING_DECRYPT_PASSWORD: $IOS_SIGNING_DECRYPT_PASSWORD
-        IOS_P12_PASSWORD: $IOS_P12_PASSWORD
     scripts:
       - name: Get Flutter packages
         script: |

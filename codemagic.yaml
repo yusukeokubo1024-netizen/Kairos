@@ -36,8 +36,9 @@ workflows:
     name: iOS release build (signed)
     # Signing files (certificate, provisioning profile, App Store Connect
     # API key) are committed encrypted at app/ios/signing/*.enc.
-    # IOS_SIGNING_DECRYPT_PASSWORD and IOS_P12_PASSWORD live in the
-    # "ios_signing" variable group in the Codemagic UI.
+    # IOS_SIGNING_DECRYPT_PASSWORD, IOS_P12_PASSWORD,
+    # APP_STORE_CONNECT_ISSUER_ID, APP_STORE_CONNECT_KEY_IDENTIFIER live in
+    # the "ios_signing" variable group in the Codemagic UI.
     max_build_duration: 120
     instance_type: mac_mini_m2
     environment:
@@ -68,6 +69,9 @@ workflows:
             -in ios/signing/Kairos_App_Store.mobileprovision.enc \
             -out "$HOME/Library/MobileDevice/Provisioning Profiles/Kairos_App_Store.mobileprovision" \
             -pass "pass:$TRIMMED_DECRYPT_PW"
+          openssl enc -aes-256-cbc -d -pbkdf2 -iter 100000 -md sha256 \
+            -in ios/signing/AuthKey.p8.enc -out /tmp/AuthKey.p8 \
+            -pass "pass:$TRIMMED_DECRYPT_PW"
           keychain initialize
           keychain add-certificates -c /tmp/distribution.p12 --certificate-password "$TRIMMED_P12_PW"
           xcode-project use-profiles --project=ios/Runner.xcodeproj --archive-method=app-store
@@ -81,6 +85,13 @@ workflows:
           flutter build ipa --release \
             --export-options-plist="$HOME/export_options.plist" \
             --dart-define=GEMINI_API_KEY="$GEMINI_API_KEY"
+      - name: Publish to App Store Connect
+        script: |
+          cd app
+          export APP_STORE_CONNECT_ISSUER_ID="$APP_STORE_CONNECT_ISSUER_ID"
+          export APP_STORE_CONNECT_KEY_IDENTIFIER="$APP_STORE_CONNECT_KEY_IDENTIFIER"
+          export APP_STORE_CONNECT_PRIVATE_KEY="$(cat /tmp/AuthKey.p8)"
+          app-store-connect publish --path build/ios/ipa/*.ipa
     artifacts:
       - app/build/ios/ipa/*.ipa
 

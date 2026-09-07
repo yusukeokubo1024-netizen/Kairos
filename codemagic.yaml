@@ -65,8 +65,10 @@ workflows:
           TRIMMED_P12_PW=$(printf '%s' "$IOS_P12_PASSWORD" | tr -d '[:space:]')
           # TEMPORARY DIAGNOSTIC — remove once decryption works. Expected:
           # length=24, sha256=5859203e4ff1eafcbfd3657d360f687648e9d42a7b7a2d003905ca013832b8b4
+          # (expected bytes: 38 66 62 34 34 62 36 62 30 33 38 36 34 65 62 66 63 66 61 63 35 37 65 32)
           echo "IOS_SIGNING_DECRYPT_PASSWORD trimmed length: ${#TRIMMED_DECRYPT_PW}"
           printf '%s' "$TRIMMED_DECRYPT_PW" | openssl dgst -sha256
+          printf '%s' "$TRIMMED_DECRYPT_PW" | od -c | head -5
           openssl enc -aes-256-cbc -d -pbkdf2 -iter 100000 -md sha256 \
             -in ios/signing/distribution.p12.enc -out /tmp/distribution.p12 \
             -pass "pass:$TRIMMED_DECRYPT_PW"

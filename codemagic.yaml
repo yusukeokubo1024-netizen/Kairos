@@ -22,13 +22,30 @@ workflows:
         script: |
           cd app/ios
           pod install
+      - name: Boot an iOS Simulator
+        script: |
+          xcrun simctl list devices available
+          UDID=""
+          for NAME in "iPhone 15 Pro Max" "iPhone 14 Pro Max" "iPhone 13 Pro Max" "iPhone 11 Pro Max"; do
+            FOUND=$(xcrun simctl list devices available | grep "$NAME (" | grep -oE '[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}' | head -1)
+            if [ -n "$FOUND" ]; then
+              UDID="$FOUND"
+              break
+            fi
+          done
+          if [ -z "$UDID" ]; then
+            UDID=$(xcrun simctl list devices available | grep "iPhone" | grep -oE '[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}' | head -1)
+          fi
+          echo "Booting simulator UDID: $UDID"
+          xcrun simctl boot "$UDID"
+          echo "SCREENSHOT_SIMULATOR_UDID=$UDID" >> "$CM_ENV"
       - name: Run screenshot capture
         script: |
           cd app
           flutter drive \
             --driver=test_driver/integration_test.dart \
             --target=integration_test/screenshot_test.dart \
-            -d "iPhone 13 Pro Max" \
+            -d "$SCREENSHOT_SIMULATOR_UDID" \
             --dart-define=SCREENSHOT_ACCOUNT_PASSWORD="$SCREENSHOT_ACCOUNT_PASSWORD"
     artifacts:
       - app/build/*.png

@@ -53,7 +53,7 @@ workflows:
             --dart-define=SCREENSHOT_MODE=true \
             --dart-define=SCREENSHOT_ACCOUNT_PASSWORD="$SCREENSHOT_ACCOUNT_PASSWORD"
     artifacts:
-      - app/build/*.png
+      - app/build/screenshots/*.png
 
   ios-unsigned-check:
     name: iOS build check (unsigned)

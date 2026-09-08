@@ -18,24 +18,38 @@ class NotificationService {
   final FlutterLocalNotificationsPlugin _plugin = FlutterLocalNotificationsPlugin();
   bool _initialized = false;
 
+  // Set only for the automated App Store screenshot capture run — skips
+  // requesting notification permission entirely, since the resulting native
+  // iOS system alert sits outside the Flutter widget tree and would
+  // otherwise block integration_test's automation forever.
+  static const _skipPermissionRequest = bool.fromEnvironment('SCREENSHOT_MODE');
+
   Future<void> init() async {
     if (_initialized) return;
     tz_data.initializeTimeZones();
     tz.setLocalLocation(tz.getLocation('Asia/Tokyo'));
 
     const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
-    const iosInit = DarwinInitializationSettings();
-    const initSettings = InitializationSettings(android: androidInit, iOS: iosInit);
+    final iosInit = _skipPermissionRequest
+        ? const DarwinInitializationSettings(
+            requestAlertPermission: false,
+            requestBadgePermission: false,
+            requestSoundPermission: false,
+          )
+        : const DarwinInitializationSettings();
+    final initSettings = InitializationSettings(android: androidInit, iOS: iosInit);
     await _plugin.initialize(settings: initSettings);
 
-    await _plugin
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
-        ?.requestNotificationsPermission();
-    await _plugin
-        .resolvePlatformSpecificImplementation<
-            IOSFlutterLocalNotificationsPlugin>()
-        ?.requestPermissions(alert: true, badge: true, sound: true);
+    if (!_skipPermissionRequest) {
+      await _plugin
+          .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>()
+          ?.requestNotificationsPermission();
+      await _plugin
+          .resolvePlatformSpecificImplementation<
+              IOSFlutterLocalNotificationsPlugin>()
+          ?.requestPermissions(alert: true, badge: true, sound: true);
+    }
 
     _initialized = true;
   }

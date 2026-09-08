@@ -50,6 +50,7 @@ workflows:
             --driver=test_driver/integration_test.dart \
             --target=integration_test/screenshot_test.dart \
             -d "$SCREENSHOT_SIMULATOR_UDID" \
+            --dart-define=SCREENSHOT_MODE=true \
             --dart-define=SCREENSHOT_ACCOUNT_PASSWORD="$SCREENSHOT_ACCOUNT_PASSWORD"
     artifacts:
       - app/build/*.png

@@ -50,6 +50,16 @@ void main() {
         const Duration(milliseconds: 100), EnginePhase.sendSemanticsUpdate, _settleTimeout);
     debugPrint('[screenshot_test] signed in, on calendar tab');
 
+    // The simulator reports biometric support, so the post-login "trust
+    // this device?" dialog appears here — dismiss it before screenshotting.
+    final biometricSkipButton = find.text('後で設定する');
+    if (biometricSkipButton.evaluate().isNotEmpty) {
+      debugPrint('[screenshot_test] dismissing biometric offer dialog');
+      await tester.tap(biometricSkipButton);
+      await tester.pumpAndSettle(
+          const Duration(milliseconds: 100), EnginePhase.sendSemanticsUpdate, _settleTimeout);
+    }
+
     await binding.takeScreenshot('01_calendar');
     debugPrint('[screenshot_test] captured 01_calendar');
 

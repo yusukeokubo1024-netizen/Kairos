@@ -5,7 +5,7 @@ workflows:
     # Store screenshot sizes) and drives the app with integration_test to
     # capture screenshots of the main tabs, logged into a dedicated seeded
     # test account. No code signing needed — simulator builds are unsigned.
-    max_build_duration: 60
+    max_build_duration: 20
     instance_type: mac_mini_m2
     environment:
       flutter: stable
@@ -38,6 +38,10 @@ workflows:
           fi
           echo "Booting simulator UDID: $UDID"
           xcrun simctl boot "$UDID"
+          # Pre-grant notification permission so iOS's native system alert
+          # never appears — that alert is outside the Flutter widget tree
+          # and would otherwise block the whole automated test forever.
+          xcrun simctl privacy "$UDID" grant notifications com.kairos.app.ios || true
           echo "SCREENSHOT_SIMULATOR_UDID=$UDID" >> "$CM_ENV"
       - name: Run screenshot capture
         script: |

@@ -19,42 +19,56 @@ import 'package:app/services/notification_service.dart';
 const _testEmail = 'kairos.screenshot@kairos-3d873.firebaseapp.com';
 const _testPassword = String.fromEnvironment('SCREENSHOT_ACCOUNT_PASSWORD');
 
+// Bounded so a stuck animation fails loudly within 30s instead of silently
+// eating the whole build's time budget.
+const _settleTimeout = Duration(seconds: 30);
+
 void main() {
   final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   testWidgets('capture App Store screenshots', (tester) async {
+    debugPrint('[screenshot_test] initializing Firebase');
     await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
     await FirebaseAuth.instance.signOut();
     await initializeDateFormatting('ja_JP');
     await initializeDateFormatting('en_US');
+    debugPrint('[screenshot_test] initializing NotificationService');
     await NotificationService.instance.init();
     await LocaleService.instance.load();
 
+    debugPrint('[screenshot_test] pumping KairosApp');
     await tester.pumpWidget(const KairosApp());
-    await tester.pumpAndSettle(const Duration(seconds: 2));
+    await tester.pumpAndSettle(
+        const Duration(milliseconds: 100), EnginePhase.sendSemanticsUpdate, _settleTimeout);
+    debugPrint('[screenshot_test] reached login screen, entering credentials');
 
     await tester.enterText(find.byKey(const Key('login_email_field')), _testEmail);
     await tester.enterText(find.byKey(const Key('login_password_field')), _testPassword);
     await tester.tap(find.byKey(const Key('login_submit_button')));
-    await tester.pumpAndSettle(const Duration(seconds: 3));
+    debugPrint('[screenshot_test] tapped login, waiting for sign-in');
+    await tester.pumpAndSettle(
+        const Duration(milliseconds: 100), EnginePhase.sendSemanticsUpdate, _settleTimeout);
+    debugPrint('[screenshot_test] signed in, on calendar tab');
 
-    // Calendar / home tab (already selected by default).
-    await tester.pumpAndSettle(const Duration(seconds: 2));
     await binding.takeScreenshot('01_calendar');
+    debugPrint('[screenshot_test] captured 01_calendar');
 
-    // Tasks tab.
     await tester.tap(find.byIcon(Icons.check_circle_outline));
-    await tester.pumpAndSettle(const Duration(seconds: 2));
+    await tester.pumpAndSettle(
+        const Duration(milliseconds: 100), EnginePhase.sendSemanticsUpdate, _settleTimeout);
     await binding.takeScreenshot('02_tasks');
+    debugPrint('[screenshot_test] captured 02_tasks');
 
-    // Groups tab.
     await tester.tap(find.byIcon(Icons.groups_outlined));
-    await tester.pumpAndSettle(const Duration(seconds: 2));
+    await tester.pumpAndSettle(
+        const Duration(milliseconds: 100), EnginePhase.sendSemanticsUpdate, _settleTimeout);
     await binding.takeScreenshot('03_groups');
+    debugPrint('[screenshot_test] captured 03_groups');
 
-    // Settings tab.
     await tester.tap(find.byIcon(Icons.settings_outlined));
-    await tester.pumpAndSettle(const Duration(seconds: 2));
+    await tester.pumpAndSettle(
+        const Duration(milliseconds: 100), EnginePhase.sendSemanticsUpdate, _settleTimeout);
     await binding.takeScreenshot('04_settings');
+    debugPrint('[screenshot_test] captured 04_settings, done');
   });
 }

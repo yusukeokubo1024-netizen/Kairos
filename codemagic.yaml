@@ -5,7 +5,8 @@ workflows:
     # Store screenshot sizes) and drives the app with integration_test to
     # capture screenshots of the main tabs, logged into a dedicated seeded
     # test account. No code signing needed — simulator builds are unsigned.
-    max_build_duration: 20
+    # Captures both iPhone (6.5") and iPad (13") sizes in one run.
+    max_build_duration: 40
     instance_type: mac_mini_m2
     environment:
       flutter: stable
@@ -22,38 +23,55 @@ workflows:
         script: |
           cd app/ios
           pod install
-      - name: Boot an iOS Simulator
+      - name: Capture iPhone screenshots (6.5")
         script: |
-          xcrun simctl list devices available
+          cd app
           UDID=""
           for NAME in "iPhone 15 Pro Max" "iPhone 14 Pro Max" "iPhone 13 Pro Max" "iPhone 11 Pro Max"; do
             FOUND=$(xcrun simctl list devices available | grep "$NAME (" | grep -oE '[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}' | head -1)
-            if [ -n "$FOUND" ]; then
-              UDID="$FOUND"
-              break
-            fi
+            if [ -n "$FOUND" ]; then UDID="$FOUND"; break; fi
           done
           if [ -z "$UDID" ]; then
             UDID=$(xcrun simctl list devices available | grep "iPhone" | grep -oE '[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}' | head -1)
           fi
-          echo "Booting simulator UDID: $UDID"
+          echo "Booting iPhone simulator UDID: $UDID"
           xcrun simctl boot "$UDID"
           # Pre-grant notification permission so iOS's native system alert
           # never appears — that alert is outside the Flutter widget tree
           # and would otherwise block the whole automated test forever.
           xcrun simctl privacy "$UDID" grant notifications com.kairos.app.ios || true
-          echo "SCREENSHOT_SIMULATOR_UDID=$UDID" >> "$CM_ENV"
-      - name: Run screenshot capture
-        script: |
-          cd app
           flutter drive \
             --driver=test_driver/integration_test.dart \
             --target=integration_test/screenshot_test.dart \
-            -d "$SCREENSHOT_SIMULATOR_UDID" \
+            -d "$UDID" \
             --dart-define=SCREENSHOT_MODE=true \
             --dart-define=SCREENSHOT_ACCOUNT_PASSWORD="$SCREENSHOT_ACCOUNT_PASSWORD"
+          mv build/screenshots build/screenshots_iphone
+          xcrun simctl shutdown "$UDID" || true
+      - name: Capture iPad screenshots (13")
+        script: |
+          cd app
+          UDID=""
+          for NAME in "iPad Pro 13-inch (M4)" "iPad Pro (12.9-inch) (6th generation)" "iPad Pro 12.9-inch"; do
+            FOUND=$(xcrun simctl list devices available | grep "$NAME (" | grep -oE '[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}' | head -1)
+            if [ -n "$FOUND" ]; then UDID="$FOUND"; break; fi
+          done
+          if [ -z "$UDID" ]; then
+            UDID=$(xcrun simctl list devices available | grep "iPad Pro" | grep -oE '[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}' | head -1)
+          fi
+          echo "Booting iPad simulator UDID: $UDID"
+          xcrun simctl boot "$UDID"
+          xcrun simctl privacy "$UDID" grant notifications com.kairos.app.ios || true
+          flutter drive \
+            --driver=test_driver/integration_test.dart \
+            --target=integration_test/screenshot_test.dart \
+            -d "$UDID" \
+            --dart-define=SCREENSHOT_MODE=true \
+            --dart-define=SCREENSHOT_ACCOUNT_PASSWORD="$SCREENSHOT_ACCOUNT_PASSWORD"
+          mv build/screenshots build/screenshots_ipad
     artifacts:
-      - app/build/screenshots/*.png
+      - app/build/screenshots_iphone/*.png
+      - app/build/screenshots_ipad/*.png
 
   ios-unsigned-check:
     name: iOS build check (unsigned)

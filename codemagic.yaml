@@ -35,7 +35,11 @@ workflows:
             UDID=$(xcrun simctl list devices available | grep "iPhone" | grep -oE '[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}' | head -1)
           fi
           echo "Booting iPhone simulator UDID: $UDID"
-          xcrun simctl boot "$UDID"
+          for i in 1 2 3; do
+            xcrun simctl boot "$UDID" && break
+            echo "Boot attempt $i failed, retrying in 10s..."
+            sleep 10
+          done
           # Pre-grant notification permission so iOS's native system alert
           # never appears — that alert is outside the Flutter widget tree
           # and would otherwise block the whole automated test forever.
@@ -60,7 +64,11 @@ workflows:
             UDID=$(xcrun simctl list devices available | grep "iPad Pro" | grep -oE '[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}' | head -1)
           fi
           echo "Booting iPad simulator UDID: $UDID"
-          xcrun simctl boot "$UDID"
+          for i in 1 2 3; do
+            xcrun simctl boot "$UDID" && break
+            echo "Boot attempt $i failed, retrying in 10s..."
+            sleep 10
+          done
           xcrun simctl privacy "$UDID" grant notifications com.kairos.app.ios || true
           flutter drive \
             --driver=test_driver/integration_test.dart \

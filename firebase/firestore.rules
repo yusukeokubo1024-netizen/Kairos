@@ -113,6 +113,15 @@ service cloud.firestore {
       allow create: if isAuthenticated() && request.resource.data.ownerId == request.auth.uid;
     }
 
+    // ============================================
+    // config コレクション（FAQ文言など、アプリ側から読むだけの
+    // 静的な設定。編集はFirebase Console/スクリプト経由のみ）
+    // ============================================
+    match /config/{document} {
+      allow read: if true;
+      allow write: if false;
+    }
+
     // デフォルト: アクセス拒否
     match /{document=**} {
       allow read, write: if false;

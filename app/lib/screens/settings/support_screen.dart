@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
@@ -17,8 +18,45 @@ const _supportEmail = 'kairos19900927@gmail.com';
 const _geminiApiKey = String.fromEnvironment('GEMINI_API_KEY');
 const _geminiModel = 'gemini-flash-latest';
 
-class SupportScreen extends StatelessWidget {
+class SupportScreen extends StatefulWidget {
   const SupportScreen({super.key});
+
+  @override
+  State<SupportScreen> createState() => _SupportScreenState();
+}
+
+class _SupportScreenState extends State<SupportScreen> {
+  // FAQ content lives in Firestore (config/support_<locale>) so wording can
+  // be edited without an app update/store review. Falls back to the
+  // bundled translations below if that document is missing or unreachable
+  // (e.g. offline, or not seeded yet), so the FAQ is never empty.
+  List<(String, String)>? _remoteFaqs;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRemoteFaqs();
+  }
+
+  Future<void> _loadRemoteFaqs() async {
+    try {
+      final locale = LocaleService.instance.locale.value.languageCode;
+      final doc =
+          await FirebaseFirestore.instance.collection('config').doc('support_$locale').get();
+      final items = doc.data()?['faq'];
+      if (items is! List) return;
+      final parsed = items
+          .whereType<Map<String, dynamic>>()
+          .map((e) => (e['q'] as String? ?? '', e['a'] as String? ?? ''))
+          .where((pair) => pair.$1.isNotEmpty && pair.$2.isNotEmpty)
+          .toList();
+      if (parsed.isNotEmpty && mounted) {
+        setState(() => _remoteFaqs = parsed);
+      }
+    } catch (_) {
+      // Keep using the bundled fallback FAQ below.
+    }
+  }
 
   Future<void> _emailSupport(BuildContext context) async {
     final l10n = AppLocalizations.of(context)!;
@@ -35,15 +73,16 @@ class SupportScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final faqs = [
-      (l10n.supportFaqPasswordQ, l10n.supportFaqPasswordA),
-      (l10n.supportFaqBiometricQ, l10n.supportFaqBiometricA),
-      (l10n.supportFaqGroupQ, l10n.supportFaqGroupA),
-      (l10n.supportFaqWeatherQ, l10n.supportFaqWeatherA),
-      (l10n.supportFaqNotificationQ, l10n.supportFaqNotificationA),
-      (l10n.supportFaqLanguageQ, l10n.supportFaqLanguageA),
-      (l10n.supportFaqDeleteQ, l10n.supportFaqDeleteA),
-    ];
+    final faqs = _remoteFaqs ??
+        [
+          (l10n.supportFaqPasswordQ, l10n.supportFaqPasswordA),
+          (l10n.supportFaqBiometricQ, l10n.supportFaqBiometricA),
+          (l10n.supportFaqGroupQ, l10n.supportFaqGroupA),
+          (l10n.supportFaqWeatherQ, l10n.supportFaqWeatherA),
+          (l10n.supportFaqNotificationQ, l10n.supportFaqNotificationA),
+          (l10n.supportFaqLanguageQ, l10n.supportFaqLanguageA),
+          (l10n.supportFaqDeleteQ, l10n.supportFaqDeleteA),
+        ];
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.supportTitle)),
@@ -71,7 +110,7 @@ class SupportScreen extends StatelessWidget {
           const SizedBox(height: 4),
           Text(l10n.supportAiDescription, style: const TextStyle(fontSize: 13, color: Colors.grey)),
           const SizedBox(height: 8),
-          const _AiChat(),
+          _AiChat(faqs: faqs),
           const SizedBox(height: 28),
           Text(l10n.supportContactTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
           const SizedBox(height: 4),
@@ -91,7 +130,9 @@ class SupportScreen extends StatelessWidget {
 }
 
 class _AiChat extends StatefulWidget {
-  const _AiChat();
+  final List<(String, String)> faqs;
+
+  const _AiChat({required this.faqs});
 
   @override
   State<_AiChat> createState() => _AiChatState();
@@ -147,6 +188,7 @@ class _AiChatState extends State<_AiChat> {
   }
 
   String _systemInstruction(AppLocalizations l10n) {
+    final faqText = widget.faqs.map((f) => 'Q: ${f.$1}\nA: ${f.$2}').join('\n');
     return '''You are a helpful assistant embedded in the calendar-sharing app "Kairos". For
 questions about Kairos itself, answer concisely using the information below, in
 ${_languageName(l10n)}. If you don't know the answer to a Kairos-specific question, honestly
@@ -161,20 +203,7 @@ app lock, 4 languages (switch via Settings > Language), email/password login (Go
 was removed; linking is still available from Settings).
 
 FAQ:
-Q: ${l10n.supportFaqPasswordQ}
-A: ${l10n.supportFaqPasswordA}
-Q: ${l10n.supportFaqBiometricQ}
-A: ${l10n.supportFaqBiometricA}
-Q: ${l10n.supportFaqGroupQ}
-A: ${l10n.supportFaqGroupA}
-Q: ${l10n.supportFaqWeatherQ}
-A: ${l10n.supportFaqWeatherA}
-Q: ${l10n.supportFaqNotificationQ}
-A: ${l10n.supportFaqNotificationA}
-Q: ${l10n.supportFaqLanguageQ}
-A: ${l10n.supportFaqLanguageA}
-Q: ${l10n.supportFaqDeleteQ}
-A: ${l10n.supportFaqDeleteA}''';
+$faqText''';
   }
 
   /// Google's free-tier flash model occasionally returns 503 (temporary

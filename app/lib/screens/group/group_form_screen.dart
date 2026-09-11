@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../../models/shared_group.dart';
+import '../../services/analytics_service.dart';
 
 class GroupFormScreen extends StatefulWidget {
   const GroupFormScreen({super.key});
@@ -37,6 +40,7 @@ class _GroupFormScreenState extends State<GroupFormScreen> {
 
     try {
       await FirebaseFirestore.instance.collection('sharedGroups').add(group.toCreateMap());
+      unawaited(AnalyticsService.instance.logGroupCreated());
       if (mounted) Navigator.of(context).pop();
     } finally {
       if (mounted) setState(() => _isSaving = false);

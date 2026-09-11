@@ -13,6 +13,7 @@ import 'firebase_options.dart';
 import 'l10n/app_localizations.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/home/home_shell.dart';
+import 'services/analytics_service.dart';
 import 'services/biometric_service.dart';
 import 'services/locale_service.dart';
 import 'services/notification_service.dart';
@@ -54,6 +55,7 @@ class KairosApp extends StatelessWidget {
           title: 'Kairos',
           debugShowCheckedModeBanner: false,
           scaffoldMessengerKey: rootScaffoldMessengerKey,
+          navigatorObservers: [AnalyticsService.instance.observer],
           locale: locale,
           supportedLocales: AppLocalizations.supportedLocales,
           localizationsDelegates: const [

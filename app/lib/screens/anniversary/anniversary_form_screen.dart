@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -5,6 +7,7 @@ import 'package:flutter/material.dart';
 import '../../l10n/app_localizations.dart';
 import '../../main.dart';
 import '../../models/anniversary.dart';
+import '../../services/analytics_service.dart';
 import '../../services/notification_service.dart';
 
 class AnniversaryFormScreen extends StatefulWidget {
@@ -83,6 +86,7 @@ class _AnniversaryFormScreenState extends State<AnniversaryFormScreen> {
           day: _date.day,
         );
         final ref = await db.collection('anniversaries').add(newAnniversary.toCreateMap());
+        unawaited(AnalyticsService.instance.logAnniversaryCreated());
         await NotificationService.instance.scheduleForAnniversary(
           Anniversary(
             id: ref.id,

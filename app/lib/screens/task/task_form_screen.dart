@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -5,6 +7,7 @@ import 'package:flutter/material.dart';
 import '../../l10n/app_localizations.dart';
 import '../../main.dart';
 import '../../models/task.dart';
+import '../../services/analytics_service.dart';
 import '../../services/notification_service.dart';
 
 class TaskFormScreen extends StatefulWidget {
@@ -84,6 +87,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
           dueDate: _dueDate,
         );
         final ref = await db.collection('tasks').add(newTask.toCreateMap());
+        unawaited(AnalyticsService.instance.logTaskCreated());
         await NotificationService.instance.scheduleForTask(
           Task(
             id: ref.id,

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
@@ -9,6 +11,7 @@ import '../../models/schedule_category.dart';
 import '../../models/schedule_prep_templates.dart';
 import '../../models/shared_group.dart';
 import '../../models/task.dart';
+import '../../services/analytics_service.dart';
 import '../../services/notification_service.dart';
 
 /// Create or edit a schedule. Pass [schedule] to edit an existing one,
@@ -233,6 +236,7 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
           reminderMinutes: _reminderMinutes,
         );
         final ref = await db.collection('schedules').add(newSchedule.toCreateMap());
+        unawaited(AnalyticsService.instance.logScheduleCreated());
         await NotificationService.instance.scheduleForSchedule(
           Schedule(
             id: ref.id,

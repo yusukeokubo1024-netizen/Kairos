@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../../l10n/app_localizations.dart';
+import '../../services/analytics_service.dart';
 import '../../services/auth_service.dart';
 import 'biometric_offer.dart';
 import 'reset_password_screen.dart';
@@ -41,6 +44,7 @@ class _LoginScreenState extends State<LoginScreen> {
         email: _emailController.text.trim(),
         password: _passwordController.text,
       );
+      unawaited(AnalyticsService.instance.logLogin());
       if (mounted) await offerBiometricLock(context);
     } on FirebaseAuthException catch (e) {
       setState(() => _errorMessage = _messageForError(e.code));

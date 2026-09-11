@@ -203,17 +203,20 @@ class _CalendarScreenState extends State<CalendarScreen> {
       return;
     }
 
-    // Firestore documentId-whereIn supports at most 30 values; larger groups
-    // of groups are truncated for now rather than paginating.
-    final ids = memberIds.take(30).toList();
-    final snapshot = await FirebaseFirestore.instance
-        .collection('publicProfiles')
-        .where(FieldPath.documentId, whereIn: ids)
-        .get();
+    // publicProfiles' security rules allow fetching a single doc (get) by
+    // any authenticated user, but deliberately disallow querying/listing
+    // the collection (to block enumerating all users) — a whereIn query,
+    // even one scoped to document IDs, counts as a list operation and
+    // would be rejected. Fetch each member's doc individually instead.
+    final collection = FirebaseFirestore.instance.collection('publicProfiles');
+    final docs = await Future.wait(
+      memberIds.take(50).map((id) => collection.doc(id).get()),
+    );
 
     final birthdays = <({String name, int month, int day})>[];
-    for (final doc in snapshot.docs) {
+    for (final doc in docs) {
       final data = doc.data();
+      if (data == null) continue;
       final month = data['birthMonth'] as int?;
       final day = data['birthDay'] as int?;
       final name = data['displayName'] as String? ?? '';

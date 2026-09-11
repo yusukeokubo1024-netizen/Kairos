@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -5,6 +7,7 @@ import 'package:flutter/material.dart';
 import '../../l10n/app_localizations.dart';
 import '../../main.dart';
 import '../../models/task.dart';
+import '../../services/audit_service.dart';
 import '../../services/notification_service.dart';
 import 'task_form_screen.dart';
 
@@ -28,6 +31,12 @@ class TaskListScreen extends StatelessWidget {
       'completed': !task.completed,
       'updatedAt': FieldValue.serverTimestamp(),
     });
+    unawaited(AuditService.instance.logUpdate(
+      collection: 'tasks',
+      targetId: task.id,
+      oldData: {'completed': task.completed},
+      newData: {'completed': !task.completed},
+    ));
     if (!task.completed) {
       await NotificationService.instance.cancelForTask(task.id);
     }
@@ -35,7 +44,11 @@ class TaskListScreen extends StatelessWidget {
 
   Future<void> _delete(BuildContext context, Task task) async {
     final l10n = AppLocalizations.of(context)!;
-    await FirebaseFirestore.instance.collection('tasks').doc(task.id).delete();
+    await AuditService.instance.softDelete(
+      collection: 'tasks',
+      targetId: task.id,
+      data: task.toUpdateMap(),
+    );
     await NotificationService.instance.cancelForTask(task.id);
 
     rootScaffoldMessengerKey.currentState?.clearSnackBars();

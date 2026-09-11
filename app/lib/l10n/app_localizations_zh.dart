@@ -282,6 +282,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsSupport => '支持';
 
   @override
+  String get settingsTrash => '回收站';
+
+  @override
   String get settingsCouldNotOpenPage => '无法打开页面';
 
   @override
@@ -408,6 +411,38 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String get supportContactBody =>
       '如以上内容无法解决您的问题，或需要报告故障、咨询隐私相关事宜，请通过以下邮箱与我们联系。';
+
+  @override
+  String get trashTitle => '回收站';
+
+  @override
+  String get trashEmpty => '回收站是空的';
+
+  @override
+  String get trashRestore => '恢复';
+
+  @override
+  String get trashDeleteForever => '永久删除';
+
+  @override
+  String get trashRestored => '已恢复';
+
+  @override
+  String trashDeletedOn(Object collection, Object date) {
+    return '$collection ・ $date 删除';
+  }
+
+  @override
+  String get trashCollectionSchedule => '日程';
+
+  @override
+  String get trashCollectionTask => '任务';
+
+  @override
+  String get trashCollectionAnniversary => '纪念日';
+
+  @override
+  String get trashCollectionGroup => '群组';
 
   @override
   String get taskListTitle => '任务';

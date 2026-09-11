@@ -8,6 +8,7 @@ import '../../l10n/app_localizations.dart';
 import '../../main.dart';
 import '../../models/task.dart';
 import '../../services/analytics_service.dart';
+import '../../services/audit_service.dart';
 import '../../services/notification_service.dart';
 
 class TaskFormScreen extends StatefulWidget {
@@ -74,6 +75,12 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
           dueDate: _dueDate,
         );
         await db.collection('tasks').doc(updated.id).update(updated.toUpdateMap());
+        unawaited(AuditService.instance.logUpdate(
+          collection: 'tasks',
+          targetId: updated.id,
+          oldData: widget.task!.toUpdateMap(),
+          newData: updated.toUpdateMap(),
+        ));
         if (!updated.completed) {
           await NotificationService.instance.scheduleForTask(updated);
         }
@@ -88,6 +95,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
         );
         final ref = await db.collection('tasks').add(newTask.toCreateMap());
         unawaited(AnalyticsService.instance.logTaskCreated());
+        unawaited(AuditService.instance.logCreate(collection: 'tasks', targetId: ref.id));
         await NotificationService.instance.scheduleForTask(
           Task(
             id: ref.id,
@@ -109,7 +117,11 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
     final task = widget.task;
     if (task == null) return;
     final l10n = AppLocalizations.of(context)!;
-    await FirebaseFirestore.instance.collection('tasks').doc(task.id).delete();
+    await AuditService.instance.softDelete(
+      collection: 'tasks',
+      targetId: task.id,
+      data: task.toUpdateMap(),
+    );
     await NotificationService.instance.cancelForTask(task.id);
     if (mounted) Navigator.of(context).pop();
 

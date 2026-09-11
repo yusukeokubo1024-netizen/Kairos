@@ -12,6 +12,7 @@ import '../../models/schedule_prep_templates.dart';
 import '../../models/shared_group.dart';
 import '../../models/task.dart';
 import '../../services/analytics_service.dart';
+import '../../services/audit_service.dart';
 import '../../services/notification_service.dart';
 
 /// Create or edit a schedule. Pass [schedule] to edit an existing one,
@@ -219,6 +220,12 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
           reminderMinutes: _reminderMinutes,
         );
         await db.collection('schedules').doc(updated.id).update(updated.toUpdateMap());
+        unawaited(AuditService.instance.logUpdate(
+          collection: 'schedules',
+          targetId: updated.id,
+          oldData: widget.schedule!.toUpdateMap(),
+          newData: updated.toUpdateMap(),
+        ));
         await NotificationService.instance.scheduleForSchedule(updated);
       } else {
         final newSchedule = Schedule(
@@ -237,6 +244,7 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
         );
         final ref = await db.collection('schedules').add(newSchedule.toCreateMap());
         unawaited(AnalyticsService.instance.logScheduleCreated());
+        unawaited(AuditService.instance.logCreate(collection: 'schedules', targetId: ref.id));
         await NotificationService.instance.scheduleForSchedule(
           Schedule(
             id: ref.id,

@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../l10n/app_localizations.dart';
 import '../../main.dart';
 import '../../models/schedule.dart';
+import '../../services/audit_service.dart';
 import '../../services/notification_service.dart';
 import 'schedule_form_screen.dart';
 
@@ -29,7 +30,11 @@ class ScheduleDetailScreen extends StatelessWidget {
     );
     if (confirmed != true) return;
 
-    await FirebaseFirestore.instance.collection('schedules').doc(schedule.id).delete();
+    await AuditService.instance.softDelete(
+      collection: 'schedules',
+      targetId: schedule.id,
+      data: schedule.toUpdateMap(),
+    );
     await NotificationService.instance.cancelForSchedule(schedule.id);
     if (context.mounted) Navigator.of(context).pop();
 

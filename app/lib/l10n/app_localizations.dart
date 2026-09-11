@@ -618,6 +618,12 @@ abstract class AppLocalizations {
   /// **'サポート'**
   String get settingsSupport;
 
+  /// No description provided for @settingsTrash.
+  ///
+  /// In ja, this message translates to:
+  /// **'ゴミ箱'**
+  String get settingsTrash;
+
   /// No description provided for @settingsCouldNotOpenPage.
   ///
   /// In ja, this message translates to:
@@ -857,6 +863,66 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'上記で解決しない場合や、不具合の報告・プライバシーに関するお問い合わせは、次のメールアドレスで受け付けます。'**
   String get supportContactBody;
+
+  /// No description provided for @trashTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ゴミ箱'**
+  String get trashTitle;
+
+  /// No description provided for @trashEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'ゴミ箱は空です'**
+  String get trashEmpty;
+
+  /// No description provided for @trashRestore.
+  ///
+  /// In ja, this message translates to:
+  /// **'復元'**
+  String get trashRestore;
+
+  /// No description provided for @trashDeleteForever.
+  ///
+  /// In ja, this message translates to:
+  /// **'完全に削除'**
+  String get trashDeleteForever;
+
+  /// No description provided for @trashRestored.
+  ///
+  /// In ja, this message translates to:
+  /// **'復元しました'**
+  String get trashRestored;
+
+  /// No description provided for @trashDeletedOn.
+  ///
+  /// In ja, this message translates to:
+  /// **'{collection} ・ {date}に削除'**
+  String trashDeletedOn(Object collection, Object date);
+
+  /// No description provided for @trashCollectionSchedule.
+  ///
+  /// In ja, this message translates to:
+  /// **'予定'**
+  String get trashCollectionSchedule;
+
+  /// No description provided for @trashCollectionTask.
+  ///
+  /// In ja, this message translates to:
+  /// **'タスク'**
+  String get trashCollectionTask;
+
+  /// No description provided for @trashCollectionAnniversary.
+  ///
+  /// In ja, this message translates to:
+  /// **'記念日'**
+  String get trashCollectionAnniversary;
+
+  /// No description provided for @trashCollectionGroup.
+  ///
+  /// In ja, this message translates to:
+  /// **'グループ'**
+  String get trashCollectionGroup;
 
   /// No description provided for @taskListTitle.
   ///

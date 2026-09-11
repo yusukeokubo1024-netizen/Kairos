@@ -284,6 +284,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get settingsSupport => 'サポート';
 
   @override
+  String get settingsTrash => 'ゴミ箱';
+
+  @override
   String get settingsCouldNotOpenPage => 'ページを開けませんでした';
 
   @override
@@ -416,6 +419,38 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get supportContactBody =>
       '上記で解決しない場合や、不具合の報告・プライバシーに関するお問い合わせは、次のメールアドレスで受け付けます。';
+
+  @override
+  String get trashTitle => 'ゴミ箱';
+
+  @override
+  String get trashEmpty => 'ゴミ箱は空です';
+
+  @override
+  String get trashRestore => '復元';
+
+  @override
+  String get trashDeleteForever => '完全に削除';
+
+  @override
+  String get trashRestored => '復元しました';
+
+  @override
+  String trashDeletedOn(Object collection, Object date) {
+    return '$collection ・ $dateに削除';
+  }
+
+  @override
+  String get trashCollectionSchedule => '予定';
+
+  @override
+  String get trashCollectionTask => 'タスク';
+
+  @override
+  String get trashCollectionAnniversary => '記念日';
+
+  @override
+  String get trashCollectionGroup => 'グループ';
 
   @override
   String get taskListTitle => 'タスク';

@@ -286,6 +286,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get settingsSupport => '고객지원';
 
   @override
+  String get settingsTrash => '휴지통';
+
+  @override
   String get settingsCouldNotOpenPage => '페이지를 열 수 없습니다';
 
   @override
@@ -419,6 +422,38 @@ class AppLocalizationsKo extends AppLocalizations {
   @override
   String get supportContactBody =>
       '위 내용으로 해결되지 않거나, 오류 신고·개인정보 관련 문의는 아래 이메일 주소로 접수합니다.';
+
+  @override
+  String get trashTitle => '휴지통';
+
+  @override
+  String get trashEmpty => '휴지통이 비어 있습니다';
+
+  @override
+  String get trashRestore => '복원';
+
+  @override
+  String get trashDeleteForever => '영구 삭제';
+
+  @override
+  String get trashRestored => '복원되었습니다';
+
+  @override
+  String trashDeletedOn(Object collection, Object date) {
+    return '$collection · $date에 삭제됨';
+  }
+
+  @override
+  String get trashCollectionSchedule => '일정';
+
+  @override
+  String get trashCollectionTask => '할 일';
+
+  @override
+  String get trashCollectionAnniversary => '기념일';
+
+  @override
+  String get trashCollectionGroup => '그룹';
 
   @override
   String get taskListTitle => '할 일';

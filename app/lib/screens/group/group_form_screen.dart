@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/shared_group.dart';
 import '../../services/analytics_service.dart';
+import '../../services/audit_service.dart';
 
 class GroupFormScreen extends StatefulWidget {
   const GroupFormScreen({super.key});
@@ -39,8 +40,9 @@ class _GroupFormScreenState extends State<GroupFormScreen> {
     );
 
     try {
-      await FirebaseFirestore.instance.collection('sharedGroups').add(group.toCreateMap());
+      final ref = await FirebaseFirestore.instance.collection('sharedGroups').add(group.toCreateMap());
       unawaited(AnalyticsService.instance.logGroupCreated());
+      unawaited(AuditService.instance.logCreate(collection: 'sharedGroups', targetId: ref.id));
       if (mounted) Navigator.of(context).pop();
     } finally {
       if (mounted) setState(() => _isSaving = false);

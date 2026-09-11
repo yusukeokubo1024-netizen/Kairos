@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import '../../l10n/app_localizations.dart';
 import '../../main.dart';
 import '../../models/shared_group.dart';
+import '../../services/audit_service.dart';
 import 'group_chat_screen.dart';
 
 class GroupDetailScreen extends StatelessWidget {
@@ -38,7 +39,11 @@ class GroupDetailScreen extends StatelessWidget {
     );
     if (confirmed != true) return;
 
-    await FirebaseFirestore.instance.collection('sharedGroups').doc(group.id).delete();
+    await AuditService.instance.softDelete(
+      collection: 'sharedGroups',
+      targetId: group.id,
+      data: group.toCreateMap(),
+    );
     if (context.mounted) Navigator.of(context).pop();
 
     rootScaffoldMessengerKey.currentState?.clearSnackBars();

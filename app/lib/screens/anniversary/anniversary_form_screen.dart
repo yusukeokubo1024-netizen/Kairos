@@ -8,6 +8,7 @@ import '../../l10n/app_localizations.dart';
 import '../../main.dart';
 import '../../models/anniversary.dart';
 import '../../services/analytics_service.dart';
+import '../../services/audit_service.dart';
 import '../../services/notification_service.dart';
 
 class AnniversaryFormScreen extends StatefulWidget {
@@ -76,6 +77,12 @@ class _AnniversaryFormScreenState extends State<AnniversaryFormScreen> {
           day: _date.day,
         );
         await db.collection('anniversaries').doc(updated.id).update(updated.toUpdateMap());
+        unawaited(AuditService.instance.logUpdate(
+          collection: 'anniversaries',
+          targetId: updated.id,
+          oldData: widget.anniversary!.toUpdateMap(),
+          newData: updated.toUpdateMap(),
+        ));
         await NotificationService.instance.scheduleForAnniversary(updated);
       } else {
         final newAnniversary = Anniversary(
@@ -87,6 +94,7 @@ class _AnniversaryFormScreenState extends State<AnniversaryFormScreen> {
         );
         final ref = await db.collection('anniversaries').add(newAnniversary.toCreateMap());
         unawaited(AnalyticsService.instance.logAnniversaryCreated());
+        unawaited(AuditService.instance.logCreate(collection: 'anniversaries', targetId: ref.id));
         await NotificationService.instance.scheduleForAnniversary(
           Anniversary(
             id: ref.id,
@@ -107,7 +115,11 @@ class _AnniversaryFormScreenState extends State<AnniversaryFormScreen> {
     final anniversary = widget.anniversary;
     if (anniversary == null) return;
     final l10n = AppLocalizations.of(context)!;
-    await FirebaseFirestore.instance.collection('anniversaries').doc(anniversary.id).delete();
+    await AuditService.instance.softDelete(
+      collection: 'anniversaries',
+      targetId: anniversary.id,
+      data: anniversary.toUpdateMap(),
+    );
     await NotificationService.instance.cancelForAnniversary(anniversary.id);
     if (mounted) Navigator.of(context).pop();
 

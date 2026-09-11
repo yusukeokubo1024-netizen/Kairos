@@ -294,6 +294,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsSupport => 'Support';
 
   @override
+  String get settingsTrash => 'Trash';
+
+  @override
   String get settingsCouldNotOpenPage => 'Couldn\'t open the page';
 
   @override
@@ -429,6 +432,38 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get supportContactBody =>
       'If the above doesn\'t resolve your question, or to report a bug or ask about privacy, reach us at the email address below.';
+
+  @override
+  String get trashTitle => 'Trash';
+
+  @override
+  String get trashEmpty => 'Trash is empty';
+
+  @override
+  String get trashRestore => 'Restore';
+
+  @override
+  String get trashDeleteForever => 'Delete forever';
+
+  @override
+  String get trashRestored => 'Restored';
+
+  @override
+  String trashDeletedOn(Object collection, Object date) {
+    return '$collection · deleted $date';
+  }
+
+  @override
+  String get trashCollectionSchedule => 'Schedule';
+
+  @override
+  String get trashCollectionTask => 'Task';
+
+  @override
+  String get trashCollectionAnniversary => 'Anniversary';
+
+  @override
+  String get trashCollectionGroup => 'Group';
 
   @override
   String get taskListTitle => 'Tasks';

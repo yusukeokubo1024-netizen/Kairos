@@ -14,6 +14,7 @@ import '../../services/notification_service.dart';
 import '../../services/weather_service.dart';
 import '../anniversary/anniversary_list_screen.dart';
 import 'support_screen.dart';
+import 'trash_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -696,6 +697,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 title: Text(l10n.settingsSupport),
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => const SupportScreen()),
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.delete_outline),
+                title: Text(l10n.settingsTrash),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const TrashScreen()),
                 ),
               ),
               const Divider(),

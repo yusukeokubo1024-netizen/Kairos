@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:ui';
 
+import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
@@ -26,6 +27,20 @@ final rootScaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  // App Check: attaches an attestation token (Play Integrity on Android,
+  // App Attest/DeviceCheck on iOS) to every Firebase request, so tampered
+  // apps/bots/scripts show up as "unverified" in the App Check dashboard.
+  // Deliberately NOT flipping Firestore/Auth to "Enforce" in the Firebase
+  // Console yet — start in monitoring-only mode and only enforce once
+  // verified request metrics look healthy, to avoid risking an outage for
+  // legitimate users from a misconfiguration.
+  await FirebaseAppCheck.instance.activate(
+    providerAndroid: kDebugMode ? const AndroidDebugProvider() : const AndroidPlayIntegrityProvider(),
+    providerApple: kDebugMode
+        ? const AppleDebugProvider()
+        : const AppleAppAttestWithDeviceCheckFallbackProvider(),
+  );
 
   // Crash/error reporting. Skipped in local debug builds so development
   // noise doesn't pollute the Crashlytics dashboard.

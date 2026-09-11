@@ -37,7 +37,7 @@
   "signUpNameLabel": "Display name",
   "signUpNameRequired": "Please enter a display name",
   "signUpPasswordLabel": "Password (6+ characters)",
-  "signUpPasswordTooShort": "Password must be at least 6 characters",
+  "signUpPasswordTooShort": "Password must be at least 8 characters",
   "signUpButton": "Create account",
   "signUpErrorEmailInUse": "This email address is already registered",
   "signUpErrorGeneric": "Sign-up failed. Please try again later",
@@ -54,6 +54,9 @@
 
   "settingsTitle": "Settings",
   "settingsDisplayNameUnset": "(No display name set)",
+  "settingsEmailUnverified": "Email address not verified",
+  "settingsResendVerification": "Resend",
+  "settingsEmailVerificationSent": "Verification email sent",
   "settingsEditDisplayName": "Edit display name",
   "settingsDisplayNameSaved": "Display name changed to \"{name}\"",
   "@settingsDisplayNameSaved": { "placeholders": { "name": {} } },

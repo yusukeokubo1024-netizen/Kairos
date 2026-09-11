@@ -106,7 +106,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get signUpPasswordLabel => '비밀번호（6자 이상）';
 
   @override
-  String get signUpPasswordTooShort => '비밀번호는 6자 이상이어야 합니다';
+  String get signUpPasswordTooShort => '비밀번호는 8자 이상이어야 합니다';
 
   @override
   String get signUpButton => '계정 만들기';
@@ -151,6 +151,15 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get settingsDisplayNameUnset => '（표시 이름 미설정）';
+
+  @override
+  String get settingsEmailUnverified => '이메일 주소가 확인되지 않았습니다';
+
+  @override
+  String get settingsResendVerification => '재전송';
+
+  @override
+  String get settingsEmailVerificationSent => '확인 이메일을 다시 보냈습니다';
 
   @override
   String get settingsEditDisplayName => '표시 이름 편집';

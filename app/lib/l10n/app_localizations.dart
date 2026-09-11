@@ -297,7 +297,7 @@ abstract class AppLocalizations {
   /// No description provided for @signUpPasswordTooShort.
   ///
   /// In ja, this message translates to:
-  /// **'パスワードは6文字以上で設定してください'**
+  /// **'パスワードは8文字以上で設定してください'**
   String get signUpPasswordTooShort;
 
   /// No description provided for @signUpButton.
@@ -383,6 +383,24 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'(表示名未設定)'**
   String get settingsDisplayNameUnset;
+
+  /// No description provided for @settingsEmailUnverified.
+  ///
+  /// In ja, this message translates to:
+  /// **'メールアドレスが未確認です'**
+  String get settingsEmailUnverified;
+
+  /// No description provided for @settingsResendVerification.
+  ///
+  /// In ja, this message translates to:
+  /// **'再送信'**
+  String get settingsResendVerification;
+
+  /// No description provided for @settingsEmailVerificationSent.
+  ///
+  /// In ja, this message translates to:
+  /// **'確認メールを再送信しました'**
+  String get settingsEmailVerificationSent;
 
   /// No description provided for @settingsEditDisplayName.
   ///

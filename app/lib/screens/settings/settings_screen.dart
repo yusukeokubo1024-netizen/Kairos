@@ -34,6 +34,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void initState() {
     super.initState();
     _loadBiometricState();
+    // The cached currentUser's emailVerified flag doesn't update itself
+    // after the user taps the link in the verification email — refresh it
+    // so the "please verify" banner clears once they've actually done so.
+    FirebaseAuth.instance.currentUser?.reload().then((_) {
+      if (mounted) setState(() {});
+    });
   }
 
   Future<void> _loadBiometricState() async {
@@ -586,6 +592,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 trailing: const Icon(Icons.edit_outlined),
                 onTap: () => _editDisplayName(displayName),
               ),
+              if (!_authService.isEmailVerified)
+                ListTile(
+                  tileColor: Theme.of(context).colorScheme.errorContainer.withValues(alpha: 0.3),
+                  leading: Icon(Icons.mark_email_unread_outlined,
+                      color: Theme.of(context).colorScheme.error),
+                  title: Text(l10n.settingsEmailUnverified),
+                  trailing: TextButton(
+                    onPressed: () async {
+                      await _authService.resendEmailVerification();
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(l10n.settingsEmailVerificationSent)),
+                        );
+                      }
+                    },
+                    child: Text(l10n.settingsResendVerification),
+                  ),
+                ),
               StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
                 stream: FirebaseFirestore.instance.collection('publicProfiles').doc(uid).snapshots(),
                 builder: (context, profileSnapshot) {

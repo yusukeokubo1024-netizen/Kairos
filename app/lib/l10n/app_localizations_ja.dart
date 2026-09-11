@@ -107,7 +107,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get signUpPasswordLabel => 'パスワード（6文字以上）';
 
   @override
-  String get signUpPasswordTooShort => 'パスワードは6文字以上で設定してください';
+  String get signUpPasswordTooShort => 'パスワードは8文字以上で設定してください';
 
   @override
   String get signUpButton => '登録する';
@@ -152,6 +152,15 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get settingsDisplayNameUnset => '(表示名未設定)';
+
+  @override
+  String get settingsEmailUnverified => 'メールアドレスが未確認です';
+
+  @override
+  String get settingsResendVerification => '再送信';
+
+  @override
+  String get settingsEmailVerificationSent => '確認メールを再送信しました';
 
   @override
   String get settingsEditDisplayName => '表示名を編集';

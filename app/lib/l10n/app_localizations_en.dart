@@ -107,7 +107,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get signUpPasswordLabel => 'Password (6+ characters)';
 
   @override
-  String get signUpPasswordTooShort => 'Password must be at least 6 characters';
+  String get signUpPasswordTooShort => 'Password must be at least 8 characters';
 
   @override
   String get signUpButton => 'Create account';
@@ -154,6 +154,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsDisplayNameUnset => '(No display name set)';
+
+  @override
+  String get settingsEmailUnverified => 'Email address not verified';
+
+  @override
+  String get settingsResendVerification => 'Resend';
+
+  @override
+  String get settingsEmailVerificationSent => 'Verification email sent';
 
   @override
   String get settingsEditDisplayName => 'Edit display name';

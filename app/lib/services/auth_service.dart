@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -35,6 +37,17 @@ class AuthService {
     );
     await _db.collection('users').doc(uid).set(user.toCreateMap());
     await _writePublicProfile(uid, displayName);
+    // Best-effort — a failure here shouldn't block account creation.
+    unawaited(credential.user!.sendEmailVerification());
+  }
+
+  bool get isEmailVerified => _auth.currentUser?.emailVerified ?? true;
+
+  Future<void> resendEmailVerification() async {
+    final user = _auth.currentUser;
+    if (user != null && !user.emailVerified) {
+      await user.sendEmailVerification();
+    }
   }
 
   /// Public-facing profile info (display name only — no email) that other

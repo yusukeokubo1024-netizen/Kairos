@@ -103,7 +103,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   decoration: InputDecoration(labelText: l10n.signUpPasswordLabel),
                   validator: (value) {
                     if (value == null || value.isEmpty) return l10n.loginPasswordRequired;
-                    if (value.length < 6) return l10n.signUpPasswordTooShort;
+                    if (value.length < 8) return l10n.signUpPasswordTooShort;
                     return null;
                   },
                 ),

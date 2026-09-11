@@ -37,7 +37,7 @@
   "signUpNameLabel": "表示名",
   "signUpNameRequired": "表示名を入力してください",
   "signUpPasswordLabel": "パスワード（6文字以上）",
-  "signUpPasswordTooShort": "パスワードは6文字以上で設定してください",
+  "signUpPasswordTooShort": "パスワードは8文字以上で設定してください",
   "signUpButton": "登録する",
   "signUpErrorEmailInUse": "このメールアドレスは既に登録されています",
   "signUpErrorGeneric": "登録に失敗しました。しばらくしてから再度お試しください",
@@ -54,6 +54,9 @@
 
   "settingsTitle": "設定",
   "settingsDisplayNameUnset": "(表示名未設定)",
+  "settingsEmailUnverified": "メールアドレスが未確認です",
+  "settingsResendVerification": "再送信",
+  "settingsEmailVerificationSent": "確認メールを再送信しました",
   "settingsEditDisplayName": "表示名を編集",
   "settingsDisplayNameSaved": "表示名を「{name}」に変更しました",
   "@settingsDisplayNameSaved": { "placeholders": { "name": {} } },

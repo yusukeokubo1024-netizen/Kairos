@@ -106,7 +106,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get signUpPasswordLabel => '密码（6位以上）';
 
   @override
-  String get signUpPasswordTooShort => '密码必须至少为6位';
+  String get signUpPasswordTooShort => '密码必须至少为8位';
 
   @override
   String get signUpButton => '创建账号';
@@ -150,6 +150,15 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get settingsDisplayNameUnset => '（未设置显示名称）';
+
+  @override
+  String get settingsEmailUnverified => '邮箱地址尚未验证';
+
+  @override
+  String get settingsResendVerification => '重新发送';
+
+  @override
+  String get settingsEmailVerificationSent => '验证邮件已重新发送';
 
   @override
   String get settingsEditDisplayName => '编辑显示名称';

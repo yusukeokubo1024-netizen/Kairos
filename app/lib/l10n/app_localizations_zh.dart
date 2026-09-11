@@ -88,6 +88,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get loginErrorUserDisabled => '此账号已被禁用';
 
   @override
+  String get loginErrorTooManyRequests => '登录尝试次数过多，请稍后再试';
+
+  @override
   String get loginErrorGeneric => '登录失败，请稍后再试';
 
   @override

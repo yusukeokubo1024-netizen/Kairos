@@ -30,6 +30,7 @@
   "loginErrorWrongCredentials": "이메일 또는 비밀번호가 올바르지 않습니다",
   "loginErrorInvalidEmail": "이메일 주소 형식이 올바르지 않습니다",
   "loginErrorUserDisabled": "이 계정은 사용이 중지되었습니다",
+  "loginErrorTooManyRequests": "로그인 시도 횟수가 너무 많습니다. 잠시 후 다시 시도해 주세요",
   "loginErrorGeneric": "로그인에 실패했습니다. 잠시 후 다시 시도해 주세요",
 
   "signUpTitle": "회원가입",

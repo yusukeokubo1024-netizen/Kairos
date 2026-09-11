@@ -30,6 +30,7 @@
   "loginErrorWrongCredentials": "Incorrect email or password",
   "loginErrorInvalidEmail": "Invalid email address format",
   "loginErrorUserDisabled": "This account has been disabled",
+  "loginErrorTooManyRequests": "Too many login attempts. Please wait a while before trying again",
   "loginErrorGeneric": "Sign-in failed. Please try again later",
 
   "signUpTitle": "Sign up",

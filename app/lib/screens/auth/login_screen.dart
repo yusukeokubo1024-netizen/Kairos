@@ -60,6 +60,8 @@ class _LoginScreenState extends State<LoginScreen> {
         return l10n.loginErrorInvalidEmail;
       case 'user-disabled':
         return l10n.loginErrorUserDisabled;
+      case 'too-many-requests':
+        return l10n.loginErrorTooManyRequests;
       default:
         return l10n.loginErrorGeneric;
     }

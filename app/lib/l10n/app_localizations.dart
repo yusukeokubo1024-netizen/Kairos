@@ -258,6 +258,12 @@ abstract class AppLocalizations {
   /// **'このアカウントは無効化されています'**
   String get loginErrorUserDisabled;
 
+  /// No description provided for @loginErrorTooManyRequests.
+  ///
+  /// In ja, this message translates to:
+  /// **'ログインの試行回数が多すぎます。しばらく時間をおいてから再度お試しください'**
+  String get loginErrorTooManyRequests;
+
   /// No description provided for @loginErrorGeneric.
   ///
   /// In ja, this message translates to:

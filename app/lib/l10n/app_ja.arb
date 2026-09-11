@@ -30,6 +30,7 @@
   "loginErrorWrongCredentials": "メールアドレスまたはパスワードが正しくありません",
   "loginErrorInvalidEmail": "メールアドレスの形式が正しくありません",
   "loginErrorUserDisabled": "このアカウントは無効化されています",
+  "loginErrorTooManyRequests": "ログインの試行回数が多すぎます。しばらく時間をおいてから再度お試しください",
   "loginErrorGeneric": "ログインに失敗しました。しばらくしてから再度お試しください",
 
   "signUpTitle": "新規登録",

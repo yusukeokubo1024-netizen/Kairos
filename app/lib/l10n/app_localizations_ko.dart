@@ -88,6 +88,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get loginErrorUserDisabled => '이 계정은 사용이 중지되었습니다';
 
   @override
+  String get loginErrorTooManyRequests => '로그인 시도 횟수가 너무 많습니다. 잠시 후 다시 시도해 주세요';
+
+  @override
   String get loginErrorGeneric => '로그인에 실패했습니다. 잠시 후 다시 시도해 주세요';
 
   @override

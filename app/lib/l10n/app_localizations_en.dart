@@ -88,6 +88,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loginErrorUserDisabled => 'This account has been disabled';
 
   @override
+  String get loginErrorTooManyRequests =>
+      'Too many login attempts. Please wait a while before trying again';
+
+  @override
   String get loginErrorGeneric => 'Sign-in failed. Please try again later';
 
   @override

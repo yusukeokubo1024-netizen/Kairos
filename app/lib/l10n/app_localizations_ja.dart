@@ -88,6 +88,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get loginErrorUserDisabled => 'このアカウントは無効化されています';
 
   @override
+  String get loginErrorTooManyRequests =>
+      'ログインの試行回数が多すぎます。しばらく時間をおいてから再度お試しください';
+
+  @override
   String get loginErrorGeneric => 'ログインに失敗しました。しばらくしてから再度お試しください';
 
   @override

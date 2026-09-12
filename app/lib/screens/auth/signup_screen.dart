@@ -63,6 +63,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       case 'invalid-email':
         return l10n.loginErrorInvalidEmail;
       case 'weak-password':
+      case 'password-does-not-meet-requirements':
         return l10n.signUpPasswordTooShort;
       default:
         return l10n.signUpErrorGeneric;

@@ -71,14 +71,26 @@ service cloud.firestore {
       allow create: if isAuthenticated() && request.resource.data.ownerId == request.auth.uid &&
         request.auth.uid in request.resource.data.memberIds;
       allow update: if isAuthenticated() && (
-        // オーナーによる編集（オーナー自体の変更は不可）
+        // オーナーによる編集（オーナー自体の変更は不可。メンバー削除＝キックもここに含まれる）
         (resource.data.ownerId == request.auth.uid && request.resource.data.ownerId == resource.data.ownerId) ||
-        // 招待コード（グループID）を知る本人が、自分自身だけをメンバーに追加する（参加）
+        // 招待コード（グループID）を知る本人が、自分自身だけをメンバーに追加する（参加）。
+        // サイズ差分だけのチェックだと「自分を追加しつつ別の誰かを外す」ような
+        // 抜け道が生まれるため、結果の配列が「元の配列＋自分のUID」と完全一致
+        // することまで検証する。
         (
           !(request.auth.uid in resource.data.memberIds) &&
-          request.auth.uid in request.resource.data.memberIds &&
           request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberIds', 'updatedAt']) &&
-          request.resource.data.memberIds.size() == resource.data.memberIds.size() + 1
+          request.resource.data.memberIds == resource.data.memberIds.concat([request.auth.uid])
+        ) ||
+        // メンバー本人が自分自身だけをメンバーから外す（退出。オーナーは退出不可＝グループ削除のみ）。
+        // 同様に、結果の配列が「元の配列から自分のUIDだけを除いたもの」と
+        // 完全一致することまで検証し、他人を巻き添えで外したり別UIDを
+        // 紛れ込ませたりできないようにする。
+        (
+          request.auth.uid != resource.data.ownerId &&
+          request.auth.uid in resource.data.memberIds &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberIds', 'updatedAt']) &&
+          request.resource.data.memberIds == resource.data.memberIds.removeAll([request.auth.uid])
         )
       );
       allow delete: if isAuthenticated() && resource.data.ownerId == request.auth.uid;
@@ -104,6 +116,33 @@ service cloud.firestore {
     }
 
     // ============================================
+    // messageReports コレクション（不適切なメッセージの通報。
+    // 書き込み専用 — アプリからは読み返さない。運営がFirebase Console
+    // から確認する。通報者本人・実際にそのグループのメンバーであること
+    // ・偽造されたタイムスタンプでないことを検証する）
+    // ============================================
+    match /messageReports/{reportId} {
+      // 通報対象のメッセージが実在し、通報内容(送信者・本文)が実物と
+      // 一致していることまで検証する。これがないと、実在するグループ
+      // メンバーが他のメンバーになすりつけた架空の内容で虚偽通報を
+      // 作成できてしまう。
+      function reportMatchesRealMessage(data) {
+        let msg = get(/databases/$(database)/documents/sharedGroups/$(data.groupId)/messages/$(data.messageId)).data;
+        return msg.senderId == data.messageSenderId && msg.text == data.messageText;
+      }
+
+      allow create: if isAuthenticated() &&
+        request.resource.data.reporterId == request.auth.uid &&
+        request.auth.uid in
+          get(/databases/$(database)/documents/sharedGroups/$(request.resource.data.groupId)).data.memberIds &&
+        reportMatchesRealMessage(request.resource.data) &&
+        request.resource.data.createdAt == request.time &&
+        request.resource.data.keys().hasOnly(
+          ['reporterId', 'groupId', 'messageId', 'messageSenderId', 'messageText', 'createdAt']);
+      allow read, update, delete: if false;
+    }
+
+    // ============================================
     // groupInvitePreviews コレクション（招待コードだけを知る非メンバー
     // 向けの、参加前プレビュー専用データ。グループ名と人数だけを持ち、
     // memberIds（実在するUIDの一覧）は一切含まない）
@@ -120,7 +159,10 @@ service cloud.firestore {
           request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name'])) ||
         // 参加時、人数を1人分だけ増やす（それ以外は変更不可）
         (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberCount']) &&
-          request.resource.data.memberCount == resource.data.memberCount + 1)
+          request.resource.data.memberCount == resource.data.memberCount + 1) ||
+        // 退出・キック時、人数を1人分だけ減らす
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberCount']) &&
+          request.resource.data.memberCount == resource.data.memberCount - 1)
       );
       allow delete: if isAuthenticated() && resource.data.ownerId == request.auth.uid;
     }

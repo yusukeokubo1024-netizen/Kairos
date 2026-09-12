@@ -834,6 +834,53 @@ class AppLocalizationsKo extends AppLocalizations {
   String get groupChatStampTooltip => '스티커';
 
   @override
+  String get groupChatReport => '메시지 신고';
+
+  @override
+  String get groupChatReportConfirmTitle => '이 메시지를 신고하시겠습니까?';
+
+  @override
+  String get groupChatReportConfirmBody =>
+      '메시지 내용이 운영팀에 전송됩니다. 부적절한 메시지 신고에 사용해 주세요.';
+
+  @override
+  String get groupChatReported => '신고했습니다';
+
+  @override
+  String get groupChatReportFailed => '신고에 실패했습니다';
+
+  @override
+  String get groupLeaveTooltip => '그룹 나가기';
+
+  @override
+  String get groupLeaveConfirmTitle => '이 그룹에서 나가시겠습니까?';
+
+  @override
+  String get groupLeaveConfirmBody => '나가면 이 그룹의 채팅과 일정을 볼 수 없게 됩니다.';
+
+  @override
+  String get groupLeft => '그룹에서 나갔습니다';
+
+  @override
+  String get groupLeaveFailed => '나가기에 실패했습니다';
+
+  @override
+  String get groupRemoveMemberTooltip => '멤버 삭제';
+
+  @override
+  String get groupRemoveMemberConfirmTitle => '이 멤버를 삭제하시겠습니까?';
+
+  @override
+  String get groupRemoveMemberConfirmBody =>
+      '삭제하면 이 멤버는 그룹의 채팅과 일정을 볼 수 없게 됩니다.';
+
+  @override
+  String get groupMemberRemoved => '멤버를 삭제했습니다';
+
+  @override
+  String get groupRemoveMemberFailed => '삭제에 실패했습니다';
+
+  @override
   String get anniversaryListTitle => '소중한 기념일';
 
   @override

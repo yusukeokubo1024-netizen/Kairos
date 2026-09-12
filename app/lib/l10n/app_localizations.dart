@@ -1638,6 +1638,96 @@ abstract class AppLocalizations {
   /// **'スタンプ'**
   String get groupChatStampTooltip;
 
+  /// No description provided for @groupChatReport.
+  ///
+  /// In ja, this message translates to:
+  /// **'メッセージを報告'**
+  String get groupChatReport;
+
+  /// No description provided for @groupChatReportConfirmTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'このメッセージを報告しますか？'**
+  String get groupChatReportConfirmTitle;
+
+  /// No description provided for @groupChatReportConfirmBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'運営に内容が送信されます。不適切なメッセージの報告にご利用ください。'**
+  String get groupChatReportConfirmBody;
+
+  /// No description provided for @groupChatReported.
+  ///
+  /// In ja, this message translates to:
+  /// **'報告しました'**
+  String get groupChatReported;
+
+  /// No description provided for @groupChatReportFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'報告に失敗しました'**
+  String get groupChatReportFailed;
+
+  /// No description provided for @groupLeaveTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'グループから退出'**
+  String get groupLeaveTooltip;
+
+  /// No description provided for @groupLeaveConfirmTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'このグループから退出しますか？'**
+  String get groupLeaveConfirmTitle;
+
+  /// No description provided for @groupLeaveConfirmBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'退出すると、このグループのトークや予定は見られなくなります。'**
+  String get groupLeaveConfirmBody;
+
+  /// No description provided for @groupLeft.
+  ///
+  /// In ja, this message translates to:
+  /// **'グループから退出しました'**
+  String get groupLeft;
+
+  /// No description provided for @groupLeaveFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'退出に失敗しました'**
+  String get groupLeaveFailed;
+
+  /// No description provided for @groupRemoveMemberTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'メンバーを削除'**
+  String get groupRemoveMemberTooltip;
+
+  /// No description provided for @groupRemoveMemberConfirmTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'このメンバーを削除しますか？'**
+  String get groupRemoveMemberConfirmTitle;
+
+  /// No description provided for @groupRemoveMemberConfirmBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'削除すると、このメンバーはグループのトークや予定が見られなくなります。'**
+  String get groupRemoveMemberConfirmBody;
+
+  /// No description provided for @groupMemberRemoved.
+  ///
+  /// In ja, this message translates to:
+  /// **'メンバーを削除しました'**
+  String get groupMemberRemoved;
+
+  /// No description provided for @groupRemoveMemberFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'削除に失敗しました'**
+  String get groupRemoveMemberFailed;
+
   /// No description provided for @anniversaryListTitle.
   ///
   /// In ja, this message translates to:

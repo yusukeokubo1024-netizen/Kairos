@@ -851,6 +851,54 @@ class AppLocalizationsEn extends AppLocalizations {
   String get groupChatStampTooltip => 'Stamps';
 
   @override
+  String get groupChatReport => 'Report message';
+
+  @override
+  String get groupChatReportConfirmTitle => 'Report this message?';
+
+  @override
+  String get groupChatReportConfirmBody =>
+      'This will send the message content to us for review. Use this to report inappropriate messages.';
+
+  @override
+  String get groupChatReported => 'Reported';
+
+  @override
+  String get groupChatReportFailed => 'Failed to report';
+
+  @override
+  String get groupLeaveTooltip => 'Leave group';
+
+  @override
+  String get groupLeaveConfirmTitle => 'Leave this group?';
+
+  @override
+  String get groupLeaveConfirmBody =>
+      'After leaving, you won\'t be able to see this group\'s chat or schedules.';
+
+  @override
+  String get groupLeft => 'Left the group';
+
+  @override
+  String get groupLeaveFailed => 'Failed to leave the group';
+
+  @override
+  String get groupRemoveMemberTooltip => 'Remove member';
+
+  @override
+  String get groupRemoveMemberConfirmTitle => 'Remove this member?';
+
+  @override
+  String get groupRemoveMemberConfirmBody =>
+      'After removal, this member won\'t be able to see this group\'s chat or schedules.';
+
+  @override
+  String get groupMemberRemoved => 'Member removed';
+
+  @override
+  String get groupRemoveMemberFailed => 'Failed to remove member';
+
+  @override
   String get anniversaryListTitle => 'Important anniversaries';
 
   @override

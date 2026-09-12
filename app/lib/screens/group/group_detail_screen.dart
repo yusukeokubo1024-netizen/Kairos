@@ -69,6 +69,83 @@ class GroupDetailScreen extends StatelessWidget {
     Future.delayed(const Duration(seconds: 5), () => snackBarController?.close());
   }
 
+  Future<void> _decrementPreviewCount() async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('groupInvitePreviews')
+          .doc(group.id)
+          .update({'memberCount': FieldValue.increment(-1)});
+    } catch (_) {
+      // Best-effort — the preview count is only used for display before
+      // joining, so a missed decrement here isn't worth failing the
+      // leave/removal for.
+    }
+  }
+
+  Future<void> _leaveGroup(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.groupLeaveConfirmTitle),
+        content: Text(l10n.groupLeaveConfirmBody),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(l10n.commonCancel)),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: Text(l10n.groupLeaveTooltip)),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+    try {
+      await FirebaseFirestore.instance.collection('sharedGroups').doc(group.id).update({
+        'memberIds': FieldValue.arrayRemove([uid]),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+      await _decrementPreviewCount();
+      if (context.mounted) {
+        Navigator.of(context).pop();
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.groupLeft)));
+      }
+    } catch (_) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.groupLeaveFailed)));
+      }
+    }
+  }
+
+  Future<void> _removeMember(BuildContext context, String memberId) async {
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.groupRemoveMemberConfirmTitle),
+        content: Text(l10n.groupRemoveMemberConfirmBody),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(l10n.commonCancel)),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: Text(l10n.groupRemoveMemberTooltip)),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    try {
+      await FirebaseFirestore.instance.collection('sharedGroups').doc(group.id).update({
+        'memberIds': FieldValue.arrayRemove([memberId]),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+      await _decrementPreviewCount();
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.groupMemberRemoved)));
+      }
+    } catch (_) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.groupRemoveMemberFailed)));
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -78,9 +155,16 @@ class GroupDetailScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(group.name),
-        actions: isOwner
-            ? [IconButton(icon: const Icon(Icons.delete_outline), onPressed: () => _delete(context))]
-            : null,
+        actions: [
+          if (isOwner)
+            IconButton(icon: const Icon(Icons.delete_outline), onPressed: () => _delete(context))
+          else
+            IconButton(
+              icon: const Icon(Icons.exit_to_app),
+              tooltip: l10n.groupLeaveTooltip,
+              onPressed: () => _leaveGroup(context),
+            ),
+        ],
       ),
       body: SafeArea(
         child: ListView(
@@ -99,7 +183,10 @@ class GroupDetailScreen extends StatelessWidget {
             const SizedBox(height: 16),
             Text(l10n.groupDetailMembers, style: const TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
-            ...group.memberIds.map((memberId) => _MemberTile(uid: memberId)),
+            ...group.memberIds.map((memberId) => _MemberTile(
+                  uid: memberId,
+                  onRemove: (isOwner && memberId != uid) ? () => _removeMember(context, memberId) : null,
+                )),
           ],
         ),
       ),
@@ -116,8 +203,9 @@ class GroupDetailScreen extends StatelessWidget {
 
 class _MemberTile extends StatelessWidget {
   final String uid;
+  final VoidCallback? onRemove;
 
-  const _MemberTile({required this.uid});
+  const _MemberTile({required this.uid, this.onRemove});
 
   @override
   Widget build(BuildContext context) {
@@ -129,6 +217,13 @@ class _MemberTile extends StatelessWidget {
         return ListTile(
           leading: const CircleAvatar(child: Icon(Icons.person_outline)),
           title: Text(name?.isNotEmpty == true ? name! : l10n.scheduleFormLoadingName),
+          trailing: onRemove == null
+              ? null
+              : IconButton(
+                  icon: const Icon(Icons.person_remove_outlined),
+                  tooltip: l10n.groupRemoveMemberTooltip,
+                  onPressed: onRemove,
+                ),
         );
       },
     );

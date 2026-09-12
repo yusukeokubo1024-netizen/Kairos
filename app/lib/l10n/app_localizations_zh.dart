@@ -822,6 +822,51 @@ class AppLocalizationsZh extends AppLocalizations {
   String get groupChatStampTooltip => '贴图';
 
   @override
+  String get groupChatReport => '举报消息';
+
+  @override
+  String get groupChatReportConfirmTitle => '要举报这条消息吗？';
+
+  @override
+  String get groupChatReportConfirmBody => '消息内容将发送给我们审核。请用于举报不当消息。';
+
+  @override
+  String get groupChatReported => '已举报';
+
+  @override
+  String get groupChatReportFailed => '举报失败';
+
+  @override
+  String get groupLeaveTooltip => '退出群组';
+
+  @override
+  String get groupLeaveConfirmTitle => '要退出该群组吗？';
+
+  @override
+  String get groupLeaveConfirmBody => '退出后将无法查看该群组的聊天记录和日程。';
+
+  @override
+  String get groupLeft => '已退出群组';
+
+  @override
+  String get groupLeaveFailed => '退出失败';
+
+  @override
+  String get groupRemoveMemberTooltip => '移除成员';
+
+  @override
+  String get groupRemoveMemberConfirmTitle => '要移除该成员吗？';
+
+  @override
+  String get groupRemoveMemberConfirmBody => '移除后该成员将无法查看该群组的聊天记录和日程。';
+
+  @override
+  String get groupMemberRemoved => '已移除成员';
+
+  @override
+  String get groupRemoveMemberFailed => '移除失败';
+
+  @override
   String get anniversaryListTitle => '重要纪念日';
 
   @override

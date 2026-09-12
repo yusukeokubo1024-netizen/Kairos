@@ -72,6 +72,40 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     }
   }
 
+  Future<void> _reportMessage(ChatMessage message) async {
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.groupChatReportConfirmTitle),
+        content: Text(l10n.groupChatReportConfirmBody),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(l10n.commonCancel)),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: Text(l10n.groupChatReport)),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    try {
+      await FirebaseFirestore.instance.collection('messageReports').add({
+        'reporterId': FirebaseAuth.instance.currentUser!.uid,
+        'groupId': widget.group.id,
+        'messageId': message.id,
+        'messageSenderId': message.senderId,
+        'messageText': message.text,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.groupChatReported)));
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.groupChatReportFailed)));
+      }
+    }
+  }
+
   Future<void> _toggleReaction(ChatMessage message, String emoji) async {
     final uid = FirebaseAuth.instance.currentUser!.uid;
     final alreadyReacted = message.reactions[emoji]?.contains(uid) ?? false;
@@ -87,26 +121,46 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
   }
 
   void _openReactionPicker(ChatMessage message) {
+    final l10n = AppLocalizations.of(context)!;
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+    final isMine = message.senderId == uid;
     showModalBottomSheet<void>(
       context: context,
       builder: (context) => SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16),
-          child: Wrap(
-            spacing: 12,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              for (final emoji in _quickReactions)
-                InkWell(
+              Wrap(
+                spacing: 12,
+                children: [
+                  for (final emoji in _quickReactions)
+                    InkWell(
+                      onTap: () {
+                        Navigator.of(context).pop();
+                        _toggleReaction(message, emoji);
+                      },
+                      borderRadius: BorderRadius.circular(24),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: Text(emoji, style: const TextStyle(fontSize: 28)),
+                      ),
+                    ),
+                ],
+              ),
+              if (!isMine) ...[
+                const Divider(),
+                ListTile(
+                  leading: const Icon(Icons.flag_outlined),
+                  title: Text(l10n.groupChatReport),
                   onTap: () {
                     Navigator.of(context).pop();
-                    _toggleReaction(message, emoji);
+                    _reportMessage(message);
                   },
-                  borderRadius: BorderRadius.circular(24),
-                  child: Padding(
-                    padding: const EdgeInsets.all(8),
-                    child: Text(emoji, style: const TextStyle(fontSize: 28)),
-                  ),
                 ),
+              ],
             ],
           ),
         ),

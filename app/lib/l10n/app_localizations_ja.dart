@@ -830,6 +830,52 @@ class AppLocalizationsJa extends AppLocalizations {
   String get groupChatStampTooltip => 'スタンプ';
 
   @override
+  String get groupChatReport => 'メッセージを報告';
+
+  @override
+  String get groupChatReportConfirmTitle => 'このメッセージを報告しますか？';
+
+  @override
+  String get groupChatReportConfirmBody => '運営に内容が送信されます。不適切なメッセージの報告にご利用ください。';
+
+  @override
+  String get groupChatReported => '報告しました';
+
+  @override
+  String get groupChatReportFailed => '報告に失敗しました';
+
+  @override
+  String get groupLeaveTooltip => 'グループから退出';
+
+  @override
+  String get groupLeaveConfirmTitle => 'このグループから退出しますか？';
+
+  @override
+  String get groupLeaveConfirmBody => '退出すると、このグループのトークや予定は見られなくなります。';
+
+  @override
+  String get groupLeft => 'グループから退出しました';
+
+  @override
+  String get groupLeaveFailed => '退出に失敗しました';
+
+  @override
+  String get groupRemoveMemberTooltip => 'メンバーを削除';
+
+  @override
+  String get groupRemoveMemberConfirmTitle => 'このメンバーを削除しますか？';
+
+  @override
+  String get groupRemoveMemberConfirmBody =>
+      '削除すると、このメンバーはグループのトークや予定が見られなくなります。';
+
+  @override
+  String get groupMemberRemoved => 'メンバーを削除しました';
+
+  @override
+  String get groupRemoveMemberFailed => '削除に失敗しました';
+
+  @override
   String get anniversaryListTitle => '大切な記念日';
 
   @override

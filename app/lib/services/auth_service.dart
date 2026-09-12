@@ -140,6 +140,23 @@ class AuthService {
     batch.delete(_db.collection('publicProfiles').doc(uid));
 
     await batch.commit();
+
+    // Trash snapshots are the user's actual deleted content (not just
+    // operational metadata like auditLogs), so they must go too — otherwise
+    // it silently outlives account deletion with no way to ever purge it,
+    // since _purgeExpired only runs from a client the now-deleted user no
+    // longer has. Deleted in its own batch(es), chunked well under
+    // Firestore's 500-write-per-batch limit in case of a large trash.
+    final ownedTrash = await _db.collection('trash').where('ownerId', isEqualTo: uid).get();
+    const chunkSize = 400;
+    for (var i = 0; i < ownedTrash.docs.length; i += chunkSize) {
+      final trashBatch = _db.batch();
+      for (final doc in ownedTrash.docs.skip(i).take(chunkSize)) {
+        trashBatch.delete(doc.reference);
+      }
+      await trashBatch.commit();
+    }
+
     await user.delete();
   }
 }

@@ -41,6 +41,14 @@ class _GroupFormScreenState extends State<GroupFormScreen> {
 
     try {
       final ref = await FirebaseFirestore.instance.collection('sharedGroups').add(group.toCreateMap());
+      // Minimal, non-sensitive preview doc so non-members with only the
+      // invite code can see the group's name/size without ever being able
+      // to read the real memberIds list (see firestore.rules).
+      await FirebaseFirestore.instance.collection('groupInvitePreviews').doc(ref.id).set({
+        'name': group.name,
+        'memberCount': group.memberIds.length,
+        'ownerId': uid,
+      });
       unawaited(AnalyticsService.instance.logGroupCreated());
       unawaited(AuditService.instance.logCreate(collection: 'sharedGroups', targetId: ref.id));
       if (mounted) Navigator.of(context).pop();

@@ -128,6 +128,7 @@ class AuthService {
         await _db.collection('sharedGroups').where('ownerId', isEqualTo: uid).get();
     for (final doc in ownedGroups.docs) {
       batch.delete(doc.reference);
+      batch.delete(_db.collection('groupInvitePreviews').doc(doc.id));
     }
 
     final ownedAnniversaries =

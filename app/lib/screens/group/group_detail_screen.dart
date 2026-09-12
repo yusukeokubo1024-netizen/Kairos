@@ -44,6 +44,7 @@ class GroupDetailScreen extends StatelessWidget {
       targetId: group.id,
       data: group.toCreateMap(),
     );
+    await FirebaseFirestore.instance.collection('groupInvitePreviews').doc(group.id).delete();
     if (context.mounted) Navigator.of(context).pop();
 
     rootScaffoldMessengerKey.currentState?.clearSnackBars();

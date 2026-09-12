@@ -64,10 +64,10 @@ service cloud.firestore {
     // sharedGroups コレクション（共有グループ）
     // ============================================
     match /sharedGroups/{groupId} {
-      // グループID（招待コードとして共有）を知っていれば単体取得で参加前プレビューができる。
-      // 一覧取得（クエリ）は自分がメンバーのグループのみ。
-      allow get: if isAuthenticated();
-      allow list: if isAuthenticated() && request.auth.uid in resource.data.memberIds;
+      // フルドキュメント（memberIds＝実在するUIDの一覧を含む）は、
+      // 実際のメンバーだけが読める。招待コードだけを知る非メンバーへの
+      // プレビューは、下の groupInvitePreviews（名前と人数だけ）で行う。
+      allow get, list: if isAuthenticated() && request.auth.uid in resource.data.memberIds;
       allow create: if isAuthenticated() && request.resource.data.ownerId == request.auth.uid &&
         request.auth.uid in request.resource.data.memberIds;
       allow update: if isAuthenticated() && (
@@ -101,6 +101,28 @@ service cloud.firestore {
           request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reactions']);
         allow delete: if isAuthenticated() && resource.data.senderId == request.auth.uid;
       }
+    }
+
+    // ============================================
+    // groupInvitePreviews コレクション（招待コードだけを知る非メンバー
+    // 向けの、参加前プレビュー専用データ。グループ名と人数だけを持ち、
+    // memberIds（実在するUIDの一覧）は一切含まない）
+    // ============================================
+    match /groupInvitePreviews/{groupId} {
+      allow get: if isAuthenticated();
+      allow list: if false;
+      allow create: if isAuthenticated() &&
+        request.resource.data.ownerId == request.auth.uid &&
+        request.resource.data.keys().hasOnly(['name', 'memberCount', 'ownerId']);
+      allow update: if isAuthenticated() && (
+        // オーナーによる名前変更（オーナー自体の変更は不可）
+        (resource.data.ownerId == request.auth.uid &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name'])) ||
+        // 参加時、人数を1人分だけ増やす（それ以外は変更不可）
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberCount']) &&
+          request.resource.data.memberCount == resource.data.memberCount + 1)
+      );
+      allow delete: if isAuthenticated() && resource.data.ownerId == request.auth.uid;
     }
 
     // ============================================

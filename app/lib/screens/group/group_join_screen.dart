@@ -3,10 +3,14 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../../l10n/app_localizations.dart';
-import '../../models/shared_group.dart';
 
 /// Lets a user join a group by entering its invite code (the group's
 /// Firestore document ID). See docs/group-invite-flow.md for the design.
+///
+/// The pre-join preview reads from `groupInvitePreviews` (name + member
+/// count only) rather than the group's own document — `sharedGroups` is
+/// members-only to read, precisely so someone who only has the invite code
+/// can't see the real member list before deciding to join.
 class GroupJoinScreen extends StatefulWidget {
   const GroupJoinScreen({super.key});
 
@@ -19,7 +23,7 @@ class _GroupJoinScreenState extends State<GroupJoinScreen> {
   bool _isLoading = false;
   bool _isJoining = false;
   String? _errorMessage;
-  SharedGroup? _preview;
+  ({String id, String name, int memberCount})? _preview;
 
   @override
   void dispose() {
@@ -39,12 +43,18 @@ class _GroupJoinScreenState extends State<GroupJoinScreen> {
     });
 
     try {
-      final doc = await FirebaseFirestore.instance.collection('sharedGroups').doc(code).get();
+      final doc =
+          await FirebaseFirestore.instance.collection('groupInvitePreviews').doc(code).get();
       if (!doc.exists) {
         setState(() => _errorMessage = l10n.groupJoinNotFound);
         return;
       }
-      setState(() => _preview = SharedGroup.fromFirestore(doc));
+      final data = doc.data()!;
+      setState(() => _preview = (
+            id: doc.id,
+            name: data['name'] as String? ?? '',
+            memberCount: data['memberCount'] as int? ?? 0,
+          ));
     } catch (_) {
       setState(() => _errorMessage = l10n.groupJoinNotFound);
     } finally {
@@ -53,10 +63,11 @@ class _GroupJoinScreenState extends State<GroupJoinScreen> {
   }
 
   Future<void> _join() async {
-    final group = _preview;
-    if (group == null) return;
+    final preview = _preview;
+    if (preview == null) return;
     final l10n = AppLocalizations.of(context)!;
     final uid = FirebaseAuth.instance.currentUser!.uid;
+    final groupRef = FirebaseFirestore.instance.collection('sharedGroups').doc(preview.id);
 
     setState(() {
       _isJoining = true;
@@ -64,10 +75,28 @@ class _GroupJoinScreenState extends State<GroupJoinScreen> {
     });
 
     try {
-      await FirebaseFirestore.instance.collection('sharedGroups').doc(group.id).update({
-        'memberIds': FieldValue.arrayUnion([uid]),
-        'updatedAt': FieldValue.serverTimestamp(),
-      });
+      // `get` on sharedGroups only succeeds for existing members, so a
+      // successful read here (with our uid already present) means we're
+      // already in the group — a permission-denied means we aren't, which
+      // is the expected/normal case for a new joiner.
+      var alreadyMember = false;
+      try {
+        final existing = await groupRef.get();
+        alreadyMember = (existing.data()?['memberIds'] as List?)?.contains(uid) ?? false;
+      } catch (_) {
+        alreadyMember = false;
+      }
+
+      if (!alreadyMember) {
+        await groupRef.update({
+          'memberIds': FieldValue.arrayUnion([uid]),
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+        await FirebaseFirestore.instance
+            .collection('groupInvitePreviews')
+            .doc(preview.id)
+            .update({'memberCount': FieldValue.increment(1)});
+      }
       if (mounted) Navigator.of(context).pop();
     } catch (_) {
       setState(() => _errorMessage = l10n.groupJoinFailed);
@@ -79,9 +108,7 @@ class _GroupJoinScreenState extends State<GroupJoinScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final uid = FirebaseAuth.instance.currentUser!.uid;
     final preview = _preview;
-    final alreadyMember = preview != null && preview.memberIds.contains(uid);
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.groupJoinTitle)),
@@ -118,23 +145,20 @@ class _GroupJoinScreenState extends State<GroupJoinScreen> {
                   child: ListTile(
                     leading: const Icon(Icons.groups_outlined),
                     title: Text(preview.name),
-                    subtitle: Text(l10n.groupJoinMembers(preview.memberIds.length)),
+                    subtitle: Text(l10n.groupJoinMembers(preview.memberCount)),
                   ),
                 ),
                 const SizedBox(height: 16),
-                if (alreadyMember)
-                  Text(l10n.groupJoinAlreadyMember)
-                else
-                  FilledButton(
-                    onPressed: _isJoining ? null : _join,
-                    child: _isJoining
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : Text(l10n.groupJoinButton),
-                  ),
+                FilledButton(
+                  onPressed: _isJoining ? null : _join,
+                  child: _isJoining
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : Text(l10n.groupJoinButton),
+                ),
               ],
             ],
           ),

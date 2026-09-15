@@ -35,9 +35,9 @@ calendar/groups.
 
 Demo account for review:
 - Email: kairos.screenshot@kairos-3d873.firebaseapp.com
-- Password: [see secrets/screenshot_account_password.txt locally — not committed
-  to git; paste the real value here only in the copy submitted to Apple, never
-  in this tracked file]
+- Password: (see secrets/screenshot_account_password.txt — deliberately not
+  written in this git-tracked file; when copying this text to submit to
+  Apple, replace this whole line with "Password: <the actual value>")
 
 This account is pre-populated with sample schedules, tasks, an anniversary,
 and a sample group, so the reviewer can see populated screens immediately
@@ -46,7 +46,7 @@ configuration, region, or device setting is required.
 
 **3. Screen recording**
 
-[SCREEN RECORDING LINK]
+https://drive.google.com/file/d/1_vS4uLQENuFynG6eysBQHNFtgfBtSNGn/view?usp=drivesdk
 
 The recording shows, on a physical device, the complete flow requested:
 account registration, login, the core calendar/task/group features, the
@@ -105,6 +105,6 @@ the simulator), one continuous take if possible, showing in order:
    the login screen.
 
 Keep it under ~3–5 minutes, upload it (YouTube unlisted, Google Drive with
-link sharing on, or Apple's own attachment option in the Resolution Center),
-and drop the link into the `[SCREEN RECORDING LINK]` placeholder above before
-submitting.
+link sharing on, or Apple's own attachment option in the Resolution Center).
+The recording link is already filled in under item 3 above (confirm sharing
+is set to "anyone with the link" before submitting).

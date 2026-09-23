@@ -218,7 +218,12 @@ class WeatherService {
       'longitude': '$lon',
       'daily':
           'weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_max',
-      'timezone': 'Asia/Tokyo',
+      // Must match the queried location's own timezone, not be hardcoded —
+      // Open-Meteo uses this to decide each "daily" entry's date boundaries,
+      // so a mismatched timezone shifts which calendar day gets labeled
+      // "today" and can show the wrong day's weather. 'auto' resolves the
+      // correct IANA timezone from lat/lon.
+      'timezone': 'auto',
     });
     final response = await http.get(uri);
     if (response.statusCode != 200) return _cachedForecast ?? [];

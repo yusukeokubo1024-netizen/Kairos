@@ -781,10 +781,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get groupJoinAlreadyMember => '您已经是该群组的成员';
 
   @override
-  String get groupJoinButton => '加入该群组';
+  String get groupJoinButton => '申请加入';
 
   @override
   String get groupJoinFailed => '加入失败，请稍后再试';
+
+  @override
+  String get groupJoinRequestSent => '已发送加入申请，请等待管理员批准';
+
+  @override
+  String get groupJoinAlreadyRequested => '您已经申请加入';
 
   @override
   String get groupDetailInviteCode => '邀请码';
@@ -797,6 +803,27 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get groupDetailChat => '聊天';
+
+  @override
+  String get groupDetailJoinRequests => '加入申请';
+
+  @override
+  String get groupJoinRequestApprove => '批准';
+
+  @override
+  String get groupJoinRequestReject => '拒绝';
+
+  @override
+  String get groupJoinRequestApproved => '已批准';
+
+  @override
+  String get groupJoinRequestRejected => '已拒绝';
+
+  @override
+  String get groupJoinRequestApproveFailed => '批准失败';
+
+  @override
+  String get groupJoinRequestRejectFailed => '拒绝失败';
 
   @override
   String get groupDeleteConfirmTitle => '确定要删除该群组吗？';

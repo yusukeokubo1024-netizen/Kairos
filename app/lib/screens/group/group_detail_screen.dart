@@ -115,6 +115,53 @@ class GroupDetailScreen extends StatelessWidget {
     }
   }
 
+  Future<void> _approveRequest(BuildContext context, String requesterId) async {
+    final l10n = AppLocalizations.of(context)!;
+    final db = FirebaseFirestore.instance;
+    try {
+      final batch = db.batch();
+      batch.update(db.collection('sharedGroups').doc(group.id), {
+        'memberIds': FieldValue.arrayUnion([requesterId]),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+      batch.delete(
+        db.collection('sharedGroups').doc(group.id).collection('joinRequests').doc(requesterId),
+      );
+      batch.update(db.collection('groupInvitePreviews').doc(group.id), {
+        'memberCount': FieldValue.increment(1),
+      });
+      await batch.commit();
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.groupJoinRequestApproved)));
+      }
+    } catch (_) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(l10n.groupJoinRequestApproveFailed)));
+      }
+    }
+  }
+
+  Future<void> _rejectRequest(BuildContext context, String requesterId) async {
+    final l10n = AppLocalizations.of(context)!;
+    try {
+      await FirebaseFirestore.instance
+          .collection('sharedGroups')
+          .doc(group.id)
+          .collection('joinRequests')
+          .doc(requesterId)
+          .delete();
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.groupJoinRequestRejected)));
+      }
+    } catch (_) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(l10n.groupJoinRequestRejectFailed)));
+      }
+    }
+  }
+
   Future<void> _removeMember(BuildContext context, String memberId) async {
     final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
@@ -180,6 +227,33 @@ class GroupDetailScreen extends StatelessWidget {
                 ),
               ),
             ),
+            if (isOwner) ...[
+              const SizedBox(height: 16),
+              StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+                stream: FirebaseFirestore.instance
+                    .collection('sharedGroups')
+                    .doc(group.id)
+                    .collection('joinRequests')
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  final requests = snapshot.data?.docs ?? [];
+                  if (requests.isEmpty) return const SizedBox.shrink();
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(l10n.groupDetailJoinRequests,
+                          style: const TextStyle(fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 8),
+                      ...requests.map((doc) => _JoinRequestTile(
+                            uid: doc.data()['requesterId'] as String? ?? doc.id,
+                            onApprove: () => _approveRequest(context, doc.id),
+                            onReject: () => _rejectRequest(context, doc.id),
+                          )),
+                    ],
+                  );
+                },
+              ),
+            ],
             const SizedBox(height: 16),
             Text(l10n.groupDetailMembers, style: const TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
@@ -197,6 +271,44 @@ class GroupDetailScreen extends StatelessWidget {
         icon: const Icon(Icons.chat_bubble_outline),
         label: Text(l10n.groupDetailChat),
       ),
+    );
+  }
+}
+
+class _JoinRequestTile extends StatelessWidget {
+  final String uid;
+  final VoidCallback onApprove;
+  final VoidCallback onReject;
+
+  const _JoinRequestTile({required this.uid, required this.onApprove, required this.onReject});
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+      future: FirebaseFirestore.instance.collection('publicProfiles').doc(uid).get(),
+      builder: (context, snapshot) {
+        final l10n = AppLocalizations.of(context)!;
+        final name = snapshot.data?.data()?['displayName'] as String?;
+        return ListTile(
+          leading: const CircleAvatar(child: Icon(Icons.person_outline)),
+          title: Text(name?.isNotEmpty == true ? name! : l10n.scheduleFormLoadingName),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.check_circle_outline),
+                tooltip: l10n.groupJoinRequestApprove,
+                onPressed: onApprove,
+              ),
+              IconButton(
+                icon: const Icon(Icons.cancel_outlined),
+                tooltip: l10n.groupJoinRequestReject,
+                onPressed: onReject,
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

@@ -809,10 +809,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get groupJoinAlreadyMember => 'You\'re already a member of this group';
 
   @override
-  String get groupJoinButton => 'Join this group';
+  String get groupJoinButton => 'Request to join';
 
   @override
   String get groupJoinFailed => 'Failed to join. Please try again later';
+
+  @override
+  String get groupJoinRequestSent =>
+      'Join request sent. Waiting for the owner\'s approval';
+
+  @override
+  String get groupJoinAlreadyRequested => 'You\'ve already requested to join';
 
   @override
   String get groupDetailInviteCode => 'Invite code';
@@ -825,6 +832,27 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get groupDetailChat => 'Chat';
+
+  @override
+  String get groupDetailJoinRequests => 'Join requests';
+
+  @override
+  String get groupJoinRequestApprove => 'Approve';
+
+  @override
+  String get groupJoinRequestReject => 'Decline';
+
+  @override
+  String get groupJoinRequestApproved => 'Approved';
+
+  @override
+  String get groupJoinRequestRejected => 'Declined';
+
+  @override
+  String get groupJoinRequestApproveFailed => 'Failed to approve';
+
+  @override
+  String get groupJoinRequestRejectFailed => 'Failed to decline';
 
   @override
   String get groupDeleteConfirmTitle => 'Delete this group?';

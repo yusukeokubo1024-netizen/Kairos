@@ -789,10 +789,16 @@ class AppLocalizationsJa extends AppLocalizations {
   String get groupJoinAlreadyMember => 'すでにこのグループのメンバーです';
 
   @override
-  String get groupJoinButton => 'このグループに参加する';
+  String get groupJoinButton => '参加をリクエストする';
 
   @override
   String get groupJoinFailed => '参加に失敗しました。時間をおいて再度お試しください';
+
+  @override
+  String get groupJoinRequestSent => '参加リクエストを送りました。オーナーの承認をお待ちください';
+
+  @override
+  String get groupJoinAlreadyRequested => 'すでに参加リクエストを送っています';
 
   @override
   String get groupDetailInviteCode => '招待コード';
@@ -805,6 +811,27 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get groupDetailChat => 'トーク';
+
+  @override
+  String get groupDetailJoinRequests => '参加リクエスト';
+
+  @override
+  String get groupJoinRequestApprove => '承認';
+
+  @override
+  String get groupJoinRequestReject => '却下';
+
+  @override
+  String get groupJoinRequestApproved => '承認しました';
+
+  @override
+  String get groupJoinRequestRejected => '却下しました';
+
+  @override
+  String get groupJoinRequestApproveFailed => '承認に失敗しました';
+
+  @override
+  String get groupJoinRequestRejectFailed => '却下に失敗しました';
 
   @override
   String get groupDeleteConfirmTitle => 'グループを削除しますか？';

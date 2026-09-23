@@ -1563,7 +1563,7 @@ abstract class AppLocalizations {
   /// No description provided for @groupJoinButton.
   ///
   /// In ja, this message translates to:
-  /// **'このグループに参加する'**
+  /// **'参加をリクエストする'**
   String get groupJoinButton;
 
   /// No description provided for @groupJoinFailed.
@@ -1571,6 +1571,18 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'参加に失敗しました。時間をおいて再度お試しください'**
   String get groupJoinFailed;
+
+  /// No description provided for @groupJoinRequestSent.
+  ///
+  /// In ja, this message translates to:
+  /// **'参加リクエストを送りました。オーナーの承認をお待ちください'**
+  String get groupJoinRequestSent;
+
+  /// No description provided for @groupJoinAlreadyRequested.
+  ///
+  /// In ja, this message translates to:
+  /// **'すでに参加リクエストを送っています'**
+  String get groupJoinAlreadyRequested;
 
   /// No description provided for @groupDetailInviteCode.
   ///
@@ -1595,6 +1607,48 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'トーク'**
   String get groupDetailChat;
+
+  /// No description provided for @groupDetailJoinRequests.
+  ///
+  /// In ja, this message translates to:
+  /// **'参加リクエスト'**
+  String get groupDetailJoinRequests;
+
+  /// No description provided for @groupJoinRequestApprove.
+  ///
+  /// In ja, this message translates to:
+  /// **'承認'**
+  String get groupJoinRequestApprove;
+
+  /// No description provided for @groupJoinRequestReject.
+  ///
+  /// In ja, this message translates to:
+  /// **'却下'**
+  String get groupJoinRequestReject;
+
+  /// No description provided for @groupJoinRequestApproved.
+  ///
+  /// In ja, this message translates to:
+  /// **'承認しました'**
+  String get groupJoinRequestApproved;
+
+  /// No description provided for @groupJoinRequestRejected.
+  ///
+  /// In ja, this message translates to:
+  /// **'却下しました'**
+  String get groupJoinRequestRejected;
+
+  /// No description provided for @groupJoinRequestApproveFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'承認に失敗しました'**
+  String get groupJoinRequestApproveFailed;
+
+  /// No description provided for @groupJoinRequestRejectFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'却下に失敗しました'**
+  String get groupJoinRequestRejectFailed;
 
   /// No description provided for @groupDeleteConfirmTitle.
   ///

@@ -793,10 +793,16 @@ class AppLocalizationsKo extends AppLocalizations {
   String get groupJoinAlreadyMember => '이미 이 그룹의 멤버입니다';
 
   @override
-  String get groupJoinButton => '이 그룹에 참여하기';
+  String get groupJoinButton => '참여 요청하기';
 
   @override
   String get groupJoinFailed => '참여에 실패했습니다. 잠시 후 다시 시도해 주세요';
+
+  @override
+  String get groupJoinRequestSent => '참여 요청을 보냈습니다. 오너의 승인을 기다려 주세요';
+
+  @override
+  String get groupJoinAlreadyRequested => '이미 참여 요청을 보냈습니다';
 
   @override
   String get groupDetailInviteCode => '초대 코드';
@@ -809,6 +815,27 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get groupDetailChat => '대화';
+
+  @override
+  String get groupDetailJoinRequests => '참여 요청';
+
+  @override
+  String get groupJoinRequestApprove => '승인';
+
+  @override
+  String get groupJoinRequestReject => '거절';
+
+  @override
+  String get groupJoinRequestApproved => '승인했습니다';
+
+  @override
+  String get groupJoinRequestRejected => '거절했습니다';
+
+  @override
+  String get groupJoinRequestApproveFailed => '승인에 실패했습니다';
+
+  @override
+  String get groupJoinRequestRejectFailed => '거절에 실패했습니다';
 
   @override
   String get groupDeleteConfirmTitle => '그룹을 삭제하시겠습니까?';

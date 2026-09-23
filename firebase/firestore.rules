@@ -113,6 +113,36 @@ service cloud.firestore {
           request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reactions']);
         allow delete: if isAuthenticated() && resource.data.senderId == request.auth.uid;
       }
+
+      // ============================================
+      // joinRequests サブコレクション（招待コードで参加を希望した人の
+      // 「参加リクエスト」。ドキュメントIDは申請者自身のUID固定にして
+      // 二重申請を防ぐ。即時参加はせず、オーナーが承認して初めて
+      // memberIds に追加される）
+      // ============================================
+      match /joinRequests/{requesterId} {
+        function isGroupOwner() {
+          return get(/databases/$(database)/documents/sharedGroups/$(groupId)).data.ownerId == request.auth.uid;
+        }
+        function isAlreadyMember() {
+          return request.auth.uid in
+            get(/databases/$(database)/documents/sharedGroups/$(groupId)).data.memberIds;
+        }
+
+        allow create: if isAuthenticated() &&
+          requesterId == request.auth.uid &&
+          request.resource.data.requesterId == request.auth.uid &&
+          request.resource.data.groupId == groupId &&
+          !isAlreadyMember() &&
+          request.resource.data.requestedAt == request.time &&
+          request.resource.data.keys().hasOnly(['requesterId', 'groupId', 'requestedAt']);
+        allow get: if isAuthenticated() &&
+          (resource.data.requesterId == request.auth.uid || isGroupOwner());
+        allow list: if isAuthenticated() && isGroupOwner();
+        allow delete: if isAuthenticated() &&
+          (resource.data.requesterId == request.auth.uid || isGroupOwner());
+        allow update: if false;
+      }
     }
 
     // ============================================

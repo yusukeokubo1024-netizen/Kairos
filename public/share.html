@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="description" content="Kairos の共有カレンダーです。">
+    <title>Kairos | 共有カレンダー</title>
+    <link rel="stylesheet" href="/styles.css">
+    <style>
+      .day-group {
+        margin-top: 28px;
+      }
+      .day-heading {
+        font-weight: 700;
+        color: #123c3a;
+        font-size: 15px;
+        margin: 0 0 8px;
+      }
+      .event-row {
+        background: #fff;
+        border: 1px solid #d6d7cf;
+        border-radius: 10px;
+        padding: 12px 16px;
+        margin-top: 8px;
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        align-items: baseline;
+      }
+      .event-title {
+        font-weight: 600;
+      }
+      .event-time {
+        color: #52606d;
+        font-size: 14px;
+        white-space: nowrap;
+      }
+      #status {
+        color: #52606d;
+      }
+      #owner-name {
+        margin-top: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <p>Kairos</p>
+      <h1 id="owner-name">共有カレンダー</h1>
+    </header>
+    <main>
+      <p id="status">読み込み中…</p>
+      <div id="events"></div>
+    </main>
+    <footer>© Kairos — このページはリンクを知っている人だけが閲覧できます</footer>
+
+    <script type="module">
+      import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
+      import {
+        getFirestore, doc, getDoc, collection, getDocs, query, orderBy,
+      } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
+
+      const firebaseConfig = {
+        apiKey: 'AIzaSyC00-G7AsrH67Ld3gVSTbG1PvSV-Jg7rDI',
+        appId: '1:889968355663:web:4366196f3e35b48569fd3a',
+        messagingSenderId: '889968355663',
+        projectId: 'kairos-3d873',
+        authDomain: 'kairos-3d873.firebaseapp.com',
+        storageBucket: 'kairos-3d873.firebasestorage.app',
+      };
+
+      const app = initializeApp(firebaseConfig);
+      const db = getFirestore(app);
+
+      const statusEl = document.getElementById('status');
+      const ownerNameEl = document.getElementById('owner-name');
+      const eventsEl = document.getElementById('events');
+
+      const token = new URLSearchParams(location.search).get('token');
+
+      function formatDayHeading(date) {
+        return date.toLocaleDateString('ja-JP', { month: 'long', day: 'numeric', weekday: 'short' });
+      }
+
+      function formatTimeRange(start, end) {
+        const fmt = (d) => d.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
+        return `${fmt(start)} - ${fmt(end)}`;
+      }
+
+      async function main() {
+        if (!token) {
+          statusEl.textContent = 'リンクが正しくありません。共有した本人にもう一度リンクを送ってもらってください。';
+          return;
+        }
+
+        let shareSnap;
+        try {
+          shareSnap = await getDoc(doc(db, 'calendarShares', token));
+        } catch (e) {
+          statusEl.textContent = '読み込みに失敗しました。時間をおいて再度お試しください。';
+          return;
+        }
+
+        if (!shareSnap.exists()) {
+          statusEl.textContent = 'このリンクは無効になっています（共有が解除された可能性があります）。';
+          return;
+        }
+
+        const ownerName = shareSnap.data().ownerName;
+        ownerNameEl.textContent = ownerName ? `${ownerName} さんのカレンダー` : '共有カレンダー';
+
+        const schedulesSnap = await getDocs(
+          query(collection(db, 'calendarShares', token, 'schedules'), orderBy('startTime')),
+        );
+
+        if (schedulesSnap.empty) {
+          statusEl.textContent = '今のところ予定はありません。';
+          return;
+        }
+
+        statusEl.remove();
+
+        const now = new Date();
+        const byDay = new Map();
+        schedulesSnap.forEach((docSnap) => {
+          const data = docSnap.data();
+          const start = data.startTime.toDate();
+          const end = data.endTime.toDate();
+          // Only show today onward — this is a live "what's coming up" view,
+          // not a full history of every past schedule ever mirrored.
+          if (end < new Date(now.getFullYear(), now.getMonth(), now.getDate())) return;
+          const dayKey = `${start.getFullYear()}-${start.getMonth()}-${start.getDate()}`;
+          if (!byDay.has(dayKey)) byDay.set(dayKey, { date: start, items: [] });
+          byDay.get(dayKey).items.push({ title: data.title, start, end });
+        });
+
+        if (byDay.size === 0) {
+          const p = document.createElement('p');
+          p.id = 'status';
+          p.textContent = '今のところ予定はありません。';
+          eventsEl.before(p);
+          return;
+        }
+
+        for (const { date, items } of byDay.values()) {
+          const group = document.createElement('div');
+          group.className = 'day-group';
+
+          const heading = document.createElement('p');
+          heading.className = 'day-heading';
+          heading.textContent = formatDayHeading(date);
+          group.appendChild(heading);
+
+          for (const item of items) {
+            const row = document.createElement('div');
+            row.className = 'event-row';
+            const title = document.createElement('span');
+            title.className = 'event-title';
+            title.textContent = item.title;
+            const time = document.createElement('span');
+            time.className = 'event-time';
+            time.textContent = formatTimeRange(item.start, item.end);
+            row.appendChild(title);
+            row.appendChild(time);
+            group.appendChild(row);
+          }
+
+          eventsEl.appendChild(group);
+        }
+      }
+
+      main();
+    </script>
+  </body>
+</html>

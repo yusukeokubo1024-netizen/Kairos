@@ -13,6 +13,7 @@ import '../../models/shared_group.dart';
 import '../../models/task.dart';
 import '../../services/analytics_service.dart';
 import '../../services/audit_service.dart';
+import '../../services/calendar_share_service.dart';
 import '../../services/notification_service.dart';
 
 /// Create or edit a schedule. Pass [schedule] to edit an existing one,
@@ -226,6 +227,7 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
           oldData: widget.schedule!.toUpdateMap(),
           newData: updated.toUpdateMap(),
         ));
+        unawaited(CalendarShareService.instance.mirrorUpsert(updated));
         await NotificationService.instance.scheduleForSchedule(updated);
       } else {
         final newSchedule = Schedule(
@@ -245,22 +247,22 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
         final ref = await db.collection('schedules').add(newSchedule.toCreateMap());
         unawaited(AnalyticsService.instance.logScheduleCreated());
         unawaited(AuditService.instance.logCreate(collection: 'schedules', targetId: ref.id));
-        await NotificationService.instance.scheduleForSchedule(
-          Schedule(
-            id: ref.id,
-            ownerId: newSchedule.ownerId,
-            title: newSchedule.title,
-            startTime: newSchedule.startTime,
-            endTime: newSchedule.endTime,
-            isAllDay: newSchedule.isAllDay,
-            location: newSchedule.location,
-            notes: newSchedule.notes,
-            groupId: newSchedule.groupId,
-            participantIds: newSchedule.participantIds,
-            color: newSchedule.color,
-            reminderMinutes: newSchedule.reminderMinutes,
-          ),
+        final createdSchedule = Schedule(
+          id: ref.id,
+          ownerId: newSchedule.ownerId,
+          title: newSchedule.title,
+          startTime: newSchedule.startTime,
+          endTime: newSchedule.endTime,
+          isAllDay: newSchedule.isAllDay,
+          location: newSchedule.location,
+          notes: newSchedule.notes,
+          groupId: newSchedule.groupId,
+          participantIds: newSchedule.participantIds,
+          color: newSchedule.color,
+          reminderMinutes: newSchedule.reminderMinutes,
         );
+        unawaited(CalendarShareService.instance.mirrorUpsert(createdSchedule));
+        await NotificationService.instance.scheduleForSchedule(createdSchedule);
         if (mounted) await _offerPrepTasks(ref.id, newSchedule.title);
       }
       if (mounted) Navigator.of(context).pop();

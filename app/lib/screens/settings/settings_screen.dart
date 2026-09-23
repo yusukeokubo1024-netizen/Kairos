@@ -13,6 +13,7 @@ import '../../services/locale_service.dart';
 import '../../services/notification_service.dart';
 import '../../services/weather_service.dart';
 import '../anniversary/anniversary_list_screen.dart';
+import 'calendar_share_screen.dart';
 import 'support_screen.dart';
 import 'trash_screen.dart';
 
@@ -560,6 +561,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
             : l10n.settingsDeleteAccountFailed;
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
       }
+    } catch (_) {
+      // Any other failure (e.g. a Firestore cleanup step) — report the same
+      // generic failure rather than letting it surface as an unhandled
+      // error with no feedback.
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(l10n.settingsDeleteAccountFailed)));
+      }
     } finally {
       if (mounted) setState(() => _isDeleting = false);
     }
@@ -728,6 +737,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 title: Text(l10n.settingsTrash),
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => const TrashScreen()),
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.ios_share_outlined),
+                title: Text(l10n.settingsCalendarShare),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const CalendarShareScreen()),
                 ),
               ),
               const Divider(),

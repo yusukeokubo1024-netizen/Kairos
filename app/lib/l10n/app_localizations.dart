@@ -642,11 +642,89 @@ abstract class AppLocalizations {
   /// **'ゴミ箱'**
   String get settingsTrash;
 
+  /// No description provided for @settingsCalendarShare.
+  ///
+  /// In ja, this message translates to:
+  /// **'共有カレンダー'**
+  String get settingsCalendarShare;
+
   /// No description provided for @settingsCouldNotOpenPage.
   ///
   /// In ja, this message translates to:
   /// **'ページを開けませんでした'**
   String get settingsCouldNotOpenPage;
+
+  /// No description provided for @calendarShareTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'共有カレンダー'**
+  String get calendarShareTitle;
+
+  /// No description provided for @calendarShareExplanation.
+  ///
+  /// In ja, this message translates to:
+  /// **'アプリを入れていない大切な人にも見せられる、閲覧専用のリンクを発行できます。予定のタイトルと日時だけが表示され、場所やメモ、参加メンバーの名前は含まれません。'**
+  String get calendarShareExplanation;
+
+  /// No description provided for @calendarShareCreateButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'共有リンクを発行する'**
+  String get calendarShareCreateButton;
+
+  /// No description provided for @calendarShareCreateFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'発行に失敗しました。時間をおいて再度お試しください'**
+  String get calendarShareCreateFailed;
+
+  /// No description provided for @calendarShareLinkLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'共有リンク'**
+  String get calendarShareLinkLabel;
+
+  /// No description provided for @calendarShareCopyButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'リンクをコピー'**
+  String get calendarShareCopyButton;
+
+  /// No description provided for @calendarShareCopied.
+  ///
+  /// In ja, this message translates to:
+  /// **'リンクをコピーしました'**
+  String get calendarShareCopied;
+
+  /// No description provided for @calendarShareRevokeButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'共有を解除する'**
+  String get calendarShareRevokeButton;
+
+  /// No description provided for @calendarShareRevokeConfirmTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'共有を解除しますか？'**
+  String get calendarShareRevokeConfirmTitle;
+
+  /// No description provided for @calendarShareRevokeConfirmBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'このリンクは無効になり、相手はカレンダーを見られなくなります。'**
+  String get calendarShareRevokeConfirmBody;
+
+  /// No description provided for @calendarShareRevoked.
+  ///
+  /// In ja, this message translates to:
+  /// **'共有を解除しました'**
+  String get calendarShareRevoked;
+
+  /// No description provided for @calendarShareRevokeFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'解除に失敗しました。時間をおいて再度お試しください'**
+  String get calendarShareRevokeFailed;
 
   /// No description provided for @settingsLogout.
   ///

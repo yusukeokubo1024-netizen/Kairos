@@ -7,6 +7,7 @@ import '../../l10n/app_localizations.dart';
 import '../../main.dart';
 import '../../models/schedule.dart';
 import '../../services/audit_service.dart';
+import '../../services/calendar_share_service.dart';
 import '../../services/notification_service.dart';
 import 'schedule_form_screen.dart';
 
@@ -36,6 +37,7 @@ class ScheduleDetailScreen extends StatelessWidget {
       data: schedule.toUpdateMap(),
     );
     await NotificationService.instance.cancelForSchedule(schedule.id);
+    await CalendarShareService.instance.mirrorDelete(schedule.id);
     if (context.mounted) Navigator.of(context).pop();
 
     rootScaffoldMessengerKey.currentState?.clearSnackBars();
@@ -54,6 +56,7 @@ class ScheduleDetailScreen extends StatelessWidget {
                 .doc(schedule.id)
                 .set(schedule.toCreateMap());
             await NotificationService.instance.scheduleForSchedule(schedule);
+            await CalendarShareService.instance.mirrorUpsert(schedule);
           },
         ),
       ),

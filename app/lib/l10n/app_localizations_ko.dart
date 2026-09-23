@@ -298,7 +298,48 @@ class AppLocalizationsKo extends AppLocalizations {
   String get settingsTrash => '휴지통';
 
   @override
+  String get settingsCalendarShare => '공유 캘린더';
+
+  @override
   String get settingsCouldNotOpenPage => '페이지를 열 수 없습니다';
+
+  @override
+  String get calendarShareTitle => '공유 캘린더';
+
+  @override
+  String get calendarShareExplanation =>
+      '앱이 없는 소중한 사람에게도 보여줄 수 있는, 보기 전용 링크를 발급할 수 있습니다. 일정의 제목과 시간만 표시되며, 장소나 메모, 참가자 이름은 포함되지 않습니다.';
+
+  @override
+  String get calendarShareCreateButton => '공유 링크 발급하기';
+
+  @override
+  String get calendarShareCreateFailed => '발급에 실패했습니다. 잠시 후 다시 시도해 주세요';
+
+  @override
+  String get calendarShareLinkLabel => '공유 링크';
+
+  @override
+  String get calendarShareCopyButton => '링크 복사';
+
+  @override
+  String get calendarShareCopied => '링크를 복사했습니다';
+
+  @override
+  String get calendarShareRevokeButton => '공유 해제하기';
+
+  @override
+  String get calendarShareRevokeConfirmTitle => '공유를 해제하시겠습니까?';
+
+  @override
+  String get calendarShareRevokeConfirmBody =>
+      '이 링크는 더 이상 작동하지 않으며, 상대방은 캘린더를 볼 수 없게 됩니다.';
+
+  @override
+  String get calendarShareRevoked => '공유를 해제했습니다';
+
+  @override
+  String get calendarShareRevokeFailed => '해제에 실패했습니다. 잠시 후 다시 시도해 주세요';
 
   @override
   String get settingsLogout => '로그아웃';

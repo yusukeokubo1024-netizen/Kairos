@@ -296,7 +296,48 @@ class AppLocalizationsJa extends AppLocalizations {
   String get settingsTrash => 'ゴミ箱';
 
   @override
+  String get settingsCalendarShare => '共有カレンダー';
+
+  @override
   String get settingsCouldNotOpenPage => 'ページを開けませんでした';
+
+  @override
+  String get calendarShareTitle => '共有カレンダー';
+
+  @override
+  String get calendarShareExplanation =>
+      'アプリを入れていない大切な人にも見せられる、閲覧専用のリンクを発行できます。予定のタイトルと日時だけが表示され、場所やメモ、参加メンバーの名前は含まれません。';
+
+  @override
+  String get calendarShareCreateButton => '共有リンクを発行する';
+
+  @override
+  String get calendarShareCreateFailed => '発行に失敗しました。時間をおいて再度お試しください';
+
+  @override
+  String get calendarShareLinkLabel => '共有リンク';
+
+  @override
+  String get calendarShareCopyButton => 'リンクをコピー';
+
+  @override
+  String get calendarShareCopied => 'リンクをコピーしました';
+
+  @override
+  String get calendarShareRevokeButton => '共有を解除する';
+
+  @override
+  String get calendarShareRevokeConfirmTitle => '共有を解除しますか？';
+
+  @override
+  String get calendarShareRevokeConfirmBody =>
+      'このリンクは無効になり、相手はカレンダーを見られなくなります。';
+
+  @override
+  String get calendarShareRevoked => '共有を解除しました';
+
+  @override
+  String get calendarShareRevokeFailed => '解除に失敗しました。時間をおいて再度お試しください';
 
   @override
   String get settingsLogout => 'ログアウト';

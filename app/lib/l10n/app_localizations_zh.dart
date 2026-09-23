@@ -294,7 +294,47 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsTrash => '回收站';
 
   @override
+  String get settingsCalendarShare => '共享日历';
+
+  @override
   String get settingsCouldNotOpenPage => '无法打开页面';
+
+  @override
+  String get calendarShareTitle => '共享日历';
+
+  @override
+  String get calendarShareExplanation =>
+      '可以生成一个只读链接，分享给没有安装本应用的重要的人。链接中只显示日程的标题和时间，不包含地点、备注或参与成员的姓名。';
+
+  @override
+  String get calendarShareCreateButton => '生成共享链接';
+
+  @override
+  String get calendarShareCreateFailed => '生成失败，请稍后再试';
+
+  @override
+  String get calendarShareLinkLabel => '共享链接';
+
+  @override
+  String get calendarShareCopyButton => '复制链接';
+
+  @override
+  String get calendarShareCopied => '已复制链接';
+
+  @override
+  String get calendarShareRevokeButton => '取消共享';
+
+  @override
+  String get calendarShareRevokeConfirmTitle => '要取消共享吗？';
+
+  @override
+  String get calendarShareRevokeConfirmBody => '该链接将失效，对方将无法再查看您的日历。';
+
+  @override
+  String get calendarShareRevoked => '已取消共享';
+
+  @override
+  String get calendarShareRevokeFailed => '取消失败，请稍后再试';
 
   @override
   String get settingsLogout => '退出登录';

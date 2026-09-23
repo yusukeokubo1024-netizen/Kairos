@@ -111,6 +111,28 @@ class AuthService {
     if (user == null) return;
     final uid = user.uid;
 
+    // Must run before anything below touches the `users` doc: the calendar
+    // share token lives only on that one field, with no other way to find
+    // it (calendarShares has no listable index by ownerId). If this ran
+    // after the users doc was deleted and then a later step failed, a retry
+    // would read a null token and silently skip cleanup forever, leaving a
+    // live public link with no account left to ever revoke it.
+    final userDocBeforeDelete = await _db.collection('users').doc(uid).get();
+    final calendarShareToken = userDocBeforeDelete.data()?['calendarShareToken'] as String?;
+    if (calendarShareToken != null) {
+      final shareRef = _db.collection('calendarShares').doc(calendarShareToken);
+      final mirrored = await shareRef.collection('schedules').get();
+      const shareChunkSize = 400;
+      for (var i = 0; i < mirrored.docs.length; i += shareChunkSize) {
+        final mirrorBatch = _db.batch();
+        for (final doc in mirrored.docs.skip(i).take(shareChunkSize)) {
+          mirrorBatch.delete(doc.reference);
+        }
+        await mirrorBatch.commit();
+      }
+      await shareRef.delete();
+    }
+
     final batch = _db.batch();
 
     final ownedSchedules =

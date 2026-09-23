@@ -198,6 +198,41 @@ service cloud.firestore {
     }
 
     // ============================================
+    // calendarShares コレクション（アプリを入れていない相手にも見せる、
+    // 閲覧専用のカレンダー共有リンク。ドキュメントIDは推測不可能な
+    // ランダムトークンで、それ自体がアクセス制御になる。所有者以外は
+    // タイトル・日時以外の情報（場所・メモ・参加者名など）に一切
+    // アクセスできない）
+    // ============================================
+    match /calendarShares/{token} {
+      // トークンを知っていれば誰でも閲覧できる（未ログインの相手向け）。
+      // 列挙（list）は禁止し、全トークンの総当たりを防ぐ。
+      allow get: if true;
+      allow list: if false;
+      allow create: if isAuthenticated() &&
+        request.resource.data.ownerId == request.auth.uid &&
+        request.resource.data.createdAt == request.time &&
+        request.resource.data.keys().hasOnly(['ownerId', 'ownerName', 'createdAt']);
+      allow update: if false;
+      allow delete: if isAuthenticated() && resource.data.ownerId == request.auth.uid;
+
+      // ============================================
+      // schedules サブコレクション（タイトルと日時だけの複製データ）
+      // ============================================
+      match /schedules/{scheduleId} {
+        function isShareOwner() {
+          return get(/databases/$(database)/documents/calendarShares/$(token)).data.ownerId ==
+            request.auth.uid;
+        }
+
+        allow get, list: if true;
+        allow create, update: if isAuthenticated() && isShareOwner() &&
+          request.resource.data.keys().hasOnly(['title', 'startTime', 'endTime']);
+        allow delete: if isAuthenticated() && isShareOwner();
+      }
+    }
+
+    // ============================================
     // anniversaries コレクション（毎年通知したい記念日）
     // ============================================
     match /anniversaries/{anniversaryId} {

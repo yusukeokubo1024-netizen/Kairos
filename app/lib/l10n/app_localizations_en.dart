@@ -306,7 +306,50 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsTrash => 'Trash';
 
   @override
+  String get settingsCalendarShare => 'Shared calendar';
+
+  @override
   String get settingsCouldNotOpenPage => 'Couldn\'t open the page';
+
+  @override
+  String get calendarShareTitle => 'Shared calendar';
+
+  @override
+  String get calendarShareExplanation =>
+      'Generate a view-only link you can send to someone important who doesn\'t have the app. It shows only event titles and times — never locations, notes, or who else is on an event.';
+
+  @override
+  String get calendarShareCreateButton => 'Create share link';
+
+  @override
+  String get calendarShareCreateFailed =>
+      'Failed to create the link. Please try again later';
+
+  @override
+  String get calendarShareLinkLabel => 'Share link';
+
+  @override
+  String get calendarShareCopyButton => 'Copy link';
+
+  @override
+  String get calendarShareCopied => 'Link copied';
+
+  @override
+  String get calendarShareRevokeButton => 'Turn off sharing';
+
+  @override
+  String get calendarShareRevokeConfirmTitle => 'Turn off sharing?';
+
+  @override
+  String get calendarShareRevokeConfirmBody =>
+      'This link will stop working and the other person will no longer be able to see your calendar.';
+
+  @override
+  String get calendarShareRevoked => 'Sharing turned off';
+
+  @override
+  String get calendarShareRevokeFailed =>
+      'Failed to turn off sharing. Please try again later';
 
   @override
   String get settingsLogout => 'Log out';

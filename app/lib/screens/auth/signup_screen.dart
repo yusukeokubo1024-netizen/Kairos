@@ -17,7 +17,6 @@ class SignUpScreen extends StatefulWidget {
 
 class _SignUpScreenState extends State<SignUpScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _authService = AuthService();
@@ -27,7 +26,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   @override
   void dispose() {
-    _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -40,10 +38,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
       _errorMessage = null;
     });
     try {
+      // Display name isn't collected at signup anymore — it can be set
+      // anytime from Settings, and every place that shows it already falls
+      // back gracefully (e.g. settingsDisplayNameUnset) when it's empty.
       await _authService.signUp(
         email: _emailController.text.trim(),
         password: _passwordController.text,
-        displayName: _nameController.text.trim(),
+        displayName: '',
       );
       unawaited(AnalyticsService.instance.logSignUp());
       if (mounted) await offerBiometricLock(context);
@@ -83,13 +84,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                TextFormField(
-                  controller: _nameController,
-                  decoration: InputDecoration(labelText: l10n.signUpNameLabel),
-                  validator: (value) =>
-                      (value == null || value.trim().isEmpty) ? l10n.signUpNameRequired : null,
-                ),
-                const SizedBox(height: 16),
                 TextFormField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,

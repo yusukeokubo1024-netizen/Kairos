@@ -269,6 +269,23 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
           reminderMinutes: newSchedule.reminderMinutes,
         );
         unawaited(CalendarShareService.instance.mirrorUpsert(createdSchedule));
+        if (_groupId != null) {
+          // Free stand-in for a push notification (real push would need
+          // Cloud Functions / the paid Blaze plan) — other members see this
+          // as a "new" badge on the group list next time they open the app.
+          //
+          // Deliberately generic, no schedule title: tagging a schedule to a
+          // group doesn't guarantee every group member is on its
+          // participantIds (they can be removed from "share with" while
+          // keeping the group tag), so broadcasting the real title here
+          // would leak schedule contents to members who can't actually read
+          // the schedule itself — e.g. a surprise party hidden from the
+          // person it's for.
+          unawaited(db.collection('sharedGroups').doc(_groupId).update({
+            'lastActivityAt': FieldValue.serverTimestamp(),
+            'lastActivityText': l10n.groupActivityScheduleAdded,
+          }));
+        }
         await NotificationService.instance.scheduleForSchedule(createdSchedule);
         if (mounted) await _offerPrepTasks(ref.id, newSchedule.title);
       }

@@ -894,6 +894,12 @@ class AppLocalizationsJa extends AppLocalizations {
   String get groupDetailChat => 'トーク';
 
   @override
+  String get groupActivityScheduleAdded => '新しい予定が追加されました';
+
+  @override
+  String get groupListNewActivity => '新着';
+
+  @override
   String get groupDetailJoinRequests => '参加リクエスト';
 
   @override

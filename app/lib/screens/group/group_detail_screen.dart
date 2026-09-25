@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -8,6 +10,25 @@ import '../../main.dart';
 import '../../models/shared_group.dart';
 import '../../services/audit_service.dart';
 import 'group_chat_screen.dart';
+
+// Marks this group's activity as "seen" the first time it's opened this
+// session, so the "new" badge on GroupListScreen clears. Guarded so
+// reopening/rebuilding the same screen doesn't spam writes.
+final Set<String> _activitySeenGroupIds = {};
+
+Future<void> _markActivitySeen(String groupId) async {
+  if (_activitySeenGroupIds.contains(groupId)) return;
+  _activitySeenGroupIds.add(groupId);
+  final uid = FirebaseAuth.instance.currentUser?.uid;
+  if (uid == null) return;
+  try {
+    await FirebaseFirestore.instance.collection('users').doc(uid).update({
+      'groupLastSeen.$groupId': FieldValue.serverTimestamp(),
+    });
+  } catch (_) {
+    _activitySeenGroupIds.remove(groupId);
+  }
+}
 
 class GroupDetailScreen extends StatelessWidget {
   final SharedGroup group;
@@ -198,6 +219,7 @@ class GroupDetailScreen extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final uid = FirebaseAuth.instance.currentUser!.uid;
     final isOwner = group.ownerId == uid;
+    unawaited(_markActivitySeen(group.id));
 
     return Scaffold(
       appBar: AppBar(

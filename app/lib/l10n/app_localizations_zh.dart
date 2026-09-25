@@ -884,6 +884,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get groupDetailChat => '聊天';
 
   @override
+  String get groupActivityScheduleAdded => '已添加新日程';
+
+  @override
+  String get groupListNewActivity => '新';
+
+  @override
   String get groupDetailJoinRequests => '加入申请';
 
   @override

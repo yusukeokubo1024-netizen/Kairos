@@ -309,6 +309,8 @@
   "groupDetailInviteCodeCopied": "초대 코드를 복사했습니다",
   "groupDetailMembers": "멤버",
   "groupDetailChat": "대화",
+  "groupActivityScheduleAdded": "새로운 일정이 추가되었습니다",
+  "groupListNewActivity": "새 소식",
   "groupDetailJoinRequests": "참여 요청",
   "groupJoinRequestApprove": "승인",
   "groupJoinRequestReject": "거절",

@@ -899,6 +899,12 @@ class AppLocalizationsKo extends AppLocalizations {
   String get groupDetailChat => '대화';
 
   @override
+  String get groupActivityScheduleAdded => '새로운 일정이 추가되었습니다';
+
+  @override
+  String get groupListNewActivity => '새 소식';
+
+  @override
   String get groupDetailJoinRequests => '참여 요청';
 
   @override

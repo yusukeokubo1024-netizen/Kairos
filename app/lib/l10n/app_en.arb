@@ -309,6 +309,8 @@
   "groupDetailInviteCodeCopied": "Invite code copied",
   "groupDetailMembers": "Members",
   "groupDetailChat": "Chat",
+  "groupActivityScheduleAdded": "A new schedule was added",
+  "groupListNewActivity": "New",
   "groupDetailJoinRequests": "Join requests",
   "groupJoinRequestApprove": "Approve",
   "groupJoinRequestReject": "Decline",

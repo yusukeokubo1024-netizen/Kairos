@@ -1764,6 +1764,18 @@ abstract class AppLocalizations {
   /// **'トーク'**
   String get groupDetailChat;
 
+  /// No description provided for @groupActivityScheduleAdded.
+  ///
+  /// In ja, this message translates to:
+  /// **'新しい予定が追加されました'**
+  String get groupActivityScheduleAdded;
+
+  /// No description provided for @groupListNewActivity.
+  ///
+  /// In ja, this message translates to:
+  /// **'新着'**
+  String get groupListNewActivity;
+
   /// No description provided for @groupDetailJoinRequests.
   ///
   /// In ja, this message translates to:

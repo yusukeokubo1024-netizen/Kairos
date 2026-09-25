@@ -1,4 +1,14 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Required for local reminder notifications (schedules/tasks/anniversaries). -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <!-- Android 12+ requires this for exact-time alarms (e.g. "5 minutes before") —
+         without it, reminders can be delayed by a lot or not fire at all. It's a
+         special permission that's auto-granted at install for apps that declare it
+         normally (not the more restrictive USE_EXACT_ALARM), but users can still
+         revoke it manually under Settings > Apps > Kairos > Alarms & reminders. -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
+    <!-- Without this, alarms scheduled before a device reboot are silently lost. -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <application
         android:label="Kairos"
         android:name="${applicationName}"

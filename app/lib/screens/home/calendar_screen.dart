@@ -27,6 +27,7 @@ class CalendarScreen extends StatefulWidget {
 class _CalendarScreenState extends State<CalendarScreen> {
   DateTime _focusedDay = DateTime.now();
   DateTime _selectedDay = DateTime.now();
+  bool _daySelectedByUser = false;
   _ViewMode _viewMode = _ViewMode.calendar;
   CalendarFormat _calendarFormat = CalendarFormat.month;
   // Calendars (null = 個人の予定, otherwise a groupId) that are hidden via
@@ -280,10 +281,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       ? Border.all(color: Theme.of(context).colorScheme.primary)
                       : null,
                 ),
-                child: Text('${day.day}', style: TextStyle(fontSize: 12, color: numberColor)),
+                child: Text('${day.day}', style: TextStyle(fontSize: 13, color: numberColor)),
               ),
               const Spacer(),
-              if (weather != null) Text(weather.emoji, style: const TextStyle(fontSize: 9)),
+              if (weather != null) Text(weather.emoji, style: const TextStyle(fontSize: 11)),
             ],
           ),
           if (labelName != null)
@@ -291,7 +292,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
               labelName,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontSize: 7, color: labelColor),
+              style: TextStyle(fontSize: 9, color: labelColor),
             ),
           for (final schedule in events.take(maxVisibleEvents))
             Container(
@@ -305,13 +306,13 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 schedule.title,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontSize: 8, color: Colors.white),
+                style: const TextStyle(fontSize: 10, color: Colors.white),
               ),
             ),
           if (events.length > maxVisibleEvents)
             Text(
               '+${events.length - maxVisibleEvents}',
-              style: TextStyle(fontSize: 7, color: Colors.grey.shade600),
+              style: TextStyle(fontSize: 9, color: Colors.grey.shade600),
             ),
         ],
       ),
@@ -571,10 +572,13 @@ class _CalendarScreenState extends State<CalendarScreen> {
       );
       schedulesByDay.putIfAbsent(day, () => []).add(schedule);
     }
+    for (final daySchedules in schedulesByDay.values) {
+      daySchedules.sort((a, b) => a.startTime.compareTo(b.startTime));
+    }
     _schedulesByDay = schedulesByDay;
 
-    final selectedDaySchedules =
-        schedules.where((s) => _isSameDay(s.startTime, _selectedDay)).toList();
+    final selectedDaySchedules = schedules.where((s) => _isSameDay(s.startTime, _selectedDay)).toList()
+      ..sort((a, b) => a.startTime.compareTo(b.startTime));
 
     // Wrapped in a scroll view so a 6-row month (or a small screen) never
     // overflows into the bottom navigation bar — it scrolls instead.
@@ -616,6 +620,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
             setState(() {
               _selectedDay = selected;
               _focusedDay = focused;
+              _daySelectedByUser = true;
             });
           },
           calendarFormat: _calendarFormat,
@@ -646,7 +651,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
           // Day cells now show 1 schedule title directly, so they need a
           // bit more room than table_calendar's 52px default — but not so
           // much that month view (6 rows) overflows into the bottom nav bar.
-          rowHeight: 58,
+          rowHeight: 62,
           daysOfWeekStyle: const DaysOfWeekStyle(
             weekendStyle: TextStyle(color: Color(0xFF2563EB)),
           ),
@@ -671,6 +676,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
             // Also used for plain weekdays/Saturdays, so non-holiday special
             // days (母の日 etc.) still show their label.
             defaultBuilder: (context, day, focusedDay) => _buildDayCell(context, day: day),
+            // Day cells already show each day's schedules directly (as colored
+            // title chips), so table_calendar's own default event-count dot
+            // markers underneath would just be redundant — suppress them.
+            markerBuilder: (context, day, events) => const SizedBox.shrink(),
             outsideBuilder: (context, day, focusedDay) => Container(
               decoration: BoxDecoration(border: Border.all(color: Colors.grey.shade300, width: 0.5)),
               alignment: Alignment.center,
@@ -678,64 +687,72 @@ class _CalendarScreenState extends State<CalendarScreen> {
             ),
           ),
         ),
-        if (_holidayFor(_selectedDay) case final holiday?)
-          Container(
-            width: double.infinity,
-            color: Colors.red.shade50,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            child: Text(holiday.name, style: const TextStyle(color: Color(0xFFEF4444))),
-          )
-        else if (_specialDayName(_selectedDay) case final name?)
-          Container(
-            width: double.infinity,
-            color: Colors.amber.shade50,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            child: Text(name, style: const TextStyle(color: Color(0xFFB45309))),
-          ),
-        if (_anniversaryNamesForDay(_selectedDay) case final names when names.isNotEmpty)
-          Container(
-            width: double.infinity,
-            color: const Color(0xFFFCE7F3),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            child: Text(
-              names.join(' / '),
-              style: const TextStyle(color: Color(0xFFEC4899)),
-            ),
-          ),
-        if (_weatherForDay(_selectedDay) case final weather?)
-          InkWell(
-            onTap: _openDetailedForecast,
-            child: Container(
+        // Only show the selected day's details once the user has actually
+        // tapped a day — otherwise this section defaults to today and shows
+        // a distracting "no schedule" message before they've asked for it.
+        if (_daySelectedByUser) ...[
+          if (_holidayFor(_selectedDay) case final holiday?)
+            Container(
               width: double.infinity,
-              color: Colors.blue.shade50,
+              color: Colors.red.shade50,
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      '${weather.emoji} '
-                      '${l10n.calendarWeatherLine(weather.maxTemp.round(), weather.minTemp.round())}'
-                      '${weather.precipitationProbability != null ? l10n.calendarWeatherPrecipitation(weather.precipitationProbability!) : ''}',
-                      style: const TextStyle(color: Color(0xFF2563EB)),
-                    ),
-                  ),
-                  const Icon(Icons.chevron_right, size: 18, color: Color(0xFF2563EB)),
-                ],
+              child: Text(holiday.name, style: const TextStyle(color: Color(0xFFEF4444))),
+            )
+          else if (_specialDayName(_selectedDay) case final name?)
+            Container(
+              width: double.infinity,
+              color: Colors.amber.shade50,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              child: Text(name, style: const TextStyle(color: Color(0xFFB45309))),
+            ),
+          if (_anniversaryNamesForDay(_selectedDay) case final names when names.isNotEmpty)
+            Container(
+              width: double.infinity,
+              color: const Color(0xFFFCE7F3),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              child: Text(
+                names.join(' / '),
+                style: const TextStyle(color: Color(0xFFEC4899)),
               ),
             ),
-          ),
-        const Divider(height: 1),
-        selectedDaySchedules.isEmpty
-            ? Padding(
-                padding: const EdgeInsets.all(24),
-                child: Center(child: Text(l10n.calendarNoScheduleThisDay)),
-              )
-            : _ScheduleListView(
-                schedules: selectedDaySchedules,
-                showDate: false,
-                shrinkWrap: true,
+          if (_weatherForDay(_selectedDay) case final weather?)
+            InkWell(
+              onTap: _openDetailedForecast,
+              child: Container(
+                width: double.infinity,
+                color: Colors.blue.shade50,
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        '${weather.emoji} '
+                        '${l10n.calendarWeatherLine(weather.maxTemp.round(), weather.minTemp.round())}'
+                        // Only worth calling out once there's a meaningful
+                        // chance of rain — 30% is the usual "bring an
+                        // umbrella" threshold in Japanese forecasts.
+                        '${(weather.precipitationProbability ?? 0) >= 30 ? l10n.calendarWeatherPrecipitation(weather.precipitationProbability!) : ''}',
+                        style: const TextStyle(color: Color(0xFF2563EB)),
+                      ),
+                    ),
+                    const Icon(Icons.chevron_right, size: 18, color: Color(0xFF2563EB)),
+                  ],
+                ),
               ),
-          ],
+            ),
+          const Divider(height: 1),
+          selectedDaySchedules.isEmpty
+              ? Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Center(child: Text(l10n.calendarNoScheduleThisDay)),
+                )
+              : _ScheduleListView(
+                  schedules: selectedDaySchedules,
+                  showDate: false,
+                  shrinkWrap: true,
+                ),
+        ],
+      ],
           ),
         ),
       ),

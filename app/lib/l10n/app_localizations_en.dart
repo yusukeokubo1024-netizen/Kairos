@@ -918,6 +918,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get groupDetailChat => 'Chat';
 
   @override
+  String get groupActivityScheduleAdded => 'A new schedule was added';
+
+  @override
+  String get groupListNewActivity => 'New';
+
+  @override
   String get groupDetailJoinRequests => 'Join requests';
 
   @override

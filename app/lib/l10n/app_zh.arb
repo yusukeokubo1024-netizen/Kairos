@@ -309,6 +309,8 @@
   "groupDetailInviteCodeCopied": "邀请码已复制",
   "groupDetailMembers": "成员",
   "groupDetailChat": "聊天",
+  "groupActivityScheduleAdded": "已添加新日程",
+  "groupListNewActivity": "新",
   "groupDetailJoinRequests": "加入申请",
   "groupJoinRequestApprove": "批准",
   "groupJoinRequestReject": "拒绝",

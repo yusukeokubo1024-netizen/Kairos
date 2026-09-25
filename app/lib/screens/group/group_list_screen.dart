@@ -61,31 +61,62 @@ class GroupListScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-        stream: groupsQuery.snapshots(),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          final groups =
-              snapshot.data!.docs.map((doc) => SharedGroup.fromFirestore(doc)).toList();
-          for (final group in groups) {
-            if (group.ownerId == uid) unawaited(_ensureInvitePreviewExists(group));
-          }
-          if (groups.isEmpty) {
-            return Center(child: Text(l10n.groupListEmpty));
-          }
-          return ListView.builder(
-            itemCount: groups.length,
-            itemBuilder: (context, index) {
-              final group = groups[index];
-              return ListTile(
-                leading: const Icon(Icons.groups_outlined),
-                title: Text(group.name),
-                subtitle: Text(l10n.groupListMembers(group.memberIds.length)),
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => GroupDetailScreen(group: group)),
-                ),
+      body: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+        stream: FirebaseFirestore.instance.collection('users').doc(uid).snapshots(),
+        builder: (context, userSnapshot) {
+          final groupLastSeen =
+              userSnapshot.data?.data()?['groupLastSeen'] as Map<String, dynamic>? ?? {};
+
+          return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+            stream: groupsQuery.snapshots(),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              final groups =
+                  snapshot.data!.docs.map((doc) => SharedGroup.fromFirestore(doc)).toList();
+              for (final group in groups) {
+                if (group.ownerId == uid) unawaited(_ensureInvitePreviewExists(group));
+              }
+              if (groups.isEmpty) {
+                return Center(child: Text(l10n.groupListEmpty));
+              }
+              return ListView.builder(
+                itemCount: groups.length,
+                itemBuilder: (context, index) {
+                  final group = groups[index];
+                  final lastSeen = (groupLastSeen[group.id] as Timestamp?)?.toDate();
+                  final hasNewActivity = group.lastActivityAt != null &&
+                      (lastSeen == null || group.lastActivityAt!.isAfter(lastSeen));
+                  return ListTile(
+                    leading: const Icon(Icons.groups_outlined),
+                    title: Text(group.name),
+                    subtitle: Text(
+                      hasNewActivity && group.lastActivityText != null
+                          ? group.lastActivityText!
+                          : l10n.groupListMembers(group.memberIds.length),
+                    ),
+                    trailing: hasNewActivity
+                        ? Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.primary,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              l10n.groupListNewActivity,
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: Theme.of(context).colorScheme.onPrimary,
+                              ),
+                            ),
+                          )
+                        : null,
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => GroupDetailScreen(group: group)),
+                    ),
+                  );
+                },
               );
             },
           );

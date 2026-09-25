@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest_all.dart' as tz_data;
 import 'package:timezone/timezone.dart' as tz;
@@ -91,22 +92,30 @@ class NotificationService {
     final reminderTime = baseTime.subtract(Duration(minutes: reminderMinutes));
     if (reminderTime.isBefore(DateTime.now())) return;
 
-    await _plugin.zonedSchedule(
-      id: _scheduleNotificationId('schedule_', schedule.id),
-      title: schedule.title,
-      body: _scheduleReminderBody,
-      scheduledDate: tz.TZDateTime.from(reminderTime, tz.local),
-      notificationDetails: NotificationDetails(
-        android: AndroidNotificationDetails(
-          'schedule_reminders',
-          _scheduleChannelName,
-          importance: Importance.high,
-          priority: Priority.high,
+    try {
+      await _plugin.zonedSchedule(
+        id: _scheduleNotificationId('schedule_', schedule.id),
+        title: schedule.title,
+        body: _scheduleReminderBody,
+        scheduledDate: tz.TZDateTime.from(reminderTime, tz.local),
+        notificationDetails: NotificationDetails(
+          android: AndroidNotificationDetails(
+            'schedule_reminders',
+            _scheduleChannelName,
+            importance: Importance.high,
+            priority: Priority.high,
+          ),
+          iOS: const DarwinNotificationDetails(),
         ),
-        iOS: const DarwinNotificationDetails(),
-      ),
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-    );
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      );
+    } catch (e, st) {
+      // Most commonly a missing/revoked Android "exact alarm" permission —
+      // this shouldn't block saving the schedule itself, but silently
+      // swallowing it means the reminder just never fires with no trace.
+      FirebaseCrashlytics.instance
+          .recordError(e, st, reason: 'failed to schedule notification', fatal: false);
+    }
   }
 
   Future<void> cancelForSchedule(String scheduleId) async {
@@ -120,22 +129,27 @@ class NotificationService {
     final reminderTime = DateTime(dueDate.year, dueDate.month, dueDate.day, 9);
     if (reminderTime.isBefore(DateTime.now())) return;
 
-    await _plugin.zonedSchedule(
-      id: _scheduleNotificationId('task_', task.id),
-      title: task.title,
-      body: _taskReminderBody,
-      scheduledDate: tz.TZDateTime.from(reminderTime, tz.local),
-      notificationDetails: NotificationDetails(
-        android: AndroidNotificationDetails(
-          'task_reminders',
-          _taskChannelName,
-          importance: Importance.high,
-          priority: Priority.high,
+    try {
+      await _plugin.zonedSchedule(
+        id: _scheduleNotificationId('task_', task.id),
+        title: task.title,
+        body: _taskReminderBody,
+        scheduledDate: tz.TZDateTime.from(reminderTime, tz.local),
+        notificationDetails: NotificationDetails(
+          android: AndroidNotificationDetails(
+            'task_reminders',
+            _taskChannelName,
+            importance: Importance.high,
+            priority: Priority.high,
+          ),
+          iOS: const DarwinNotificationDetails(),
         ),
-        iOS: const DarwinNotificationDetails(),
-      ),
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-    );
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      );
+    } catch (e, st) {
+      FirebaseCrashlytics.instance
+          .recordError(e, st, reason: 'failed to schedule notification', fatal: false);
+    }
   }
 
   Future<void> cancelForTask(String taskId) async {
@@ -158,23 +172,28 @@ class NotificationService {
       next = tz.TZDateTime(tz.local, now.year + 1, anniversary.month, anniversary.day, 9);
     }
 
-    await _plugin.zonedSchedule(
-      id: _scheduleNotificationId('anniversary_', anniversary.id),
-      title: anniversary.title,
-      body: _anniversaryBody(anniversary.title),
-      scheduledDate: next,
-      notificationDetails: NotificationDetails(
-        android: AndroidNotificationDetails(
-          'anniversary_reminders',
-          _anniversaryChannelName,
-          importance: Importance.high,
-          priority: Priority.high,
+    try {
+      await _plugin.zonedSchedule(
+        id: _scheduleNotificationId('anniversary_', anniversary.id),
+        title: anniversary.title,
+        body: _anniversaryBody(anniversary.title),
+        scheduledDate: next,
+        notificationDetails: NotificationDetails(
+          android: AndroidNotificationDetails(
+            'anniversary_reminders',
+            _anniversaryChannelName,
+            importance: Importance.high,
+            priority: Priority.high,
+          ),
+          iOS: const DarwinNotificationDetails(),
         ),
-        iOS: const DarwinNotificationDetails(),
-      ),
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      matchDateTimeComponents: DateTimeComponents.dateAndTime,
-    );
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        matchDateTimeComponents: DateTimeComponents.dateAndTime,
+      );
+    } catch (e, st) {
+      FirebaseCrashlytics.instance
+          .recordError(e, st, reason: 'failed to schedule notification', fatal: false);
+    }
   }
 
   Future<void> cancelForAnniversary(String anniversaryId) async {

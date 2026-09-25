@@ -7,6 +7,8 @@
 
   "tabHome": "ホーム",
   "tabTasks": "タスク",
+  "tabNotifications": "通知",
+  "notificationsEmpty": "新着はありません",
   "tabGroups": "グループ",
   "tabSettings": "設定",
 

@@ -7,6 +7,8 @@
 
   "tabHome": "首页",
   "tabTasks": "任务",
+  "tabNotifications": "通知",
+  "notificationsEmpty": "暂无新消息",
   "tabGroups": "群组",
   "tabSettings": "设置",
 

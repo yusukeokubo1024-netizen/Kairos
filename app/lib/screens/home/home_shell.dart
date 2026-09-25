@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import '../../l10n/app_localizations.dart';
 import '../group/group_list_screen.dart';
 import '../settings/settings_screen.dart';
-import '../task/task_list_screen.dart';
 import 'calendar_screen.dart';
+import 'notifications_screen.dart';
 
 class HomeShell extends StatefulWidget {
   const HomeShell({super.key});
@@ -25,7 +25,7 @@ class _HomeShellState extends State<HomeShell> {
     final l10n = AppLocalizations.of(context)!;
     final screens = [
       CalendarScreen(key: _calendarKey),
-      const TaskListScreen(),
+      const NotificationsScreen(),
       const GroupListScreen(),
       const SettingsScreen(),
     ];
@@ -45,7 +45,7 @@ class _HomeShellState extends State<HomeShell> {
         destinations: [
           NavigationDestination(icon: const Icon(Icons.calendar_month), label: l10n.tabHome),
           NavigationDestination(
-              icon: const Icon(Icons.check_circle_outline), label: l10n.tabTasks),
+              icon: const Icon(Icons.notifications_outlined), label: l10n.tabNotifications),
           NavigationDestination(icon: const Icon(Icons.groups_outlined), label: l10n.tabGroups),
           NavigationDestination(
               icon: const Icon(Icons.settings_outlined), label: l10n.tabSettings),

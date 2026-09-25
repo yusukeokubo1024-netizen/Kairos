@@ -25,6 +25,12 @@ class AppLocalizationsKo extends AppLocalizations {
   String get tabTasks => '할 일';
 
   @override
+  String get tabNotifications => '알림';
+
+  @override
+  String get notificationsEmpty => '새로운 소식이 없습니다';
+
+  @override
   String get tabGroups => '그룹';
 
   @override

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -11,9 +13,13 @@ import '../../models/anniversary.dart';
 import '../../models/schedule.dart';
 import '../../models/schedule_category.dart';
 import '../../models/shared_group.dart';
+import '../../models/task.dart';
+import '../../services/audit_service.dart';
+import '../../services/notification_service.dart';
 import '../../services/weather_service.dart';
 import '../schedule/schedule_detail_screen.dart';
 import '../schedule/schedule_form_screen.dart';
+import '../task/task_form_screen.dart';
 
 enum _ViewMode { calendar, list }
 
@@ -751,6 +757,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   showDate: false,
                   shrinkWrap: true,
                 ),
+          const Divider(height: 1),
+          _DayTasksSection(day: _selectedDay),
         ],
       ],
           ),
@@ -826,6 +834,94 @@ class _ScheduleListView extends StatelessWidget {
           onTap: () => Navigator.of(context).push(
             MaterialPageRoute(builder: (_) => ScheduleDetailScreen(schedule: schedule)),
           ),
+        );
+      },
+    );
+  }
+}
+
+/// Tasks due on [day], shown under the selected day's schedule list — tasks
+/// no longer have their own bottom-nav tab, so this is the only place to see
+/// them alongside their date. Tasks aren't shared/grouped like schedules, so
+/// this only ever queries the signed-in user's own tasks.
+class _DayTasksSection extends StatelessWidget {
+  final DateTime day;
+
+  const _DayTasksSection({required this.day});
+
+  Future<void> _toggleCompleted(Task task) async {
+    await FirebaseFirestore.instance.collection('tasks').doc(task.id).update({
+      'ownerId': task.ownerId,
+      'completed': !task.completed,
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+    unawaited(AuditService.instance.logUpdate(
+      collection: 'tasks',
+      targetId: task.id,
+      oldData: {'completed': task.completed},
+      newData: {'completed': !task.completed},
+    ));
+    if (!task.completed) {
+      await NotificationService.instance.cancelForTask(task.id);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+
+    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+      stream: FirebaseFirestore.instance
+          .collection('tasks')
+          .where('ownerId', isEqualTo: uid)
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) return const SizedBox.shrink();
+        final tasks = snapshot.data!.docs
+            .map((doc) => Task.fromFirestore(doc))
+            .where((task) =>
+                task.dueDate != null &&
+                task.dueDate!.year == day.year &&
+                task.dueDate!.month == day.month &&
+                task.dueDate!.day == day.day)
+            .toList();
+        if (tasks.isEmpty) return const SizedBox.shrink();
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 8, 0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(l10n.tabTasks, style: const TextStyle(fontWeight: FontWeight.bold)),
+                  IconButton(
+                    icon: const Icon(Icons.add, size: 20),
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => TaskFormScreen(initialDueDate: day)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            ...tasks.map((task) => ListTile(
+                  leading: Checkbox(
+                    value: task.completed,
+                    onChanged: (_) => _toggleCompleted(task),
+                  ),
+                  title: Text(
+                    task.title,
+                    style: task.completed
+                        ? const TextStyle(decoration: TextDecoration.lineThrough)
+                        : null,
+                  ),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => TaskFormScreen(task: task)),
+                  ),
+                )),
+          ],
         );
       },
     );

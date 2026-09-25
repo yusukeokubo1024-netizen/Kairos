@@ -13,8 +13,11 @@ import '../../services/notification_service.dart';
 
 class TaskFormScreen extends StatefulWidget {
   final Task? task;
+  // Pre-fills the due date for a new task (e.g. opened from the calendar's
+  // selected-day view). Ignored when editing an existing task.
+  final DateTime? initialDueDate;
 
-  const TaskFormScreen({super.key, this.task});
+  const TaskFormScreen({super.key, this.task, this.initialDueDate});
 
   @override
   State<TaskFormScreen> createState() => _TaskFormScreenState();
@@ -37,6 +40,8 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
       _titleController.text = task.title;
       _priority = task.priority;
       _dueDate = task.dueDate;
+    } else {
+      _dueDate = widget.initialDueDate;
     }
   }
 

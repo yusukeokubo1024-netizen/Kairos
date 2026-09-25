@@ -25,6 +25,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tabTasks => 'Tasks';
 
   @override
+  String get tabNotifications => 'Notifications';
+
+  @override
+  String get notificationsEmpty => 'No notifications yet';
+
+  @override
   String get tabGroups => 'Groups';
 
   @override

@@ -132,6 +132,18 @@ abstract class AppLocalizations {
   /// **'タスク'**
   String get tabTasks;
 
+  /// No description provided for @tabNotifications.
+  ///
+  /// In ja, this message translates to:
+  /// **'通知'**
+  String get tabNotifications;
+
+  /// No description provided for @notificationsEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'新着はありません'**
+  String get notificationsEmpty;
+
   /// No description provided for @tabGroups.
   ///
   /// In ja, this message translates to:

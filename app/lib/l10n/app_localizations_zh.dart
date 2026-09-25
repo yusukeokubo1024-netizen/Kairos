@@ -25,6 +25,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get tabTasks => '任务';
 
   @override
+  String get tabNotifications => '通知';
+
+  @override
+  String get notificationsEmpty => '暂无新消息';
+
+  @override
   String get tabGroups => '群组';
 
   @override

@@ -17,6 +17,36 @@ class AuthService {
 
   Future<void> signIn({required String email, required String password}) async {
     await _auth.signInWithEmailAndPassword(email: email, password: password);
+    // Self-heals accounts created before the email-lookup feature existed
+    // (see also the groupInvitePreviews backfill in group_list_screen.dart
+    // for the same pattern) — best-effort, doesn't block sign-in. Only
+    // actually writes once Firestore rules confirm the email is verified
+    // (see ensureEmailIndexIfVerified) — otherwise anyone could squat on an
+    // email they don't own by signing up with it and never verifying.
+    unawaited(ensureEmailIndexIfVerified());
+  }
+
+  /// Lets another user find this account by exact email match (e.g. to
+  /// invite someone to a single schedule without them being in a shared
+  /// group). Only an exact-match `get` is ever allowed — see
+  /// firestore.rules — never a listable/enumerable index.
+  ///
+  /// Deliberately requires the email to be verified first (enforced by
+  /// firestore.rules too, not just here) — otherwise anyone could sign up
+  /// with someone else's email, immediately claim the index entry before
+  /// ever proving they control that mailbox, and get invited to that
+  /// person's schedules in their place. Safe to call anytime (e.g. after
+  /// sign-in, or after the user verifies) — no-ops until verified.
+  Future<void> ensureEmailIndexIfVerified() async {
+    final user = _auth.currentUser;
+    if (user == null || !user.emailVerified) return;
+    final email = user.email;
+    if (email == null) return;
+    final ref = _db.collection('emailIndex').doc(email.trim().toLowerCase());
+    final doc = await ref.get();
+    if (!doc.exists) {
+      await ref.set({'uid': user.uid});
+    }
   }
 
   Future<void> signUp({
@@ -37,7 +67,8 @@ class AuthService {
     );
     await _db.collection('users').doc(uid).set(user.toCreateMap());
     await _writePublicProfile(uid, displayName);
-    // Best-effort — a failure here shouldn't block account creation.
+    // Not verified yet at this point, so not indexed by email yet either —
+    // see ensureEmailIndexIfVerified, called once they actually verify.
     unawaited(credential.user!.sendEmailVerification());
   }
 
@@ -131,6 +162,14 @@ class AuthService {
         await mirrorBatch.commit();
       }
       await shareRef.delete();
+    }
+
+    // Available directly from the Auth user object — no Firestore read
+    // needed. Otherwise this email would keep resolving to a uid whose
+    // account no longer exists.
+    final email = user.email;
+    if (email != null) {
+      await _db.collection('emailIndex').doc(email.trim().toLowerCase()).delete();
     }
 
     final batch = _db.batch();

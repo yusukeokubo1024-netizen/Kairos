@@ -1404,6 +1404,24 @@ abstract class AppLocalizations {
   /// **'グループのメンバーの中から、この予定を共有する人だけを選べます'**
   String get scheduleFormShareWithHint;
 
+  /// No description provided for @scheduleFormInviteByEmail.
+  ///
+  /// In ja, this message translates to:
+  /// **'メールアドレスで招待（この予定だけ）'**
+  String get scheduleFormInviteByEmail;
+
+  /// No description provided for @scheduleFormEmailNotFound.
+  ///
+  /// In ja, this message translates to:
+  /// **'そのメールアドレスのユーザーが見つかりませんでした'**
+  String get scheduleFormEmailNotFound;
+
+  /// No description provided for @scheduleFormEmailIsSelf.
+  ///
+  /// In ja, this message translates to:
+  /// **'自分自身は追加できません'**
+  String get scheduleFormEmailIsSelf;
+
   /// No description provided for @scheduleFormNoCandidates.
   ///
   /// In ja, this message translates to:

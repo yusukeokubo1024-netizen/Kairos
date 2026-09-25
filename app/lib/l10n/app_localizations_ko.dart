@@ -704,6 +704,15 @@ class AppLocalizationsKo extends AppLocalizations {
   String get scheduleFormShareWithHint => '그룹 멤버 중 이 일정을 공유할 사람만 선택할 수 있습니다';
 
   @override
+  String get scheduleFormInviteByEmail => '이메일로 초대 (이 일정만)';
+
+  @override
+  String get scheduleFormEmailNotFound => '해당 이메일 주소의 사용자를 찾을 수 없습니다';
+
+  @override
+  String get scheduleFormEmailIsSelf => '자기 자신은 추가할 수 없습니다';
+
+  @override
   String get scheduleFormNoCandidates =>
       '공유할 수 있는 상대가 없습니다. 먼저 그룹에 멤버를 추가해 주세요.';
 

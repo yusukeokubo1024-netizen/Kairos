@@ -36,6 +36,7 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
   final _titleController = TextEditingController();
   final _locationController = TextEditingController();
   final _notesController = TextEditingController();
+  final _emailSearchController = TextEditingController();
 
   late DateTime _start;
   late DateTime _end;
@@ -43,7 +44,12 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
   late Color _color;
   // uids of people (besides the owner) to share this schedule with.
   final Set<String> _selectedPersonIds = {};
+  // uids found via email search — not necessarily in any shared group, so
+  // they need to be listed separately from the group-membership candidates.
+  final Set<String> _extraPersonIds = {};
   bool _isSaving = false;
+  bool _isSearchingEmail = false;
+  String? _emailSearchError;
   int? _reminderMinutes;
   // Which group calendar this schedule is categorized under (null = 個人の予定).
   // Used only for show/hide filtering on the home calendar.
@@ -86,6 +92,39 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
     _loadColorLabels();
   }
 
+  Future<void> _searchByEmail() async {
+    final l10n = AppLocalizations.of(context)!;
+    final email = _emailSearchController.text.trim().toLowerCase();
+    if (email.isEmpty) return;
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+
+    setState(() {
+      _isSearchingEmail = true;
+      _emailSearchError = null;
+    });
+    try {
+      final doc = await FirebaseFirestore.instance.collection('emailIndex').doc(email).get();
+      final foundUid = doc.data()?['uid'] as String?;
+      if (foundUid == null) {
+        setState(() => _emailSearchError = l10n.scheduleFormEmailNotFound);
+        return;
+      }
+      if (foundUid == uid) {
+        setState(() => _emailSearchError = l10n.scheduleFormEmailIsSelf);
+        return;
+      }
+      setState(() {
+        _extraPersonIds.add(foundUid);
+        _selectedPersonIds.add(foundUid);
+        _emailSearchController.clear();
+      });
+    } catch (_) {
+      setState(() => _emailSearchError = l10n.scheduleFormEmailNotFound);
+    } finally {
+      if (mounted) setState(() => _isSearchingEmail = false);
+    }
+  }
+
   Future<void> _loadColorLabels() async {
     final uid = FirebaseAuth.instance.currentUser!.uid;
     final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
@@ -105,6 +144,7 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
     _titleController.dispose();
     _locationController.dispose();
     _notesController.dispose();
+    _emailSearchController.dispose();
     super.dispose();
   }
 
@@ -561,6 +601,38 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
                   l10n.scheduleFormShareWithHint,
                   style: const TextStyle(fontSize: 12, color: Colors.grey),
                 ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _emailSearchController,
+                        keyboardType: TextInputType.emailAddress,
+                        decoration: InputDecoration(
+                          labelText: l10n.scheduleFormInviteByEmail,
+                          isDense: true,
+                        ),
+                        onSubmitted: (_) => _searchByEmail(),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    IconButton(
+                      icon: _isSearchingEmail
+                          ? const SizedBox(
+                              height: 18,
+                              width: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.person_add_alt_1_outlined),
+                      onPressed: _isSearchingEmail ? null : _searchByEmail,
+                    ),
+                  ],
+                ),
+                if (_emailSearchError != null)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Text(_emailSearchError!, style: const TextStyle(color: Colors.red, fontSize: 12)),
+                  ),
                 StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
                   stream: groupsQuery.snapshots(),
                   builder: (context, snapshot) {
@@ -578,6 +650,7 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
                     for (final group in groups) {
                       candidateIds.addAll(group.memberIds);
                     }
+                    candidateIds.addAll(_extraPersonIds);
                     candidateIds.remove(uid);
 
                     if (candidateIds.isEmpty) {

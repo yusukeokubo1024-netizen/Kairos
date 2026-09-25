@@ -690,6 +690,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get scheduleFormShareWithHint => '可以从群组成员中选择要与之共享此日程的人';
 
   @override
+  String get scheduleFormInviteByEmail => '通过邮箱邀请（仅此日程）';
+
+  @override
+  String get scheduleFormEmailNotFound => '未找到使用该邮箱地址的用户';
+
+  @override
+  String get scheduleFormEmailIsSelf => '不能添加自己';
+
+  @override
   String get scheduleFormNoCandidates => '暂时没有可共享的对象，请先在群组中添加成员。';
 
   @override

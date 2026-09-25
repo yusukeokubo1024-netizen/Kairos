@@ -700,6 +700,15 @@ class AppLocalizationsJa extends AppLocalizations {
   String get scheduleFormShareWithHint => 'グループのメンバーの中から、この予定を共有する人だけを選べます';
 
   @override
+  String get scheduleFormInviteByEmail => 'メールアドレスで招待（この予定だけ）';
+
+  @override
+  String get scheduleFormEmailNotFound => 'そのメールアドレスのユーザーが見つかりませんでした';
+
+  @override
+  String get scheduleFormEmailIsSelf => '自分自身は追加できません';
+
+  @override
   String get scheduleFormNoCandidates => '共有できる相手がいません。まずグループでメンバーを増やしてください。';
 
   @override

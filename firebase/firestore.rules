@@ -37,6 +37,32 @@ service cloud.firestore {
     }
 
     // ============================================
+    // emailIndex コレクション（メールアドレス→UIDの完全一致検索専用。
+    // 1件の予定にだけ、グループに入っていない人をメールアドレスで
+    // 招待できるようにするための仕組み。ドキュメントIDはメールアドレス
+    // そのもの。list は禁止で全件列挙は不可能。本人の認証済みメール
+    // アドレスとしか一致させられないため、他人のメールになりすまして
+    // エントリを作ることはできない）
+    // ============================================
+    match /emailIndex/{email} {
+      allow get: if isAuthenticated();
+      allow list: if false;
+      // email_verified も必須 — これが無いと、メール確認前に他人の
+      // メールアドレスを名乗ってサインアップするだけでそのアドレスの
+      // emailIndex を先取り（横取り）でき、本来の持ち主が二度とその
+      // メールで登録できなくなる上、なりすましたuidが予定に招待され
+      // 情報が漏れてしまう。
+      allow create: if isAuthenticated() &&
+        request.auth.token.email != null &&
+        request.auth.token.email_verified == true &&
+        request.auth.token.email.lower() == email &&
+        request.resource.data.uid == request.auth.uid &&
+        request.resource.data.keys().hasOnly(['uid']);
+      allow update: if false;
+      allow delete: if isAuthenticated() && resource.data.uid == request.auth.uid;
+    }
+
+    // ============================================
     // schedules コレクション（予定）
     // ============================================
     match /schedules/{scheduleId} {

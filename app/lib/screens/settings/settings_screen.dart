@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -41,6 +43,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     // so the "please verify" banner clears once they've actually done so.
     FirebaseAuth.instance.currentUser?.reload().then((_) {
       if (mounted) setState(() {});
+      // Now that verification status is fresh, this can finally succeed if
+      // it hadn't already (e.g. verified without signing out/in again) —
+      // see ensureEmailIndexIfVerified for why it's gated on verification.
+      unawaited(_authService.ensureEmailIndexIfVerified());
     });
   }
 

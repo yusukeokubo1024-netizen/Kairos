@@ -720,6 +720,17 @@ class AppLocalizationsEn extends AppLocalizations {
       'Choose who to share this schedule with, from your group members';
 
   @override
+  String get scheduleFormInviteByEmail =>
+      'Invite by email (this schedule only)';
+
+  @override
+  String get scheduleFormEmailNotFound =>
+      'No user was found with that email address';
+
+  @override
+  String get scheduleFormEmailIsSelf => 'You can\'t add yourself';
+
+  @override
   String get scheduleFormNoCandidates =>
       'No one to share with yet. Add members to a group first.';
 

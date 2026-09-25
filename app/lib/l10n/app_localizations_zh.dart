@@ -297,7 +297,46 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsCalendarShare => '共享日历';
 
   @override
+  String get settingsColorLabels => '日程颜色分类';
+
+  @override
   String get settingsCouldNotOpenPage => '无法打开页面';
+
+  @override
+  String get colorLabelsTitle => '日程颜色分类';
+
+  @override
+  String get colorLabelsExplanation => '为自己和家人分别设定颜色后，创建日程时只需选择对应的人，就会自动套用该颜色。';
+
+  @override
+  String get colorLabelsEmpty => '尚未添加';
+
+  @override
+  String get colorLabelsAddButton => '添加';
+
+  @override
+  String get colorLabelsNameLabel => '姓名（例如：我、配偶、孩子）';
+
+  @override
+  String get colorLabelsNameRequired => '请输入姓名';
+
+  @override
+  String get colorLabelsDeleteConfirmTitle => '要删除吗？';
+
+  @override
+  String get colorLabelsDeleteConfirmBody => '将删除该颜色分类。已创建的日程颜色不会改变。';
+
+  @override
+  String get colorLabelsSaveFailed => '保存失败，请稍后再试';
+
+  @override
+  String get scheduleFormColorPerson => '这是谁的日程？';
+
+  @override
+  String get scheduleFormColorOther => '其他颜色';
+
+  @override
+  String get scheduleFormManageColorLabels => '管理日程颜色分类';
 
   @override
   String get calendarShareTitle => '共享日历';

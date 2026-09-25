@@ -309,7 +309,48 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsCalendarShare => 'Shared calendar';
 
   @override
+  String get settingsColorLabels => 'Event colors';
+
+  @override
   String get settingsCouldNotOpenPage => 'Couldn\'t open the page';
+
+  @override
+  String get colorLabelsTitle => 'Event colors';
+
+  @override
+  String get colorLabelsExplanation =>
+      'Set a color for yourself and each family member, then just pick their name when creating a schedule to color it automatically.';
+
+  @override
+  String get colorLabelsEmpty => 'None added yet';
+
+  @override
+  String get colorLabelsAddButton => 'Add';
+
+  @override
+  String get colorLabelsNameLabel => 'Name (e.g. Me, Partner, Kid)';
+
+  @override
+  String get colorLabelsNameRequired => 'Please enter a name';
+
+  @override
+  String get colorLabelsDeleteConfirmTitle => 'Delete this?';
+
+  @override
+  String get colorLabelsDeleteConfirmBody =>
+      'This removes the color label. Schedules you already created keep their color.';
+
+  @override
+  String get colorLabelsSaveFailed => 'Failed to save. Please try again later';
+
+  @override
+  String get scheduleFormColorPerson => 'Whose event is this?';
+
+  @override
+  String get scheduleFormColorOther => 'Other colors';
+
+  @override
+  String get scheduleFormManageColorLabels => 'Manage event colors';
 
   @override
   String get calendarShareTitle => 'Shared calendar';

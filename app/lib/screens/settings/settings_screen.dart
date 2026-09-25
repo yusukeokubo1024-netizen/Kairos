@@ -14,6 +14,7 @@ import '../../services/notification_service.dart';
 import '../../services/weather_service.dart';
 import '../anniversary/anniversary_list_screen.dart';
 import 'calendar_share_screen.dart';
+import 'color_labels_screen.dart';
 import 'support_screen.dart';
 import 'trash_screen.dart';
 
@@ -352,33 +353,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return regions.firstWhere((region) => region.name == picked);
   }
 
-  /// Walks region → city → (ward, for Japan's 政令指定都市 only). Returns
-  /// the final place name (city, or "city+ward" combined so the existing
-  /// geocoding fallback logic still recognizes it), [_manualEntrySentinel],
-  /// or null if the user backed out.
+  /// Walks region → city (市区町村レベルまで — 区・町名までは細かすぎるため
+  /// 選ばせない). Returns the picked city name, [_manualEntrySentinel], or
+  /// null if the user backed out.
   Future<String?> _pickAdminCity(AdminRegion region) async {
     final l10n = AppLocalizations.of(context)!;
-    final cityPick = await _pickFromList(
+    return _pickFromList(
       title: region.name,
       searchHint: l10n.settingsWeatherLocationCitySearchHint,
       items: [for (final city in region.cities) city.name],
       showManualEntry: true,
     );
-    if (cityPick == null || cityPick == _manualEntrySentinel) return cityPick;
-
-    final city = region.cities.firstWhere((c) => c.name == cityPick);
-    if (!city.hasWards) return city.name;
-    if (!mounted) return null;
-
-    final wardPick = await _pickFromList(
-      title: city.name,
-      searchHint: l10n.settingsWeatherLocationCitySearchHint,
-      items: city.wards,
-      showManualEntry: true,
-    );
-    if (wardPick == null) return null;
-    if (wardPick == _manualEntrySentinel) return _manualEntrySentinel;
-    return '${city.name}$wardPick';
   }
 
   Future<String?> _promptCityName(String? current) async {
@@ -744,6 +729,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 title: Text(l10n.settingsCalendarShare),
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => const CalendarShareScreen()),
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.palette_outlined),
+                title: Text(l10n.settingsColorLabels),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const ColorLabelsScreen()),
                 ),
               ),
               const Divider(),

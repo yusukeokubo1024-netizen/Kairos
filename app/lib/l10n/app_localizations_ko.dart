@@ -301,7 +301,48 @@ class AppLocalizationsKo extends AppLocalizations {
   String get settingsCalendarShare => '공유 캘린더';
 
   @override
+  String get settingsColorLabels => '일정 색상 구분';
+
+  @override
   String get settingsCouldNotOpenPage => '페이지를 열 수 없습니다';
+
+  @override
+  String get colorLabelsTitle => '일정 색상 구분';
+
+  @override
+  String get colorLabelsExplanation =>
+      '자신과 가족 이름마다 색상을 정해 두면, 일정을 만들 때 그 사람을 선택하기만 해도 색이 지정됩니다.';
+
+  @override
+  String get colorLabelsEmpty => '아직 등록된 항목이 없습니다';
+
+  @override
+  String get colorLabelsAddButton => '추가하기';
+
+  @override
+  String get colorLabelsNameLabel => '이름（예: 나, 배우자, 아이）';
+
+  @override
+  String get colorLabelsNameRequired => '이름을 입력해 주세요';
+
+  @override
+  String get colorLabelsDeleteConfirmTitle => '삭제하시겠습니까?';
+
+  @override
+  String get colorLabelsDeleteConfirmBody =>
+      '이 색상 구분을 삭제합니다. 이미 만든 일정의 색상은 바뀌지 않습니다.';
+
+  @override
+  String get colorLabelsSaveFailed => '저장에 실패했습니다. 잠시 후 다시 시도해 주세요';
+
+  @override
+  String get scheduleFormColorPerson => '누구의 일정인가요?';
+
+  @override
+  String get scheduleFormColorOther => '다른 색상';
+
+  @override
+  String get scheduleFormManageColorLabels => '색상 구분 관리';
 
   @override
   String get calendarShareTitle => '공유 캘린더';

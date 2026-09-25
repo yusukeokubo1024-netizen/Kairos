@@ -299,7 +299,47 @@ class AppLocalizationsJa extends AppLocalizations {
   String get settingsCalendarShare => '共有カレンダー';
 
   @override
+  String get settingsColorLabels => '予定の色分け';
+
+  @override
   String get settingsCouldNotOpenPage => 'ページを開けませんでした';
+
+  @override
+  String get colorLabelsTitle => '予定の色分け';
+
+  @override
+  String get colorLabelsExplanation =>
+      '自分や家族の名前ごとに色を決めておくと、予定を作成するときにその人を選ぶだけで色がつきます。';
+
+  @override
+  String get colorLabelsEmpty => 'まだ登録されていません';
+
+  @override
+  String get colorLabelsAddButton => '追加する';
+
+  @override
+  String get colorLabelsNameLabel => '名前（例：自分、妻、息子）';
+
+  @override
+  String get colorLabelsNameRequired => '名前を入力してください';
+
+  @override
+  String get colorLabelsDeleteConfirmTitle => '削除しますか？';
+
+  @override
+  String get colorLabelsDeleteConfirmBody => 'この色分けを削除します。すでに作成した予定の色は変わりません。';
+
+  @override
+  String get colorLabelsSaveFailed => '保存に失敗しました。時間をおいて再度お試しください';
+
+  @override
+  String get scheduleFormColorPerson => '誰の予定？';
+
+  @override
+  String get scheduleFormColorOther => 'その他の色';
+
+  @override
+  String get scheduleFormManageColorLabels => '色分けを管理する';
 
   @override
   String get calendarShareTitle => '共有カレンダー';

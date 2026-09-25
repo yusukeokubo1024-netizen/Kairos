@@ -15,6 +15,7 @@ import '../../services/analytics_service.dart';
 import '../../services/audit_service.dart';
 import '../../services/calendar_share_service.dart';
 import '../../services/notification_service.dart';
+import '../settings/color_labels_screen.dart';
 
 /// Create or edit a schedule. Pass [schedule] to edit an existing one,
 /// otherwise a new schedule is created starting on [initialDate].
@@ -29,16 +30,7 @@ class ScheduleFormScreen extends StatefulWidget {
 }
 
 class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
-  static const _palette = <Color>[
-    Color(0xFF2563EB), // blue
-    Color(0xFF0EA5E9), // sky
-    Color(0xFF10B981), // green
-    Color(0xFFF59E0B), // amber
-    Color(0xFFEF4444), // red
-    Color(0xFFA855F7), // purple
-    Color(0xFFEC4899), // pink
-    Color(0xFF64748B), // slate
-  ];
+  List<({String name, Color color})> _colorLabels = [];
 
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
@@ -90,6 +82,21 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
       _end = _start.add(const Duration(hours: 1));
       _color = Schedule.defaultColor;
       _reminderMinutes = Schedule.defaultReminderMinutes;
+    }
+    _loadColorLabels();
+  }
+
+  Future<void> _loadColorLabels() async {
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+    final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+    final raw = doc.data()?['colorLabels'] as List? ?? [];
+    if (mounted) {
+      setState(() {
+        _colorLabels = raw
+            .cast<Map<String, dynamic>>()
+            .map((e) => (name: e['name'] as String, color: Color(e['color'] as int)))
+            .toList();
+      });
     }
   }
 
@@ -405,11 +412,46 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                Text(l10n.scheduleFormColor, style: const TextStyle(fontWeight: FontWeight.bold)),
+                if (_colorLabels.isNotEmpty) ...[
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(l10n.scheduleFormColorPerson,
+                          style: const TextStyle(fontWeight: FontWeight.bold)),
+                      TextButton(
+                        onPressed: () async {
+                          await Navigator.of(context).push(
+                            MaterialPageRoute(builder: (_) => const ColorLabelsScreen()),
+                          );
+                          _loadColorLabels();
+                        },
+                        child: Text(l10n.scheduleFormManageColorLabels),
+                      ),
+                    ],
+                  ),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: _colorLabels.map((label) {
+                      final selected = label.color.toARGB32() == _color.toARGB32();
+                      return ChoiceChip(
+                        label: Text(label.name),
+                        avatar: CircleAvatar(backgroundColor: label.color),
+                        selected: selected,
+                        onSelected: (_) => setState(() => _color = label.color),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 12),
+                ],
+                Text(
+                  _colorLabels.isEmpty ? l10n.scheduleFormColor : l10n.scheduleFormColorOther,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
                 const SizedBox(height: 8),
                 Wrap(
                   spacing: 12,
-                  children: _palette.map((color) {
+                  children: colorLabelPalette.map((color) {
                     final selected = color.toARGB32() == _color.toARGB32();
                     return GestureDetector(
                       onTap: () => setState(() => _color = color),

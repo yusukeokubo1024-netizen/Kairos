@@ -648,11 +648,89 @@ abstract class AppLocalizations {
   /// **'共有カレンダー'**
   String get settingsCalendarShare;
 
+  /// No description provided for @settingsColorLabels.
+  ///
+  /// In ja, this message translates to:
+  /// **'予定の色分け'**
+  String get settingsColorLabels;
+
   /// No description provided for @settingsCouldNotOpenPage.
   ///
   /// In ja, this message translates to:
   /// **'ページを開けませんでした'**
   String get settingsCouldNotOpenPage;
+
+  /// No description provided for @colorLabelsTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'予定の色分け'**
+  String get colorLabelsTitle;
+
+  /// No description provided for @colorLabelsExplanation.
+  ///
+  /// In ja, this message translates to:
+  /// **'自分や家族の名前ごとに色を決めておくと、予定を作成するときにその人を選ぶだけで色がつきます。'**
+  String get colorLabelsExplanation;
+
+  /// No description provided for @colorLabelsEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'まだ登録されていません'**
+  String get colorLabelsEmpty;
+
+  /// No description provided for @colorLabelsAddButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'追加する'**
+  String get colorLabelsAddButton;
+
+  /// No description provided for @colorLabelsNameLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'名前（例：自分、妻、息子）'**
+  String get colorLabelsNameLabel;
+
+  /// No description provided for @colorLabelsNameRequired.
+  ///
+  /// In ja, this message translates to:
+  /// **'名前を入力してください'**
+  String get colorLabelsNameRequired;
+
+  /// No description provided for @colorLabelsDeleteConfirmTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'削除しますか？'**
+  String get colorLabelsDeleteConfirmTitle;
+
+  /// No description provided for @colorLabelsDeleteConfirmBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'この色分けを削除します。すでに作成した予定の色は変わりません。'**
+  String get colorLabelsDeleteConfirmBody;
+
+  /// No description provided for @colorLabelsSaveFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'保存に失敗しました。時間をおいて再度お試しください'**
+  String get colorLabelsSaveFailed;
+
+  /// No description provided for @scheduleFormColorPerson.
+  ///
+  /// In ja, this message translates to:
+  /// **'誰の予定？'**
+  String get scheduleFormColorPerson;
+
+  /// No description provided for @scheduleFormColorOther.
+  ///
+  /// In ja, this message translates to:
+  /// **'その他の色'**
+  String get scheduleFormColorOther;
+
+  /// No description provided for @scheduleFormManageColorLabels.
+  ///
+  /// In ja, this message translates to:
+  /// **'色分けを管理する'**
+  String get scheduleFormManageColorLabels;
 
   /// No description provided for @calendarShareTitle.
   ///

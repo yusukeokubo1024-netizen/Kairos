@@ -5,12 +5,14 @@ import 'package:intl/intl.dart';
 
 import '../../l10n/app_localizations.dart';
 
-/// "Who did what, when" activity feed, grouped by schedule — reads
-/// `schedules/*/activity` (see schedule_activity_service.dart) across every
-/// schedule the signed-in user is a participant on, via a collectionGroup
-/// query. Firestore rules scope each activity entry's visibility to that
-/// schedule's own participantIds, so this can never show more than the user
-/// could already see by opening the schedule itself.
+/// "Who did what, when" activity feed, grouped by schedule — reads the
+/// signed-in user's own `users/{uid}/activityFeed` (see
+/// schedule_activity_service.dart), which is fanned out to every real
+/// participant of a schedule whenever it's created/updated. Reading only
+/// one's own subcollection (rather than a collectionGroup query across every
+/// schedule) is what actually works reliably with Firestore's security rules
+/// — see the comment in firestore.rules for why the collectionGroup version
+/// hit a real permission-denied in practice.
 class NotificationsScreen extends StatelessWidget {
   const NotificationsScreen({super.key});
 
@@ -46,8 +48,9 @@ class NotificationsScreen extends StatelessWidget {
     final uid = FirebaseAuth.instance.currentUser!.uid;
 
     final activityQuery = FirebaseFirestore.instance
-        .collectionGroup('activity')
-        .where('participantIds', arrayContains: uid)
+        .collection('users')
+        .doc(uid)
+        .collection('activityFeed')
         .orderBy('createdAt', descending: true)
         .limit(60);
 
@@ -85,7 +88,7 @@ class NotificationsScreen extends StatelessWidget {
           final scheduleOrder = <String>[];
           final bySchedule = <String, List<QueryDocumentSnapshot<Map<String, dynamic>>>>{};
           for (final doc in docs) {
-            final scheduleId = doc.reference.parent.parent!.id;
+            final scheduleId = doc.data()['scheduleId'] as String? ?? doc.id;
             (bySchedule[scheduleId] ??= []).add(doc);
             if (bySchedule[scheduleId]!.length == 1) scheduleOrder.add(scheduleId);
           }

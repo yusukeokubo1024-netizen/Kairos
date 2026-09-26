@@ -28,23 +28,35 @@ class ScheduleActivityService {
     return _log(newSchedule, action: action);
   }
 
+  // Fanned out to each participant's own users/{uid}/activityFeed instead of
+  // a single schedules/{id}/activity subcollection read via a collectionGroup
+  // query — that design hit a real permission-denied in practice (Firestore
+  // couldn't prove the collectionGroup `list` query safe against a
+  // resource.data.participantIds-based rule the way a plain array-contains
+  // query against a single collection can). Reading only from one's own
+  // subdocument is the standard, reliable Firestore pattern for a per-user
+  // feed and needs no such provability trick.
   Future<void> _log(Schedule schedule, {required String action}) async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) return;
     try {
-      await _db
-          .collection('schedules')
-          .doc(schedule.id)
-          .collection('activity')
-          .add({
+      final data = {
         'action': action,
         'actorId': uid,
+        'scheduleId': schedule.id,
         'scheduleTitle': schedule.title,
         'scheduleStart': Timestamp.fromDate(schedule.startTime),
         'scheduleEnd': Timestamp.fromDate(schedule.endTime),
-        'participantIds': schedule.participantIds,
         'createdAt': FieldValue.serverTimestamp(),
-      });
+      };
+      final batch = _db.batch();
+      for (final participantId in schedule.participantIds) {
+        batch.set(
+          _db.collection('users').doc(participantId).collection('activityFeed').doc(),
+          data,
+        );
+      }
+      await batch.commit();
     } catch (e, st) {
       // Best-effort — a failed activity-log write shouldn't block saving the
       // schedule itself, but shouldn't vanish silently either.

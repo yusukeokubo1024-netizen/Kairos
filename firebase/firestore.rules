@@ -22,6 +22,37 @@ service cloud.firestore {
       allow create: if isAuthenticated() && request.auth.uid == uid;
       allow update: if isOwner(uid) && request.resource.data.uid == resource.data.uid;
       allow delete: if isOwner(uid);
+
+      // ============================================
+      // activityFeed サブコレクション（「誰が・いつ・何をしたか」の
+      // ユーザー向け履歴。schedules/{id}/activity の collectionGroup
+      // クエリでは list の権限証明が通らず実際に permission-denied に
+      // なったため、各参加者自身の users/{uid} 配下に書き込む方式に
+      // 変更 — 本人しか読めないので権限判定は単純な所有者チェックのみで
+      // 済み、collectionGroup の複雑さを避けられる。書き込み時は、
+      // 予定の本当の participantIds に本人(uid)と書き込み者の両方が
+      // 含まれていること、内容が実物の予定と完全一致することを検証する）
+      // ============================================
+      match /activityFeed/{activityId} {
+        function matchesRealSchedule(data) {
+          let schedule = get(/databases/$(database)/documents/schedules/$(data.scheduleId)).data;
+          return request.auth.uid in schedule.participantIds &&
+            uid in schedule.participantIds &&
+            data.scheduleTitle == schedule.title &&
+            data.scheduleStart == schedule.startTime &&
+            data.scheduleEnd == schedule.endTime;
+        }
+
+        allow get, list: if isOwner(uid);
+        allow create: if isAuthenticated() &&
+          request.resource.data.actorId == request.auth.uid &&
+          request.resource.data.action in ['create', 'update_time', 'update_title', 'update_other'] &&
+          request.resource.data.createdAt == request.time &&
+          request.resource.data.keys().hasOnly(
+            ['action', 'actorId', 'scheduleId', 'scheduleTitle', 'scheduleStart', 'scheduleEnd', 'createdAt']) &&
+          matchesRealSchedule(request.resource.data);
+        allow update, delete: if false;
+      }
     }
 
     // ============================================
@@ -74,42 +105,6 @@ service cloud.firestore {
       allow update: if isAuthenticated() && resource.data.ownerId == request.auth.uid &&
         request.resource.data.ownerId == resource.data.ownerId;
       allow delete: if isAuthenticated() && resource.data.ownerId == request.auth.uid;
-
-      // ============================================
-      // activity サブコレクション（「誰が・いつ・何をしたか」のユーザー
-      // 向け履歴。書き込み専用で内部監査用の auditLogs とは別物 — こちらは
-      // その予定の参加者(participantIds)にだけ表示する。予定そのものと
-      // 同じ閲覧範囲に厳密に合わせているため、グループ全体には絶対に
-      // 見えない（以前 sharedGroups.lastActivityText で見つかった漏洩と
-      // 同じ轍を踏まないように）
-      // ============================================
-      match /activity/{activityId} {
-        // participantIds・タイトル・日時は、書き込み側の自己申告のままでは
-        // 偽造できてしまう（実際に本番反映前のレビューで発覚 — 例えば
-        // 「本物の参加者だが participantIds に無関係な第三者のUIDを混ぜて
-        // 書き込む」ことで、その第三者にも本来見えないはずの予定名が
-        // 見えてしまう）。必ず親の schedules ドキュメントの「今の」値と
-        // 完全一致することまで検証し、予定そのものの閲覧範囲から一切
-        // ズレないようにする。
-        function matchesRealSchedule(data) {
-          let schedule = get(/databases/$(database)/documents/schedules/$(scheduleId)).data;
-          return data.participantIds == schedule.participantIds &&
-            data.scheduleTitle == schedule.title &&
-            data.scheduleStart == schedule.startTime &&
-            data.scheduleEnd == schedule.endTime;
-        }
-
-        allow get, list: if isAuthenticated() && request.auth.uid in resource.data.participantIds;
-        allow create: if isAuthenticated() &&
-          request.resource.data.actorId == request.auth.uid &&
-          request.auth.uid in request.resource.data.participantIds &&
-          request.resource.data.action in ['create', 'update_time', 'update_title', 'update_other'] &&
-          request.resource.data.createdAt == request.time &&
-          request.resource.data.keys().hasOnly(
-            ['action', 'actorId', 'scheduleTitle', 'scheduleStart', 'scheduleEnd', 'participantIds', 'createdAt']) &&
-          matchesRealSchedule(request.resource.data);
-        allow update, delete: if false;
-      }
     }
 
     // ============================================

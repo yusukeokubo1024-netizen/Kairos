@@ -24,14 +24,6 @@
         { "fieldPath": "ownerId", "order": "ASCENDING" },
         { "fieldPath": "deletedAt", "order": "DESCENDING" }
       ]
-    },
-    {
-      "collectionGroup": "activity",
-      "queryScope": "COLLECTION_GROUP",
-      "fields": [
-        { "fieldPath": "participantIds", "arrayConfig": "CONTAINS" },
-        { "fieldPath": "createdAt", "order": "DESCENDING" }
-      ]
     }
   ],
   "fieldOverrides": []

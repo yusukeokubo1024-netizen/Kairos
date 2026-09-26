@@ -58,7 +58,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyDBXtU1lxBt96VRd28XgT9Nq3rjseBB6Xw',
-    appId: '1:889968355663:android:298412f174215bee69fd3a',
+    appId: '1:889968355663:android:155dc45aa478232369fd3a',
     messagingSenderId: '889968355663',
     projectId: 'kairos-3d873',
     storageBucket: 'kairos-3d873.firebasestorage.app',

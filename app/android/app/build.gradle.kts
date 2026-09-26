@@ -34,7 +34,14 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.kairos.app"
+        // Google Play package name — must be globally unique across all of Play,
+        // and com.kairos.app was already taken by an unrelated app (the same
+        // issue iOS hit with its bundle id, fixed the same way: a distinct
+        // suffix). Deliberately kept separate from `namespace` above (which
+        // stays com.kairos.app, matching MainActivity.kt's package) — Android
+        // Gradle Plugin fully supports applicationId != namespace, so no source
+        // files need to move.
+        applicationId = "com.kairosshare.app"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion

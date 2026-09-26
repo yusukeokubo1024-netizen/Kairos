@@ -359,19 +359,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return regions.firstWhere((region) => region.name == picked);
   }
 
-  /// Walks region → city (市区町村レベルまで — 区・町名までは細かすぎるため
-  /// 選ばせない). Returns the picked city name, [_manualEntrySentinel], or
-  /// null if the user backed out.
-  Future<String?> _pickAdminCity(AdminRegion region) async {
-    final l10n = AppLocalizations.of(context)!;
-    return _pickFromList(
-      title: region.name,
-      searchHint: l10n.settingsWeatherLocationCitySearchHint,
-      items: [for (final city in region.cities) city.name],
-      showManualEntry: true,
-    );
-  }
-
   Future<String?> _promptCityName(String? current) async {
     final l10n = AppLocalizations.of(context)!;
     final controller = TextEditingController(text: current ?? '');
@@ -407,17 +394,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
     String? prefectureHint;
     var isStructuredPick = false;
     if (kAdminRegionAssets.containsKey(country.code)) {
+      // 市区町村レベルまで選ばせると、フリーの地名データベースに載っていない
+      // 市（羽曳野市など）でエラーになることがあったため、都道府県・州・省
+      // レベルまでで止める。
       final region = await _pickAdminRegion(country.code);
       if (region == null || !mounted) return;
       prefectureHint = region.name;
-      final picked = await _pickAdminCity(region);
-      if (picked == null || !mounted) return;
-      if (picked == _manualEntrySentinel) {
-        city = await _promptCityName(current);
-      } else {
-        city = picked;
-        isStructuredPick = true;
-      }
+      city = region.name;
+      isStructuredPick = true;
     } else {
       city = await _promptCityName(current);
     }

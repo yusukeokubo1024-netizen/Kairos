@@ -56,6 +56,21 @@ class NotificationsScreen extends StatelessWidget {
       body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
         stream: activityQuery.snapshots(),
         builder: (context, snapshot) {
+          // Without this check, any stream error (e.g. a still-building
+          // Firestore composite index right after this feature ships) left
+          // the spinner running forever instead of showing anything.
+          if (snapshot.hasError) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Text(
+                  '${snapshot.error}',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.grey.shade600),
+                ),
+              ),
+            );
+          }
           if (!snapshot.hasData) {
             return const Center(child: CircularProgressIndicator());
           }

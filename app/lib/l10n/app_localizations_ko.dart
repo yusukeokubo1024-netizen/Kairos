@@ -793,6 +793,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get calendarNoScheduleThisDay => '이 날의 일정이 없습니다';
 
   @override
+  String get calendarTapDayHint => '날짜를 탭하면 그날의 일정과 할 일을 볼 수 있습니다';
+
+  @override
   String get calendarNoUpcoming => '예정된 일정이 없습니다';
 
   @override

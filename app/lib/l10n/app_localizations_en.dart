@@ -811,6 +811,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get calendarNoScheduleThisDay => 'No schedules on this day';
 
   @override
+  String get calendarTapDayHint => 'Tap a date to see its schedules and tasks';
+
+  @override
   String get calendarNoUpcoming => 'No upcoming schedules';
 
   @override

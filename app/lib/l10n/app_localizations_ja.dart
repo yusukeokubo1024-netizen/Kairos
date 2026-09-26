@@ -788,6 +788,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get calendarNoScheduleThisDay => 'この日の予定はありません';
 
   @override
+  String get calendarTapDayHint => '日付をタップすると、その日の予定やタスクが見られます';
+
+  @override
   String get calendarNoUpcoming => '今後の予定はありません';
 
   @override

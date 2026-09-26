@@ -271,6 +271,7 @@
   "calendarFormatMonth": "月",
   "calendarFormatWeek": "周",
   "calendarNoScheduleThisDay": "这一天没有日程",
+  "calendarTapDayHint": "点击日期即可查看当天的日程和任务",
   "calendarNoUpcoming": "没有即将到来的日程",
   "calendarLoadError": "日程加载失败",
   "calendarWeatherLine": "最高{max}° / 最低{min}°",

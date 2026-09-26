@@ -778,6 +778,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get calendarNoScheduleThisDay => '这一天没有日程';
 
   @override
+  String get calendarTapDayHint => '点击日期即可查看当天的日程和任务';
+
+  @override
   String get calendarNoUpcoming => '没有即将到来的日程';
 
   @override

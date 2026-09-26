@@ -1572,6 +1572,12 @@ abstract class AppLocalizations {
   /// **'この日の予定はありません'**
   String get calendarNoScheduleThisDay;
 
+  /// No description provided for @calendarTapDayHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'日付をタップすると、その日の予定やタスクが見られます'**
+  String get calendarTapDayHint;
+
   /// No description provided for @calendarNoUpcoming.
   ///
   /// In ja, this message translates to:

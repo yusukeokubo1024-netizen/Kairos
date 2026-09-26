@@ -271,6 +271,7 @@
   "calendarFormatMonth": "Month",
   "calendarFormatWeek": "Week",
   "calendarNoScheduleThisDay": "No schedules on this day",
+  "calendarTapDayHint": "Tap a date to see its schedules and tasks",
   "calendarNoUpcoming": "No upcoming schedules",
   "calendarLoadError": "Failed to load schedules",
   "calendarWeatherLine": "High {max}° / Low {min}°",

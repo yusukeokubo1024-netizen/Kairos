@@ -587,12 +587,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
       ..sort((a, b) => a.startTime.compareTo(b.startTime));
 
     // Wrapped in a scroll view so a 6-row month (or a small screen) never
-    // overflows into the bottom navigation bar — it scrolls instead.
-    return LayoutBuilder(
-      builder: (context, constraints) => SingleChildScrollView(
-        child: ConstrainedBox(
-          constraints: BoxConstraints(minHeight: constraints.maxHeight),
-          child: Column(
+    // overflows into the bottom navigation bar — it scrolls instead. Content
+    // is sized naturally (not stretched to fill the screen) so there's no
+    // awkward stretch of blank space below a short month/no selected day.
+    return SingleChildScrollView(
+      child: Column(
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(12, 2, 12, 0),
@@ -759,10 +758,18 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 ),
           const Divider(height: 1),
           _DayTasksSection(day: _selectedDay),
-        ],
-      ],
+        ] else
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
+            child: Center(
+              child: Text(
+                l10n.calendarTapDayHint,
+                style: TextStyle(color: Colors.grey.shade500),
+                textAlign: TextAlign.center,
+              ),
+            ),
           ),
-        ),
+      ],
       ),
     );
   }

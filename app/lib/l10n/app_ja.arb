@@ -271,6 +271,7 @@
   "calendarFormatMonth": "月",
   "calendarFormatWeek": "週",
   "calendarNoScheduleThisDay": "この日の予定はありません",
+  "calendarTapDayHint": "日付をタップすると、その日の予定やタスクが見られます",
   "calendarNoUpcoming": "今後の予定はありません",
   "calendarLoadError": "予定の読み込みに失敗しました",
   "calendarWeatherLine": "最高{max}° / 最低{min}°",

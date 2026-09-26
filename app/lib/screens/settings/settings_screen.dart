@@ -390,6 +390,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (country == null || !mounted) return;
 
     String? city;
+    // What we actually search the geocoder with — usually same as [city],
+    // but a bare prefecture/state name is frequently NOT its own indexed
+    // place at all (e.g. 大阪府 has no entry distinct from 大阪市 — Tokyo is
+    // an exception since 東京都 doubles as its own capital-city entry), so
+    // we search its prefectural capital instead while still labeling/saving
+    // the location as the plain prefecture name.
+    String? geocodeQuery;
     String? prefectureHint;
     var isStructuredPick = false;
     if (kAdminRegionAssets.containsKey(country.code)) {
@@ -400,9 +407,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (region == null || !mounted) return;
       prefectureHint = region.name;
       city = region.name;
+      geocodeQuery = region.cities.isNotEmpty ? region.cities.first.name : region.name;
       isStructuredPick = true;
     } else {
       city = await _promptCityName(current);
+      geocodeQuery = city;
     }
     if (city == null || city.isEmpty) return;
 
@@ -410,7 +419,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     List<({double lat, double lon, String resolvedName})> candidates;
     try {
       candidates = await WeatherService.instance.geocodeCity(
-        city,
+        geocodeQuery!,
         countryCode: country.code,
         prefectureHint: prefectureHint,
       );

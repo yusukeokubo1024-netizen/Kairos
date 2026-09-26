@@ -9,6 +9,10 @@
   "tabTasks": "Tasks",
   "tabNotifications": "Notifications",
   "notificationsEmpty": "No notifications yet",
+  "scheduleActivityCreated": "Created this schedule",
+  "scheduleActivityUpdatedTime": "Updated the date/time",
+  "scheduleActivityUpdatedTitle": "Updated the title",
+  "scheduleActivityUpdatedOther": "Updated this schedule",
   "tabGroups": "Groups",
   "tabSettings": "Settings",
 

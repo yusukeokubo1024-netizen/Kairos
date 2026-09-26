@@ -9,6 +9,10 @@
   "tabTasks": "任务",
   "tabNotifications": "通知",
   "notificationsEmpty": "暂无新消息",
+  "scheduleActivityCreated": "创建了日程",
+  "scheduleActivityUpdatedTime": "更新了日期时间",
+  "scheduleActivityUpdatedTitle": "更新了日程名称",
+  "scheduleActivityUpdatedOther": "更新了日程",
   "tabGroups": "群组",
   "tabSettings": "设置",
 

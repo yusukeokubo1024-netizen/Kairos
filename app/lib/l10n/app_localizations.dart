@@ -144,6 +144,30 @@ abstract class AppLocalizations {
   /// **'新着はありません'**
   String get notificationsEmpty;
 
+  /// No description provided for @scheduleActivityCreated.
+  ///
+  /// In ja, this message translates to:
+  /// **'予定を作成しました'**
+  String get scheduleActivityCreated;
+
+  /// No description provided for @scheduleActivityUpdatedTime.
+  ///
+  /// In ja, this message translates to:
+  /// **'日時を更新しました'**
+  String get scheduleActivityUpdatedTime;
+
+  /// No description provided for @scheduleActivityUpdatedTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'予定名を更新しました'**
+  String get scheduleActivityUpdatedTitle;
+
+  /// No description provided for @scheduleActivityUpdatedOther.
+  ///
+  /// In ja, this message translates to:
+  /// **'予定を更新しました'**
+  String get scheduleActivityUpdatedOther;
+
   /// No description provided for @tabGroups.
   ///
   /// In ja, this message translates to:

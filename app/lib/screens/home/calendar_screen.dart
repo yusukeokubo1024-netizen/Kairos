@@ -395,7 +395,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     });
                   },
                 ),
-                ...personalCategories(l10n).entries.map((entry) {
+                // "その他" はカテゴリの中で最後ではなく、グループも含めた
+                // リスト全体の一番下に来るように別枠で描画する。
+                ...personalCategories(l10n).entries.where((entry) => entry.key != 'other').map((entry) {
                   return CheckboxListTile(
                     secondary: const Icon(Icons.label_outline, size: 20),
                     title: Text(entry.value),
@@ -419,6 +421,16 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     },
                   );
                 }),
+                CheckboxListTile(
+                  secondary: const Icon(Icons.label_outline, size: 20),
+                  title: Text(personalCategories(l10n)['other']!),
+                  value: !hidden.contains('other'),
+                  onChanged: (checked) {
+                    setDialogState(() {
+                      checked == true ? hidden.remove('other') : hidden.add('other');
+                    });
+                  },
+                ),
               ],
             ),
           ),

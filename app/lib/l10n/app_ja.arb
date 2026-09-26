@@ -9,6 +9,10 @@
   "tabTasks": "タスク",
   "tabNotifications": "通知",
   "notificationsEmpty": "新着はありません",
+  "scheduleActivityCreated": "予定を作成しました",
+  "scheduleActivityUpdatedTime": "日時を更新しました",
+  "scheduleActivityUpdatedTitle": "予定名を更新しました",
+  "scheduleActivityUpdatedOther": "予定を更新しました",
   "tabGroups": "グループ",
   "tabSettings": "設定",
 

@@ -74,6 +74,42 @@ service cloud.firestore {
       allow update: if isAuthenticated() && resource.data.ownerId == request.auth.uid &&
         request.resource.data.ownerId == resource.data.ownerId;
       allow delete: if isAuthenticated() && resource.data.ownerId == request.auth.uid;
+
+      // ============================================
+      // activity サブコレクション（「誰が・いつ・何をしたか」のユーザー
+      // 向け履歴。書き込み専用で内部監査用の auditLogs とは別物 — こちらは
+      // その予定の参加者(participantIds)にだけ表示する。予定そのものと
+      // 同じ閲覧範囲に厳密に合わせているため、グループ全体には絶対に
+      // 見えない（以前 sharedGroups.lastActivityText で見つかった漏洩と
+      // 同じ轍を踏まないように）
+      // ============================================
+      match /activity/{activityId} {
+        // participantIds・タイトル・日時は、書き込み側の自己申告のままでは
+        // 偽造できてしまう（実際に本番反映前のレビューで発覚 — 例えば
+        // 「本物の参加者だが participantIds に無関係な第三者のUIDを混ぜて
+        // 書き込む」ことで、その第三者にも本来見えないはずの予定名が
+        // 見えてしまう）。必ず親の schedules ドキュメントの「今の」値と
+        // 完全一致することまで検証し、予定そのものの閲覧範囲から一切
+        // ズレないようにする。
+        function matchesRealSchedule(data) {
+          let schedule = get(/databases/$(database)/documents/schedules/$(scheduleId)).data;
+          return data.participantIds == schedule.participantIds &&
+            data.scheduleTitle == schedule.title &&
+            data.scheduleStart == schedule.startTime &&
+            data.scheduleEnd == schedule.endTime;
+        }
+
+        allow get, list: if isAuthenticated() && request.auth.uid in resource.data.participantIds;
+        allow create: if isAuthenticated() &&
+          request.resource.data.actorId == request.auth.uid &&
+          request.auth.uid in request.resource.data.participantIds &&
+          request.resource.data.action in ['create', 'update_time', 'update_title', 'update_other'] &&
+          request.resource.data.createdAt == request.time &&
+          request.resource.data.keys().hasOnly(
+            ['action', 'actorId', 'scheduleTitle', 'scheduleStart', 'scheduleEnd', 'participantIds', 'createdAt']) &&
+          matchesRealSchedule(request.resource.data);
+        allow update, delete: if false;
+      }
     }
 
     // ============================================
@@ -117,14 +153,6 @@ service cloud.firestore {
           request.auth.uid in resource.data.memberIds &&
           request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberIds', 'updatedAt']) &&
           request.resource.data.memberIds == resource.data.memberIds.removeAll([request.auth.uid])
-        ) ||
-        // 任意のメンバーが「予定を追加した」等のお知らせ表示（プッシュ通知の
-        // 代わりの、無料でできるアプリ内通知）だけを更新できる。他のフィールド
-        // には触れられない。timestamp偽造防止のため request.time と一致必須。
-        (
-          request.auth.uid in resource.data.memberIds &&
-          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lastActivityAt', 'lastActivityText']) &&
-          request.resource.data.lastActivityAt == request.time
         )
       );
       allow delete: if isAuthenticated() && resource.data.ownerId == request.auth.uid;

@@ -211,11 +211,14 @@ FAQ:
 $faqText''';
   }
 
-  /// Google's free-tier flash model occasionally returns 503 (temporary
-  /// overload) rather than an actual problem with the request — retrying
-  /// once after a short pause clears most of these automatically.
+  /// Google's free-tier flash model occasionally returns 503/429 (temporary
+  /// overload/rate limit) rather than an actual problem with the request —
+  /// retrying with backoff clears most of these automatically. A casual
+  /// one-word message like "やっほー" is just as likely to hit this as any
+  /// other message, so this isn't about message content — it's purely about
+  /// giving transient overload enough retries to clear before giving up.
   Future<Map<String, dynamic>> _callGemini(AppLocalizations l10n) async {
-    const maxAttempts = 3;
+    const maxAttempts = 5;
     for (var attempt = 1; attempt <= maxAttempts; attempt++) {
       final response = await http.post(
         Uri.parse('https://generativelanguage.googleapis.com/v1beta/models/$_geminiModel:generateContent'),

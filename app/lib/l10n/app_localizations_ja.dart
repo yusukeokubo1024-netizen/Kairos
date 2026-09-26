@@ -31,6 +31,18 @@ class AppLocalizationsJa extends AppLocalizations {
   String get notificationsEmpty => '新着はありません';
 
   @override
+  String get scheduleActivityCreated => '予定を作成しました';
+
+  @override
+  String get scheduleActivityUpdatedTime => '日時を更新しました';
+
+  @override
+  String get scheduleActivityUpdatedTitle => '予定名を更新しました';
+
+  @override
+  String get scheduleActivityUpdatedOther => '予定を更新しました';
+
+  @override
   String get tabGroups => 'グループ';
 
   @override

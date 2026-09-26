@@ -31,6 +31,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notificationsEmpty => 'No notifications yet';
 
   @override
+  String get scheduleActivityCreated => 'Created this schedule';
+
+  @override
+  String get scheduleActivityUpdatedTime => 'Updated the date/time';
+
+  @override
+  String get scheduleActivityUpdatedTitle => 'Updated the title';
+
+  @override
+  String get scheduleActivityUpdatedOther => 'Updated this schedule';
+
+  @override
   String get tabGroups => 'Groups';
 
   @override

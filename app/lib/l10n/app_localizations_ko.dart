@@ -31,6 +31,18 @@ class AppLocalizationsKo extends AppLocalizations {
   String get notificationsEmpty => '새로운 소식이 없습니다';
 
   @override
+  String get scheduleActivityCreated => '일정을 만들었습니다';
+
+  @override
+  String get scheduleActivityUpdatedTime => '일시를 변경했습니다';
+
+  @override
+  String get scheduleActivityUpdatedTitle => '일정 이름을 변경했습니다';
+
+  @override
+  String get scheduleActivityUpdatedOther => '일정을 변경했습니다';
+
+  @override
   String get tabGroups => '그룹';
 
   @override

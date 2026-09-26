@@ -15,7 +15,6 @@ import '../../services/locale_service.dart';
 import '../../services/notification_service.dart';
 import '../../services/weather_service.dart';
 import '../anniversary/anniversary_list_screen.dart';
-import 'calendar_share_screen.dart';
 import 'color_labels_screen.dart';
 import 'support_screen.dart';
 import 'trash_screen.dart';
@@ -712,13 +711,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 title: Text(l10n.settingsTrash),
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => const TrashScreen()),
-                ),
-              ),
-              ListTile(
-                leading: const Icon(Icons.ios_share_outlined),
-                title: Text(l10n.settingsCalendarShare),
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const CalendarShareScreen()),
                 ),
               ),
               ListTile(

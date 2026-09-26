@@ -13,7 +13,6 @@ import '../../models/shared_group.dart';
 import '../../models/task.dart';
 import '../../services/analytics_service.dart';
 import '../../services/audit_service.dart';
-import '../../services/calendar_share_service.dart';
 import '../../services/notification_service.dart';
 import '../settings/color_labels_screen.dart';
 
@@ -274,7 +273,6 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
           oldData: widget.schedule!.toUpdateMap(),
           newData: updated.toUpdateMap(),
         ));
-        unawaited(CalendarShareService.instance.mirrorUpsert(updated));
         await NotificationService.instance.scheduleForSchedule(updated);
       } else {
         final newSchedule = Schedule(
@@ -308,7 +306,6 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
           color: newSchedule.color,
           reminderMinutes: newSchedule.reminderMinutes,
         );
-        unawaited(CalendarShareService.instance.mirrorUpsert(createdSchedule));
         if (_groupId != null) {
           // Free stand-in for a push notification (real push would need
           // Cloud Functions / the paid Blaze plan) — other members see this

@@ -20,6 +20,10 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     '👍', '👎', '❤️', '😂', '😢', '😮', '🎉', '🙏',
     '👏', '😴', '🔥', '💦', '❓', '❗', '😆', '😭',
     '😡', '🥳', '🤔', '😱', '👌', '💪', '🙌', '✨',
+    '😊', '😉', '😘', '🥰', '🤗', '😅', '🙄', '😇',
+    '🙆', '🙇', '🤝', '👋', '✋', '🫶', '💯', '💤',
+    '☕', '🍰', '🎂', '🍺', '🎁', '📅', '🚗', '✈️',
+    '🏠', '⭐', '🌙', '☀️', '☔', '❄️', '🌸', '📸',
   ];
 
   static const _quickReactions = ['👍', '❤️', '😂', '😮', '😢', '🙏'];
@@ -235,22 +239,30 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
   void _openStampPicker() {
     showModalBottomSheet<void>(
       context: context,
+      // Stamps grew from 24 to ~50 entries, so the sheet needs its own scroll
+      // area instead of shrink-wrapping to content height (which could
+      // overflow the screen on smaller phones).
+      isScrollControlled: true,
       builder: (context) => SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16),
-          child: GridView.count(
-            crossAxisCount: 4,
-            shrinkWrap: true,
-            mainAxisSpacing: 8,
-            crossAxisSpacing: 8,
-            children: [
-              for (final stamp in _stamps)
-                InkWell(
-                  onTap: () => _sendStamp(stamp),
-                  borderRadius: BorderRadius.circular(8),
-                  child: Center(child: Text(stamp, style: const TextStyle(fontSize: 32))),
-                ),
-            ],
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.6,
+            ),
+            child: GridView.count(
+              crossAxisCount: 4,
+              mainAxisSpacing: 8,
+              crossAxisSpacing: 8,
+              children: [
+                for (final stamp in _stamps)
+                  InkWell(
+                    onTap: () => _sendStamp(stamp),
+                    borderRadius: BorderRadius.circular(8),
+                    child: Center(child: Text(stamp, style: const TextStyle(fontSize: 32))),
+                  ),
+              ],
+            ),
           ),
         ),
       ),

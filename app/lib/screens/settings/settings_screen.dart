@@ -13,6 +13,7 @@ import '../../services/auth_service.dart';
 import '../../services/biometric_service.dart';
 import '../../services/locale_service.dart';
 import '../../services/notification_service.dart';
+import '../../services/theme_service.dart';
 import '../../services/weather_service.dart';
 import '../anniversary/anniversary_list_screen.dart';
 import 'color_labels_screen.dart';
@@ -119,6 +120,37 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
     if (selected != null) {
       await LocaleService.instance.setLocale(selected);
+    }
+  }
+
+  String _themeModeLabel(AppLocalizations l10n, ThemeMode mode) {
+    switch (mode) {
+      case ThemeMode.light:
+        return l10n.settingsThemeLight;
+      case ThemeMode.dark:
+        return l10n.settingsThemeDark;
+      case ThemeMode.system:
+        return l10n.settingsThemeSystem;
+    }
+  }
+
+  Future<void> _pickThemeMode() async {
+    final l10n = AppLocalizations.of(context)!;
+    final selected = await showDialog<ThemeMode>(
+      context: context,
+      builder: (context) => SimpleDialog(
+        title: Text(l10n.settingsTheme),
+        children: [
+          for (final mode in ThemeMode.values)
+            SimpleDialogOption(
+              onPressed: () => Navigator.pop(context, mode),
+              child: Text(_themeModeLabel(l10n, mode)),
+            ),
+        ],
+      ),
+    );
+    if (selected != null) {
+      await ThemeService.instance.setThemeMode(selected);
     }
   }
 
@@ -690,6 +722,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 subtitle: Text(_languageLabel(l10n, currentLocale)),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: _pickLanguage,
+              ),
+              ValueListenableBuilder<ThemeMode>(
+                valueListenable: ThemeService.instance.themeMode,
+                builder: (context, themeMode, _) => ListTile(
+                  leading: const Icon(Icons.dark_mode_outlined),
+                  title: Text(l10n.settingsTheme),
+                  subtitle: Text(_themeModeLabel(l10n, themeMode)),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: _pickThemeMode,
+                ),
               ),
               const Divider(),
               Padding(

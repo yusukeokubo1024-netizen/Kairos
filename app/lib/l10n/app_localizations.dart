@@ -888,6 +888,30 @@ abstract class AppLocalizations {
   /// **'言語'**
   String get settingsLanguage;
 
+  /// No description provided for @settingsTheme.
+  ///
+  /// In ja, this message translates to:
+  /// **'テーマ'**
+  String get settingsTheme;
+
+  /// No description provided for @settingsThemeLight.
+  ///
+  /// In ja, this message translates to:
+  /// **'ライト'**
+  String get settingsThemeLight;
+
+  /// No description provided for @settingsThemeDark.
+  ///
+  /// In ja, this message translates to:
+  /// **'ダーク'**
+  String get settingsThemeDark;
+
+  /// No description provided for @settingsThemeSystem.
+  ///
+  /// In ja, this message translates to:
+  /// **'端末の設定に合わせる'**
+  String get settingsThemeSystem;
+
   /// No description provided for @settingsLanguageJapanese.
   ///
   /// In ja, this message translates to:

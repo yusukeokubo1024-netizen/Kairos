@@ -427,6 +427,18 @@ class AppLocalizationsKo extends AppLocalizations {
   String get settingsLanguage => '언어';
 
   @override
+  String get settingsTheme => '테마';
+
+  @override
+  String get settingsThemeLight => '라이트';
+
+  @override
+  String get settingsThemeDark => '다크';
+
+  @override
+  String get settingsThemeSystem => '기기 설정에 맞춤';
+
+  @override
   String get settingsLanguageJapanese => '日本語';
 
   @override

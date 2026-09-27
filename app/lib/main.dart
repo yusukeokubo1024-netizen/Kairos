@@ -18,6 +18,7 @@ import 'services/analytics_service.dart';
 import 'services/biometric_service.dart';
 import 'services/locale_service.dart';
 import 'services/notification_service.dart';
+import 'services/theme_service.dart';
 
 /// App-wide messenger key so screens can show a SnackBar (e.g. an "undo"
 /// action after a delete) even after they've already been popped off the
@@ -55,6 +56,7 @@ Future<void> main() async {
   await initializeDateFormatting('en_US');
   await NotificationService.instance.init();
   await LocaleService.instance.load();
+  await ThemeService.instance.load();
   runApp(const KairosApp());
 }
 
@@ -66,27 +68,41 @@ class KairosApp extends StatelessWidget {
     return ValueListenableBuilder<Locale>(
       valueListenable: LocaleService.instance.locale,
       builder: (context, locale, _) {
-        return MaterialApp(
-          title: 'Kairos',
-          debugShowCheckedModeBanner: false,
-          scaffoldMessengerKey: rootScaffoldMessengerKey,
-          navigatorObservers: [AnalyticsService.instance.observer],
-          locale: locale,
-          supportedLocales: AppLocalizations.supportedLocales,
-          localizationsDelegates: const [
-            ...AppLocalizations.localizationsDelegates,
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
-          theme: ThemeData(
-            colorSchemeSeed: const Color(0xFF2563EB),
-            useMaterial3: true,
-            inputDecorationTheme: const InputDecorationTheme(
-              border: OutlineInputBorder(),
-            ),
-          ),
-          home: const AuthGate(),
+        return ValueListenableBuilder<ThemeMode>(
+          valueListenable: ThemeService.instance.themeMode,
+          builder: (context, themeMode, _) {
+            return MaterialApp(
+              title: 'Kairos',
+              debugShowCheckedModeBanner: false,
+              scaffoldMessengerKey: rootScaffoldMessengerKey,
+              navigatorObservers: [AnalyticsService.instance.observer],
+              locale: locale,
+              supportedLocales: AppLocalizations.supportedLocales,
+              localizationsDelegates: const [
+                ...AppLocalizations.localizationsDelegates,
+                GlobalMaterialLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
+              ],
+              theme: ThemeData(
+                colorSchemeSeed: const Color(0xFF2563EB),
+                useMaterial3: true,
+                inputDecorationTheme: const InputDecorationTheme(
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              darkTheme: ThemeData(
+                colorSchemeSeed: const Color(0xFF2563EB),
+                brightness: Brightness.dark,
+                useMaterial3: true,
+                inputDecorationTheme: const InputDecorationTheme(
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              themeMode: themeMode,
+              home: const AuthGate(),
+            );
+          },
         );
       },
     );

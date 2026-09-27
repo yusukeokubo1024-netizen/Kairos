@@ -798,6 +798,18 @@ class AppLocalizationsKo extends AppLocalizations {
   String get calendarFilterTooltip => '표시할 캘린더 선택';
 
   @override
+  String get scheduleSearchTooltip => '일정 검색';
+
+  @override
+  String get scheduleSearchHint => '제목·장소·메모로 검색';
+
+  @override
+  String get scheduleSearchPrompt => '키워드를 입력해 일정을 찾아보세요';
+
+  @override
+  String get scheduleSearchNoResults => '검색 결과가 없습니다';
+
+  @override
   String get calendarFilterTitle => '표시할 캘린더';
 
   @override

@@ -18,6 +18,7 @@ import '../../services/audit_service.dart';
 import '../../services/notification_service.dart';
 import '../../services/weather_service.dart';
 import '../schedule/schedule_detail_screen.dart';
+import 'schedule_search_screen.dart';
 import '../schedule/schedule_form_screen.dart';
 import '../task/task_form_screen.dart';
 
@@ -541,6 +542,13 @@ class _CalendarScreenState extends State<CalendarScreen> {
           ],
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.search),
+            tooltip: l10n.scheduleSearchTooltip,
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const ScheduleSearchScreen()),
+            ),
+          ),
           StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
             stream: groupsQuery.snapshots(),
             builder: (context, groupSnapshot) {

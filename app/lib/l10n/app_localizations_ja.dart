@@ -793,6 +793,18 @@ class AppLocalizationsJa extends AppLocalizations {
   String get calendarFilterTooltip => '表示するカレンダーを選ぶ';
 
   @override
+  String get scheduleSearchTooltip => '予定を検索';
+
+  @override
+  String get scheduleSearchHint => 'タイトル・場所・メモで検索';
+
+  @override
+  String get scheduleSearchPrompt => 'キーワードを入力して予定を探せます';
+
+  @override
+  String get scheduleSearchNoResults => '見つかりませんでした';
+
+  @override
   String get calendarFilterTitle => '表示するカレンダー';
 
   @override

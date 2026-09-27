@@ -1590,6 +1590,30 @@ abstract class AppLocalizations {
   /// **'表示するカレンダーを選ぶ'**
   String get calendarFilterTooltip;
 
+  /// No description provided for @scheduleSearchTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'予定を検索'**
+  String get scheduleSearchTooltip;
+
+  /// No description provided for @scheduleSearchHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'タイトル・場所・メモで検索'**
+  String get scheduleSearchHint;
+
+  /// No description provided for @scheduleSearchPrompt.
+  ///
+  /// In ja, this message translates to:
+  /// **'キーワードを入力して予定を探せます'**
+  String get scheduleSearchPrompt;
+
+  /// No description provided for @scheduleSearchNoResults.
+  ///
+  /// In ja, this message translates to:
+  /// **'見つかりませんでした'**
+  String get scheduleSearchNoResults;
+
   /// No description provided for @calendarFilterTitle.
   ///
   /// In ja, this message translates to:

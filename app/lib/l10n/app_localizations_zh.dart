@@ -783,6 +783,18 @@ class AppLocalizationsZh extends AppLocalizations {
   String get calendarFilterTooltip => '选择要显示的日历';
 
   @override
+  String get scheduleSearchTooltip => '搜索日程';
+
+  @override
+  String get scheduleSearchHint => '按标题、地点或备注搜索';
+
+  @override
+  String get scheduleSearchPrompt => '输入关键字以查找日程';
+
+  @override
+  String get scheduleSearchNoResults => '未找到相关日程';
+
+  @override
   String get calendarFilterTitle => '要显示的日历';
 
   @override

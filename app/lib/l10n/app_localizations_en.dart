@@ -816,6 +816,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get calendarFilterTooltip => 'Choose which calendars to show';
 
   @override
+  String get scheduleSearchTooltip => 'Search schedules';
+
+  @override
+  String get scheduleSearchHint => 'Search by title, location or notes';
+
+  @override
+  String get scheduleSearchPrompt => 'Type a keyword to find a schedule';
+
+  @override
+  String get scheduleSearchNoResults => 'No matches found';
+
+  @override
   String get calendarFilterTitle => 'Calendars to show';
 
   @override

@@ -436,6 +436,15 @@ class AppLocalizationsJa extends AppLocalizations {
   String get settingsThemeSystem => '端末の設定に合わせる';
 
   @override
+  String get settingsAddHomeWidget => 'ホーム画面ウィジェットを追加';
+
+  @override
+  String get settingsAddHomeWidgetHint => '今日の予定を一目で確認できます(Android)';
+
+  @override
+  String get settingsAddHomeWidgetManual => 'ホーム画面を長押し→ウィジェット→Kairosから追加してください';
+
+  @override
   String get settingsLanguageJapanese => '日本語';
 
   @override

@@ -431,6 +431,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsThemeSystem => '跟随系统设置';
 
   @override
+  String get settingsAddHomeWidget => '添加主屏幕小组件';
+
+  @override
+  String get settingsAddHomeWidgetHint => '一目了然查看今天的日程(Android)';
+
+  @override
+  String get settingsAddHomeWidgetManual => '请长按主屏幕→小组件→Kairos 进行添加';
+
+  @override
   String get settingsLanguageJapanese => '日本語';
 
   @override

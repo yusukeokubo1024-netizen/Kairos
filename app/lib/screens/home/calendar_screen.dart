@@ -15,6 +15,7 @@ import '../../models/schedule_category.dart';
 import '../../models/shared_group.dart';
 import '../../models/task.dart';
 import '../../services/audit_service.dart';
+import '../../services/home_widget_service.dart';
 import '../../services/notification_service.dart';
 import '../../services/weather_service.dart';
 import '../schedule/schedule_detail_screen.dart';
@@ -105,6 +106,24 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   bool _isSameDay(DateTime a, DateTime b) {
     return a.year == b.year && a.month == b.month && a.day == b.day;
+  }
+
+  /// Pushes today's schedules to the Android home-screen widget (a no-op on
+  /// iOS/other platforms — see HomeWidgetService). Runs every time this
+  /// stream rebuilds, but the service itself skips the native call when the
+  /// formatted text hasn't actually changed since the last push.
+  Future<void> _pushTodayToHomeWidget(List<Schedule> schedules, AppLocalizations l10n) async {
+    final now = DateTime.now();
+    final today = schedules.where((s) => _isSameDay(s.startTime, now)).toList()
+      ..sort((a, b) => a.startTime.compareTo(b.startTime));
+    final lines = today.take(5).map((s) {
+      final time = s.isAllDay
+          ? l10n.calendarAllDay
+          : '${s.startTime.hour.toString().padLeft(2, '0')}:'
+              '${s.startTime.minute.toString().padLeft(2, '0')}';
+      return '$time  ${s.title}';
+    }).toList();
+    await HomeWidgetService.updateTodaySchedules(lines);
   }
 
   // How far out a recurring schedule with no end date still gets expanded
@@ -613,6 +632,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                         // out of order, so re-sort the flattened list.
                         ..sort((a, b) => a.startTime.compareTo(b.startTime)))
                   : <Schedule>[];
+              unawaited(_pushTodayToHomeWidget(schedules, l10n));
 
               final content = _viewMode == _ViewMode.calendar
                   ? _buildCalendarView(schedules)

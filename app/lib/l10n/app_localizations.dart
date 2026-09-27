@@ -912,6 +912,24 @@ abstract class AppLocalizations {
   /// **'端末の設定に合わせる'**
   String get settingsThemeSystem;
 
+  /// No description provided for @settingsAddHomeWidget.
+  ///
+  /// In ja, this message translates to:
+  /// **'ホーム画面ウィジェットを追加'**
+  String get settingsAddHomeWidget;
+
+  /// No description provided for @settingsAddHomeWidgetHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'今日の予定を一目で確認できます(Android)'**
+  String get settingsAddHomeWidgetHint;
+
+  /// No description provided for @settingsAddHomeWidgetManual.
+  ///
+  /// In ja, this message translates to:
+  /// **'ホーム画面を長押し→ウィジェット→Kairosから追加してください'**
+  String get settingsAddHomeWidgetManual;
+
   /// No description provided for @settingsLanguageJapanese.
   ///
   /// In ja, this message translates to:

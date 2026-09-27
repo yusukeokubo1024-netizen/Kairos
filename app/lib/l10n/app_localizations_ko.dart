@@ -439,6 +439,16 @@ class AppLocalizationsKo extends AppLocalizations {
   String get settingsThemeSystem => '기기 설정에 맞춤';
 
   @override
+  String get settingsAddHomeWidget => '홈 화면 위젯 추가';
+
+  @override
+  String get settingsAddHomeWidgetHint => '오늘의 일정을 한눈에 확인하세요 (Android)';
+
+  @override
+  String get settingsAddHomeWidgetManual =>
+      '홈 화면을 길게 눌러 → 위젯 → Kairos에서 추가해 주세요';
+
+  @override
   String get settingsLanguageJapanese => '日本語';
 
   @override

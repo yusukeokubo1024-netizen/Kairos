@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:home_widget/home_widget.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../data/admin_regions.dart';
@@ -151,6 +153,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
     if (selected != null) {
       await ThemeService.instance.setThemeMode(selected);
+    }
+  }
+
+  /// Asks the Android launcher to place the "today's schedules" widget on
+  /// the home screen. Only some launchers support this on Android 8+ — if
+  /// unsupported, tells the user to add it manually (long-press the home
+  /// screen > widgets > Kairos) instead of silently doing nothing.
+  Future<void> _addHomeWidget(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
+    final supported = await HomeWidget.isRequestPinWidgetSupported() ?? false;
+    if (!context.mounted) return;
+    if (supported) {
+      await HomeWidget.requestPinWidget(androidName: 'TodayScheduleWidgetProvider');
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.settingsAddHomeWidgetManual)),
+      );
     }
   }
 
@@ -733,6 +752,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   onTap: _pickThemeMode,
                 ),
               ),
+              if (Platform.isAndroid)
+                ListTile(
+                  leading: const Icon(Icons.widgets_outlined),
+                  title: Text(l10n.settingsAddHomeWidget),
+                  subtitle: Text(l10n.settingsAddHomeWidgetHint),
+                  onTap: () => _addHomeWidget(context),
+                ),
               const Divider(),
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),

@@ -449,6 +449,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsThemeSystem => 'Follow system setting';
 
   @override
+  String get settingsAddHomeWidget => 'Add home screen widget';
+
+  @override
+  String get settingsAddHomeWidgetHint =>
+      'See today\'s schedules at a glance (Android)';
+
+  @override
+  String get settingsAddHomeWidgetManual =>
+      'Long-press your home screen → Widgets → Kairos to add it';
+
+  @override
   String get settingsLanguageJapanese => '日本語';
 
   @override

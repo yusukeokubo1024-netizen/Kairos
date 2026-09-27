@@ -979,6 +979,18 @@ class AppLocalizationsKo extends AppLocalizations {
   String get groupChatStampTooltip => '스티커';
 
   @override
+  String groupChatReadCount(Object count) {
+    return '읽음 $count';
+  }
+
+  @override
+  String get settingsReadReceipts => '읽음 표시';
+
+  @override
+  String get settingsReadReceiptsSubtitle =>
+      '끄면 내가 메시지를 읽어도 상대에게 읽음이 표시되지 않습니다';
+
+  @override
   String get groupChatReport => '메시지 신고';
 
   @override

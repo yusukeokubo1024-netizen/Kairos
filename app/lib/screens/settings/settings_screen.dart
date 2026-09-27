@@ -70,6 +70,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (mounted) setState(() => _biometricEnabled = enabled);
   }
 
+  Future<void> _toggleReadReceipts(bool enabled) async {
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+    await FirebaseFirestore.instance.collection('users').doc(uid).set({
+      'uid': uid,
+      'read_receipts_enabled': enabled,
+    }, SetOptions(merge: true));
+  }
+
   Future<void> _toggleNotifications(bool enabled) async {
     final uid = FirebaseAuth.instance.currentUser!.uid;
     await FirebaseFirestore.instance.collection('users').doc(uid).set({
@@ -572,6 +580,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           final displayName = data?['display_name'] as String? ?? '';
           final email = data?['email'] as String? ?? FirebaseAuth.instance.currentUser?.email ?? '';
           final notificationsEnabled = data?['notifications_enabled'] as bool? ?? true;
+          final readReceiptsEnabled = data?['read_receipts_enabled'] as bool? ?? true;
           final isGoogleLinked = _authService.isGoogleLinked;
           final currentLocale = LocaleService.instance.locale.value;
 
@@ -679,6 +688,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 subtitle: Text(l10n.settingsNotificationsSubtitle),
                 value: notificationsEnabled,
                 onChanged: _toggleNotifications,
+              ),
+              SwitchListTile(
+                secondary: const Icon(Icons.done_all),
+                title: Text(l10n.settingsReadReceipts),
+                subtitle: Text(l10n.settingsReadReceiptsSubtitle),
+                value: readReceiptsEnabled,
+                onChanged: _toggleReadReceipts,
               ),
               if (_biometricSupported)
                 SwitchListTile(

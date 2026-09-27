@@ -9,6 +9,9 @@ class ChatMessage {
   final bool isStamp;
   // emoji -> uids of people who reacted with it.
   final Map<String, List<String>> reactions;
+  // uids of members (other than the sender) who have opened the chat since
+  // this was sent — drives the "既読 N" count under one's own messages.
+  final List<String> readBy;
   final DateTime? createdAt;
 
   ChatMessage({
@@ -17,6 +20,7 @@ class ChatMessage {
     required this.text,
     this.isStamp = false,
     this.reactions = const {},
+    this.readBy = const [],
     this.createdAt,
   });
 
@@ -31,6 +35,7 @@ class ChatMessage {
       reactions: rawReactions.map(
         (emoji, uids) => MapEntry(emoji, List<String>.from(uids as List)),
       ),
+      readBy: List<String>.from(data['readBy'] as List? ?? []),
       createdAt: (data['createdAt'] as Timestamp?)?.toDate(),
     );
   }

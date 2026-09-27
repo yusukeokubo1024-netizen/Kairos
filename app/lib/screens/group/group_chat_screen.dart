@@ -28,6 +28,56 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
   final _scrollController = ScrollController();
   final Map<String, String> _nameCache = {};
   bool _isSending = false;
+  // Messages this session has already marked as read, so a snapshot rebuild
+  // doesn't re-send the same write.
+  final Set<String> _markedRead = {};
+  bool _readReceiptsEnabled = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadReadReceiptsSetting();
+  }
+
+  Future<void> _loadReadReceiptsSetting() async {
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+    try {
+      final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      _readReceiptsEnabled = doc.data()?['read_receipts_enabled'] as bool? ?? true;
+    } catch (_) {
+      _readReceiptsEnabled = true;
+    }
+  }
+
+  /// Adds the signed-in user's uid to `readBy` on every message from someone
+  /// else they haven't yet marked — unless they've turned read receipts off
+  /// in Settings. Firestore rules only allow appending one's own uid.
+  Future<void> _markRead(List<ChatMessage> messages) async {
+    if (!_readReceiptsEnabled) return;
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+    final unread = messages
+        .where((m) =>
+            m.senderId != uid && !m.readBy.contains(uid) && !_markedRead.contains(m.id))
+        .toList();
+    if (unread.isEmpty) return;
+    _markedRead.addAll(unread.map((m) => m.id));
+    try {
+      final batch = FirebaseFirestore.instance.batch();
+      for (final message in unread) {
+        batch.update(
+          FirebaseFirestore.instance
+              .collection('sharedGroups')
+              .doc(widget.group.id)
+              .collection('messages')
+              .doc(message.id),
+          {'readBy': FieldValue.arrayUnion([uid])},
+        );
+      }
+      await batch.commit();
+    } catch (_) {
+      _markedRead.removeAll(unread.map((m) => m.id));
+    }
+  }
 
   @override
   void dispose() {
@@ -220,6 +270,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                   if (messages.isEmpty) {
                     return Center(child: Text(l10n.groupChatEmpty));
                   }
+                  WidgetsBinding.instance.addPostFrameCallback((_) => _markRead(messages));
                   return ListView.builder(
                     controller: _scrollController,
                     reverse: true,
@@ -322,9 +373,19 @@ class _MessageBubble extends StatelessWidget {
             mainAxisAlignment: isMine ? MainAxisAlignment.end : MainAxisAlignment.start,
             children: [
               if (isMine) ...[
-                Text(
-                  _formatTime(message.createdAt),
-                  style: const TextStyle(fontSize: 10, color: Colors.grey),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    if (message.readBy.isNotEmpty)
+                      Text(
+                        AppLocalizations.of(context)!.groupChatReadCount(message.readBy.length),
+                        style: const TextStyle(fontSize: 10, color: Colors.grey),
+                      ),
+                    Text(
+                      _formatTime(message.createdAt),
+                      style: const TextStyle(fontSize: 10, color: Colors.grey),
+                    ),
+                  ],
                 ),
                 const SizedBox(width: 4),
               ],

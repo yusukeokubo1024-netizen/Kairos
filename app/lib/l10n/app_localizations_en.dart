@@ -1001,6 +1001,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get groupChatStampTooltip => 'Stamps';
 
   @override
+  String groupChatReadCount(Object count) {
+    return 'Read $count';
+  }
+
+  @override
+  String get settingsReadReceipts => 'Read receipts';
+
+  @override
+  String get settingsReadReceiptsSubtitle =>
+      'If turned off, others won\'t see that you\'ve read their messages';
+
+  @override
   String get groupChatReport => 'Report message';
 
   @override

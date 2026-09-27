@@ -166,8 +166,16 @@ service cloud.firestore {
           request.resource.data.senderId == request.auth.uid;
         // Any group member can react, but only the "reactions" field may
         // change — the message text/sender can't be tampered with this way.
-        allow update: if isAuthenticated() && isGroupMember() &&
-          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reactions']);
+        allow update: if isAuthenticated() && isGroupMember() && (
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reactions']) ||
+          // 既読: 送信者以外のメンバーが、自分のUIDを readBy の末尾に1つ
+          // 足すことだけができる（他人のUIDを足したり、既存を消したりは不可。
+          // 結果の配列が「元＋自分」と完全一致することまで検証）。古い
+          // メッセージには readBy 自体が無いので get(..., []) で補う。
+          (request.auth.uid != resource.data.senderId &&
+            request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readBy']) &&
+            request.resource.data.readBy == resource.data.get('readBy', []).concat([request.auth.uid]))
+        );
         allow delete: if isAuthenticated() && resource.data.senderId == request.auth.uid;
       }
 

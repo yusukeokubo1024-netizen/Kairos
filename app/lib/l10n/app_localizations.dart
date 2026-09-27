@@ -1920,6 +1920,24 @@ abstract class AppLocalizations {
   /// **'スタンプ'**
   String get groupChatStampTooltip;
 
+  /// No description provided for @groupChatReadCount.
+  ///
+  /// In ja, this message translates to:
+  /// **'既読 {count}'**
+  String groupChatReadCount(Object count);
+
+  /// No description provided for @settingsReadReceipts.
+  ///
+  /// In ja, this message translates to:
+  /// **'既読をつける'**
+  String get settingsReadReceipts;
+
+  /// No description provided for @settingsReadReceiptsSubtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'オフにすると、あなたがメッセージを読んでも相手に既読が表示されません'**
+  String get settingsReadReceiptsSubtitle;
+
   /// No description provided for @groupChatReport.
   ///
   /// In ja, this message translates to:

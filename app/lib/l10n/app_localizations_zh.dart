@@ -964,6 +964,17 @@ class AppLocalizationsZh extends AppLocalizations {
   String get groupChatStampTooltip => '贴图';
 
   @override
+  String groupChatReadCount(Object count) {
+    return '已读 $count';
+  }
+
+  @override
+  String get settingsReadReceipts => '已读回执';
+
+  @override
+  String get settingsReadReceiptsSubtitle => '关闭后，即使您阅读了消息，对方也不会看到已读';
+
+  @override
   String get groupChatReport => '举报消息';
 
   @override

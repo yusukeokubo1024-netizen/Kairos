@@ -974,6 +974,18 @@ class AppLocalizationsJa extends AppLocalizations {
   String get groupChatStampTooltip => 'スタンプ';
 
   @override
+  String groupChatReadCount(Object count) {
+    return '既読 $count';
+  }
+
+  @override
+  String get settingsReadReceipts => '既読をつける';
+
+  @override
+  String get settingsReadReceiptsSubtitle =>
+      'オフにすると、あなたがメッセージを読んでも相手に既読が表示されません';
+
+  @override
   String get groupChatReport => 'メッセージを報告';
 
   @override

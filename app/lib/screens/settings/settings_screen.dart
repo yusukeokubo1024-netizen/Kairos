@@ -232,58 +232,73 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<Country?> _pickCountry() async {
     final l10n = AppLocalizations.of(context)!;
     var query = '';
-    return showDialog<Country>(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) {
-          final filtered = query.isEmpty
-              ? kCountries
-              : kCountries
-                  .where((c) =>
-                      c.nameJa.contains(query) ||
-                      c.nameEn.toLowerCase().contains(query.toLowerCase()))
-                  .toList();
-          return AlertDialog(
-            title: Text(l10n.settingsWeatherLocationCountryTitle),
-            content: SizedBox(
-              width: double.maxFinite,
-              height: 420,
-              child: Column(
-                children: [
-                  TextField(
-                    autofocus: true,
-                    decoration: InputDecoration(
-                      hintText: l10n.settingsWeatherLocationCountrySearchHint,
-                      prefixIcon: const Icon(Icons.search),
+    // Kept outside StatefulBuilder's rebuild so it survives each keystroke;
+    // reset to the top on every filter change below, otherwise the list
+    // keeps its old scroll *offset* against a shorter filtered list and the
+    // view visibly jumps.
+    final scrollController = ScrollController();
+    try {
+      return await showDialog<Country>(
+        context: context,
+        builder: (context) => StatefulBuilder(
+          builder: (context, setDialogState) {
+            final filtered = query.isEmpty
+                ? kCountries
+                : kCountries
+                    .where((c) =>
+                        c.nameJa.contains(query) ||
+                        c.nameEn.toLowerCase().contains(query.toLowerCase()))
+                    .toList();
+            return AlertDialog(
+              title: Text(l10n.settingsWeatherLocationCountryTitle),
+              content: SizedBox(
+                width: double.maxFinite,
+                height: 420,
+                child: Column(
+                  children: [
+                    TextField(
+                      autofocus: true,
+                      decoration: InputDecoration(
+                        hintText: l10n.settingsWeatherLocationCountrySearchHint,
+                        prefixIcon: const Icon(Icons.search),
+                      ),
+                      onChanged: (value) {
+                        setDialogState(() => query = value);
+                        if (scrollController.hasClients) {
+                          scrollController.jumpTo(0);
+                        }
+                      },
                     ),
-                    onChanged: (value) => setDialogState(() => query = value),
-                  ),
-                  const SizedBox(height: 8),
-                  Expanded(
-                    child: filtered.isEmpty
-                        ? Center(child: Text(l10n.settingsWeatherLocationCountryNotFound))
-                        : ListView.builder(
-                            itemCount: filtered.length,
-                            itemBuilder: (context, index) {
-                              final country = filtered[index];
-                              return ListTile(
-                                title: Text(country.nameJa),
-                                subtitle: Text(country.nameEn),
-                                onTap: () => Navigator.pop(context, country),
-                              );
-                            },
-                          ),
-                  ),
-                ],
+                    const SizedBox(height: 8),
+                    Expanded(
+                      child: filtered.isEmpty
+                          ? Center(child: Text(l10n.settingsWeatherLocationCountryNotFound))
+                          : ListView.builder(
+                              controller: scrollController,
+                              itemCount: filtered.length,
+                              itemBuilder: (context, index) {
+                                final country = filtered[index];
+                                return ListTile(
+                                  title: Text(country.nameJa),
+                                  subtitle: Text(country.nameEn),
+                                  onTap: () => Navigator.pop(context, country),
+                                );
+                              },
+                            ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            actions: [
-              TextButton(onPressed: () => Navigator.pop(context), child: Text(l10n.commonCancel)),
-            ],
-          );
-        },
-      ),
-    );
+              actions: [
+                TextButton(onPressed: () => Navigator.pop(context), child: Text(l10n.commonCancel)),
+              ],
+            );
+          },
+        ),
+      );
+    } finally {
+      scrollController.dispose();
+    }
   }
 
   /// Sentinel returned by [_pickAdminCity] when the user wants to type a
@@ -301,56 +316,71 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }) async {
     final l10n = AppLocalizations.of(context)!;
     var query = '';
-    return showDialog<String>(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) {
-          final filtered =
-              query.isEmpty ? items : items.where((c) => c.contains(query)).toList();
-          return AlertDialog(
-            title: Text(title),
-            content: SizedBox(
-              width: double.maxFinite,
-              height: 420,
-              child: Column(
-                children: [
-                  TextField(
-                    autofocus: true,
-                    decoration: InputDecoration(
-                      hintText: searchHint,
-                      prefixIcon: const Icon(Icons.search),
-                    ),
-                    onChanged: (value) => setDialogState(() => query = value),
-                  ),
-                  const SizedBox(height: 8),
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: filtered.length + (showManualEntry ? 1 : 0),
-                      itemBuilder: (context, index) {
-                        if (showManualEntry && index == filtered.length) {
-                          return ListTile(
-                            title: Text(l10n.settingsWeatherLocationManualEntry),
-                            onTap: () => Navigator.pop(context, _manualEntrySentinel),
-                          );
+    // Kept outside StatefulBuilder's rebuild so it survives each keystroke;
+    // reset to the top on every filter change below, otherwise the list
+    // keeps its old scroll *offset* against a shorter filtered list and the
+    // view visibly jumps.
+    final scrollController = ScrollController();
+    try {
+      return await showDialog<String>(
+        context: context,
+        builder: (context) => StatefulBuilder(
+          builder: (context, setDialogState) {
+            final filtered =
+                query.isEmpty ? items : items.where((c) => c.contains(query)).toList();
+            return AlertDialog(
+              title: Text(title),
+              content: SizedBox(
+                width: double.maxFinite,
+                height: 420,
+                child: Column(
+                  children: [
+                    TextField(
+                      autofocus: true,
+                      decoration: InputDecoration(
+                        hintText: searchHint,
+                        prefixIcon: const Icon(Icons.search),
+                      ),
+                      onChanged: (value) {
+                        setDialogState(() => query = value);
+                        if (scrollController.hasClients) {
+                          scrollController.jumpTo(0);
                         }
-                        final item = filtered[index];
-                        return ListTile(
-                          title: Text(item),
-                          onTap: () => Navigator.pop(context, item),
-                        );
                       },
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 8),
+                    Expanded(
+                      child: ListView.builder(
+                        controller: scrollController,
+                        itemCount: filtered.length + (showManualEntry ? 1 : 0),
+                        itemBuilder: (context, index) {
+                          if (showManualEntry && index == filtered.length) {
+                            return ListTile(
+                              title: Text(l10n.settingsWeatherLocationManualEntry),
+                              onTap: () => Navigator.pop(context, _manualEntrySentinel),
+                            );
+                          }
+                          final item = filtered[index];
+                          return ListTile(
+                            title: Text(item),
+                            onTap: () => Navigator.pop(context, item),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            actions: [
-              TextButton(onPressed: () => Navigator.pop(context), child: Text(l10n.commonCancel)),
-            ],
-          );
-        },
-      ),
-    );
+              actions: [
+                TextButton(onPressed: () => Navigator.pop(context), child: Text(l10n.commonCancel)),
+              ],
+            );
+          },
+        ),
+      );
+    } finally {
+      scrollController.dispose();
+    }
   }
 
   Future<AdminRegion?> _pickAdminRegion(String countryCode) async {

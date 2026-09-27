@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="description" content="Kairos のメール認証・パスワード再設定を続けます。">
+    <title>Kairos | 手続きを続ける</title>
+    <link rel="stylesheet" href="/styles.css">
+    <style>
+      main.gate {
+        max-width: 460px;
+        text-align: center;
+        padding-top: 72px;
+      }
+      #gate-button {
+        display: inline-block;
+        margin-top: 28px;
+        padding: 14px 32px;
+        border: none;
+        border-radius: 24px;
+        background: #0b6962;
+        color: #fff;
+        font-size: 16px;
+        cursor: pointer;
+      }
+      #gate-button:disabled {
+        opacity: 0.6;
+        cursor: default;
+      }
+      #gate-note {
+        margin-top: 20px;
+        font-size: 13px;
+        color: #52606d;
+      }
+      #gate-error {
+        margin-top: 20px;
+        color: #b3261e;
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <p>Kairos</p>
+      <h1>手続きを続ける</h1>
+    </header>
+    <main class="gate">
+      <p id="gate-message">読み込んでいます…</p>
+      <button id="gate-button" type="button" style="display:none">続ける</button>
+      <p id="gate-note"></p>
+      <p id="gate-error"></p>
+    </main>
+    <footer>
+      <p>© Kairos</p>
+    </footer>
+    <script>
+      // Firebase's default auth-action page (the one this page stands in
+      // front of) verifies/resets on page LOAD with no user interaction —
+      // convenient, but it means any automated link-scanner that fetches
+      // and renders the email (Gmail/Outlook do this for spam/phishing
+      // checks) silently consumes the single-use code before the person
+      // who received the email ever opens it, so their real click then
+      // hits "expired or already used". Gating the same redirect behind an
+      // explicit button tap means a passive scanner that only renders the
+      // page (and doesn't simulate a real click) never triggers it.
+      const params = new URLSearchParams(window.location.search);
+      const mode = params.get('mode');
+      const oobCode = params.get('oobCode');
+      const apiKey = params.get('apiKey');
+
+      const messageEl = document.getElementById('gate-message');
+      const buttonEl = document.getElementById('gate-button');
+      const noteEl = document.getElementById('gate-note');
+      const errorEl = document.getElementById('gate-error');
+
+      const labels = {
+        verifyEmail: {
+          message: 'メールアドレスの確認を続けます。',
+          button: 'メール認証を続ける',
+          note: 'このメールを開いてすぐの操作でなくても大丈夫です。',
+        },
+        resetPassword: {
+          message: 'パスワードの再設定を続けます。',
+          button: 'パスワード再設定を続ける',
+          note: '',
+        },
+        recoverEmail: {
+          message: 'メールアドレスの変更を取り消す手続きを続けます。',
+          button: '続ける',
+          note: '',
+        },
+      };
+
+      if (!oobCode || !apiKey) {
+        messageEl.textContent = '';
+        errorEl.textContent = 'リンクが正しくないか、すでに開かれています。もう一度メールのリンクを開き直してください。';
+        errorEl.style.display = 'block';
+      } else {
+        const label = labels[mode] || { message: '手続きを続けます。', button: '続ける', note: '' };
+        messageEl.textContent = label.message;
+        noteEl.textContent = label.note;
+        buttonEl.textContent = label.button;
+        buttonEl.style.display = 'inline-block';
+
+        buttonEl.addEventListener('click', () => {
+          buttonEl.disabled = true;
+          const target = new URL('https://kairos-3d873.firebaseapp.com/__/auth/action');
+          params.forEach((value, key) => target.searchParams.set(key, value));
+          window.location.replace(target.toString());
+        });
+      }
+    </script>
+  </body>
+</html>

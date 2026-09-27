@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 
 import '../../l10n/app_localizations.dart';
 
-/// Lets a user request to join a group by entering its invite code (the
-/// group's Firestore document ID). See docs/group-invite-flow.md for the
+/// Lets a user request to join a group by entering its invite code — either
+/// the short 6-character code shown in GroupDetailScreen (resolved via
+/// groupShortCodes) or, for codes shared before that existed, the group's
+/// raw (long) Firestore document ID. See docs/group-invite-flow.md for the
 /// design.
 ///
 /// The pre-join preview reads from `groupInvitePreviews` (name + member
@@ -40,8 +42,8 @@ class _GroupJoinScreenState extends State<GroupJoinScreen> {
   }
 
   Future<void> _lookupCode() async {
-    final code = _codeController.text.trim();
-    if (code.isEmpty) return;
+    final rawInput = _codeController.text.trim();
+    if (rawInput.isEmpty) return;
     final l10n = AppLocalizations.of(context)!;
     final uid = FirebaseAuth.instance.currentUser!.uid;
 
@@ -55,6 +57,21 @@ class _GroupJoinScreenState extends State<GroupJoinScreen> {
     });
 
     try {
+      // Short codes (6 uppercase letters/digits) resolve via groupShortCodes
+      // to the real group id; anything else — including a code shared
+      // before short codes existed — is tried as that raw (long) group id.
+      String code = rawInput;
+      try {
+        final shortCodeDoc = await FirebaseFirestore.instance
+            .collection('groupShortCodes')
+            .doc(rawInput.toUpperCase().replaceAll(RegExp(r'\s+'), ''))
+            .get();
+        final resolvedGroupId = shortCodeDoc.data()?['groupId'] as String?;
+        if (resolvedGroupId != null) code = resolvedGroupId;
+      } catch (_) {
+        // Fall through and try rawInput as a long group id instead.
+      }
+
       final doc =
           await FirebaseFirestore.instance.collection('groupInvitePreviews').doc(code).get();
       if (!doc.exists) {

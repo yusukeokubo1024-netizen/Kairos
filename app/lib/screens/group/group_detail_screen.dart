@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:math';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +12,65 @@ import '../../models/shared_group.dart';
 import '../../services/audit_service.dart';
 import 'group_chat_screen.dart';
 
+// Characters chosen to avoid look-alikes when read or typed by hand
+// (no 0/O, 1/I/L).
+//
+// Length is 8, not something shorter/friendlier like 6: Firestore security
+// rules can only gate *who* can read a groupShortCodes doc (get: any
+// authenticated user, matching the pre-existing groupInvitePreviews design),
+// not *how many* — there's no rate limiting available at the rules layer.
+// A security review found 6 chars (31^6 ≈ 8.9e8 combinations) cheap enough
+// to brute-force-enumerate for a few hundred dollars of Firestore reads,
+// harvesting every group's name/member count via chained
+// groupShortCodes -> groupInvitePreviews lookups. 8 chars (31^8 ≈ 8.5e11)
+// raises that to a six-figure-dollar cost, in line with this app's
+// info-leak-prevention priority.
+const _shortCodeAlphabet = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';
+const _shortCodeLength = 8;
+final _shortCodeRandom = Random.secure();
+
+String _generateShortCode() {
+  return List.generate(
+    _shortCodeLength,
+    (_) => _shortCodeAlphabet[_shortCodeRandom.nextInt(_shortCodeAlphabet.length)],
+  ).join();
+}
+
+// Guards against retrying short-code generation on every rebuild — same
+// pattern as group_list_screen.dart's _previewCheckedGroupIds.
+final Set<String> _shortCodeCheckedGroupIds = {};
+
+/// Generates and registers a short invite code for [group] the first time
+/// its owner opens the detail screen, if it doesn't have one yet. A
+/// collision (another group already claimed the random code) is rejected by
+/// the security rules (short codes can't be overwritten once created), so
+/// this just retries with a fresh code a few times.
+Future<void> _ensureShortCode(SharedGroup group) async {
+  if (group.shortCode != null) return;
+  if (_shortCodeCheckedGroupIds.contains(group.id)) return;
+  _shortCodeCheckedGroupIds.add(group.id);
+  final db = FirebaseFirestore.instance;
+  try {
+    for (var attempt = 0; attempt < 5; attempt++) {
+      final code = _generateShortCode();
+      try {
+        await db.collection('groupShortCodes').doc(code).set({'groupId': group.id});
+        await db.collection('sharedGroups').doc(group.id).update({'shortCode': code});
+        return;
+      } on FirebaseException catch (e) {
+        if (e.code == 'permission-denied') continue; // code already taken — try another
+        rethrow;
+      }
+    }
+    // Ran out of retries — let a later open of this screen try again.
+    _shortCodeCheckedGroupIds.remove(group.id);
+  } catch (_) {
+    // Best-effort — worst case the long code keeps working and this retries
+    // next time the screen opens.
+    _shortCodeCheckedGroupIds.remove(group.id);
+  }
+}
+
 class GroupDetailScreen extends StatelessWidget {
   final SharedGroup group;
 
@@ -16,7 +78,7 @@ class GroupDetailScreen extends StatelessWidget {
 
   Future<void> _copyInviteCode(BuildContext context) async {
     final l10n = AppLocalizations.of(context)!;
-    await Clipboard.setData(ClipboardData(text: group.id));
+    await Clipboard.setData(ClipboardData(text: group.shortCode ?? group.id));
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(l10n.groupDetailInviteCodeCopied)),
@@ -198,6 +260,7 @@ class GroupDetailScreen extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final uid = FirebaseAuth.instance.currentUser!.uid;
     final isOwner = group.ownerId == uid;
+    if (isOwner) unawaited(_ensureShortCode(group));
 
     return Scaffold(
       appBar: AppBar(
@@ -220,7 +283,12 @@ class GroupDetailScreen extends StatelessWidget {
             Card(
               child: ListTile(
                 title: Text(l10n.groupDetailInviteCode),
-                subtitle: Text(group.id),
+                subtitle: Text(
+                  group.shortCode ?? group.id,
+                  style: group.shortCode != null
+                      ? const TextStyle(fontSize: 20, letterSpacing: 2, fontWeight: FontWeight.bold)
+                      : null,
+                ),
                 trailing: IconButton(
                   icon: const Icon(Icons.copy_outlined),
                   onPressed: () => _copyInviteCode(context),

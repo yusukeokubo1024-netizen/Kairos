@@ -7,6 +7,12 @@ class SharedGroup {
   final List<String> memberIds;
   final DateTime? createdAt;
   final DateTime? updatedAt;
+  // Short, easy-to-type invite code (e.g. "K7QX9M") that resolves to this
+  // group's id via the groupShortCodes collection — see
+  // GroupDetailScreen._ensureShortCode. Null until the owner's detail screen
+  // has generated one (self-heals the first time they open it, same as
+  // groupInvitePreviews).
+  final String? shortCode;
 
   SharedGroup({
     required this.id,
@@ -15,6 +21,7 @@ class SharedGroup {
     required this.memberIds,
     this.createdAt,
     this.updatedAt,
+    this.shortCode,
   });
 
   factory SharedGroup.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
@@ -26,6 +33,7 @@ class SharedGroup {
       memberIds: List<String>.from(data['memberIds'] as List? ?? []),
       createdAt: (data['createdAt'] as Timestamp?)?.toDate(),
       updatedAt: (data['updatedAt'] as Timestamp?)?.toDate(),
+      shortCode: data['shortCode'] as String?,
     );
   }
 

@@ -61,7 +61,12 @@ class GroupListScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+      body: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+        stream: FirebaseFirestore.instance.collection('users').doc(uid).snapshots(),
+        builder: (context, userSnapshot) {
+          final chatLastSeen =
+              userSnapshot.data?.data()?['chatLastSeen'] as Map<String, dynamic>? ?? {};
+          return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
         stream: groupsQuery.snapshots(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
@@ -83,11 +88,18 @@ class GroupListScreen extends StatelessWidget {
                 leading: const Icon(Icons.groups_outlined),
                 title: Text(group.name),
                 subtitle: Text(l10n.groupListMembers(group.memberIds.length)),
+                trailing: _UnreadBadge(
+                  groupId: group.id,
+                  uid: uid,
+                  lastSeen: (chatLastSeen[group.id] as Timestamp?)?.toDate(),
+                ),
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => GroupDetailScreen(group: group)),
                 ),
               );
             },
+          );
+        },
           );
         },
       ),
@@ -97,6 +109,56 @@ class GroupListScreen extends StatelessWidget {
         ),
         child: const Icon(Icons.add),
       ),
+    );
+  }
+}
+
+/// Count of chat messages from other members newer than the last time this
+/// user opened the group's chat — the free stand-in for a push notification
+/// (real push would need Cloud Functions / the paid Blaze plan). Looks only
+/// at the latest 30 messages, so it caps at "30+".
+class _UnreadBadge extends StatelessWidget {
+  final String groupId;
+  final String uid;
+  final DateTime? lastSeen;
+
+  const _UnreadBadge({required this.groupId, required this.uid, required this.lastSeen});
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+      stream: FirebaseFirestore.instance
+          .collection('sharedGroups')
+          .doc(groupId)
+          .collection('messages')
+          .orderBy('createdAt', descending: true)
+          .limit(30)
+          .snapshots(),
+      builder: (context, snapshot) {
+        final docs = snapshot.data?.docs ?? const [];
+        final unread = docs.where((doc) {
+          final data = doc.data();
+          final createdAt = (data['createdAt'] as Timestamp?)?.toDate();
+          return data['senderId'] != uid &&
+              createdAt != null &&
+              (lastSeen == null || createdAt.isAfter(lastSeen!));
+        }).length;
+        if (unread == 0) return const SizedBox.shrink();
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.primary,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Text(
+            unread >= 30 ? '30+' : '$unread',
+            style: TextStyle(
+              fontSize: 12,
+              color: Theme.of(context).colorScheme.onPrimary,
+            ),
+          ),
+        );
+      },
     );
   }
 }

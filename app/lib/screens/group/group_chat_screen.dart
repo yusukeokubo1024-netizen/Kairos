@@ -37,6 +37,19 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
   void initState() {
     super.initState();
     _loadReadReceiptsSetting();
+    _markChatSeen();
+  }
+
+  /// Records when this chat was last open, independent of read receipts, so
+  /// the unread badge on the group list clears (and keeps working even if the
+  /// user has turned read receipts off). Called on open and again on close
+  /// to cover messages that arrived while the chat was on screen.
+  void _markChatSeen() {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+    FirebaseFirestore.instance.collection('users').doc(uid).update({
+      'chatLastSeen.${widget.group.id}': FieldValue.serverTimestamp(),
+    }).catchError((_) {});
   }
 
   Future<void> _loadReadReceiptsSetting() async {
@@ -81,6 +94,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
 
   @override
   void dispose() {
+    _markChatSeen();
     _textController.dispose();
     _scrollController.dispose();
     super.dispose();

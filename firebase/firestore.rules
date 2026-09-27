@@ -193,11 +193,17 @@ service cloud.firestore {
           !isAlreadyMember() &&
           request.resource.data.requestedAt == request.time &&
           request.resource.data.keys().hasOnly(['requesterId', 'groupId', 'requestedAt']);
+        // ドキュメントIDは申請者自身のUIDなので、resource.data ではなくパスの
+        // {requesterId} で本人判定する。resource.data だと「まだ申請して
+        // いない（ドキュメントが存在しない）」ときに評価エラー＝拒否になり、
+        // 参加画面の「申請済みか」の確認読み取りが常に permission-denied に
+        // なって、招待コードが有効でも「コードが見つかりません」と表示される
+        // バグになっていた。
         allow get: if isAuthenticated() &&
-          (resource.data.requesterId == request.auth.uid || isGroupOwner());
+          (requesterId == request.auth.uid || isGroupOwner());
         allow list: if isAuthenticated() && isGroupOwner();
         allow delete: if isAuthenticated() &&
-          (resource.data.requesterId == request.auth.uid || isGroupOwner());
+          (requesterId == request.auth.uid || isGroupOwner());
         allow update: if false;
       }
     }

@@ -76,15 +76,22 @@ class _GroupJoinScreenState extends State<GroupJoinScreen> {
         alreadyMember = false;
       }
 
+      // Best-effort: a failure here (e.g. a transient error) must not be
+      // reported as "code not found" — the code itself already resolved
+      // above, this only decides whether to show "already requested".
       var alreadyRequested = false;
       if (!alreadyMember) {
-        final existingRequest = await FirebaseFirestore.instance
-            .collection('sharedGroups')
-            .doc(code)
-            .collection('joinRequests')
-            .doc(uid)
-            .get();
-        alreadyRequested = existingRequest.exists;
+        try {
+          final existingRequest = await FirebaseFirestore.instance
+              .collection('sharedGroups')
+              .doc(code)
+              .collection('joinRequests')
+              .doc(uid)
+              .get();
+          alreadyRequested = existingRequest.exists;
+        } catch (_) {
+          alreadyRequested = false;
+        }
       }
 
       setState(() {

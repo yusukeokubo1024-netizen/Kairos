@@ -106,6 +106,24 @@ class _CalendarScreenState extends State<CalendarScreen> {
     return a.year == b.year && a.month == b.month && a.day == b.day;
   }
 
+  /// Every calendar day a schedule touches, from its start date through its
+  /// end date inclusive — so a 3-day trip (11/20〜11/22) shows up on all
+  /// three days, not just the day it starts. Capped at 60 days so a
+  /// mis-entered end date (e.g. wrong year) can't make the calendar iterate
+  /// over years of days.
+  List<DateTime> _daysSpannedBy(Schedule schedule) {
+    final start = DateTime(schedule.startTime.year, schedule.startTime.month, schedule.startTime.day);
+    final end = DateTime(schedule.endTime.year, schedule.endTime.month, schedule.endTime.day);
+    if (!end.isAfter(start)) return [start];
+    final days = <DateTime>[];
+    var day = start;
+    while (!day.isAfter(end) && days.length < 60) {
+      days.add(day);
+      day = day.add(const Duration(days: 1));
+    }
+    return days;
+  }
+
   /// The date of the [n]th [weekday] in [month]/[year] (e.g. the 2nd Sunday
   /// of May). Computed per-year since it shifts, unlike a fixed month/day.
   DateTime _nthWeekdayOfMonth(int year, int month, int weekday, int n) {
@@ -583,19 +601,18 @@ class _CalendarScreenState extends State<CalendarScreen> {
     final l10n = AppLocalizations.of(context)!;
     final schedulesByDay = <DateTime, List<Schedule>>{};
     for (final schedule in schedules) {
-      final day = DateTime(
-        schedule.startTime.year,
-        schedule.startTime.month,
-        schedule.startTime.day,
-      );
-      schedulesByDay.putIfAbsent(day, () => []).add(schedule);
+      for (final day in _daysSpannedBy(schedule)) {
+        schedulesByDay.putIfAbsent(day, () => []).add(schedule);
+      }
     }
     for (final daySchedules in schedulesByDay.values) {
       daySchedules.sort((a, b) => a.startTime.compareTo(b.startTime));
     }
     _schedulesByDay = schedulesByDay;
 
-    final selectedDaySchedules = schedules.where((s) => _isSameDay(s.startTime, _selectedDay)).toList()
+    final selectedDaySchedules = schedules
+        .where((s) => _daysSpannedBy(s).any((day) => _isSameDay(day, _selectedDay)))
+        .toList()
       ..sort((a, b) => a.startTime.compareTo(b.startTime));
 
     // Wrapped in a scroll view so a 6-row month (or a small screen) never
@@ -822,6 +839,10 @@ class _ScheduleListView extends StatelessWidget {
     return '${dateTime.month}/${dateTime.day}';
   }
 
+  bool _isSameDay(DateTime a, DateTime b) {
+    return a.year == b.year && a.month == b.month && a.day == b.day;
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -831,11 +852,22 @@ class _ScheduleListView extends StatelessWidget {
       itemCount: schedules.length,
       itemBuilder: (context, index) {
         final schedule = schedules[index];
+        // A multi-day schedule (e.g. a 3-day trip) now shows up in every
+        // day's list, not just its start day, so its label always spells
+        // out the date range — otherwise a middle/end day would show a bare
+        // time range (or just "終日") that looks like a same-day event.
+        final isMultiDay = !_isSameDay(schedule.startTime, schedule.endTime);
         final String timeLabel;
         if (schedule.isAllDay) {
-          timeLabel = showDate
-              ? '${_formatDate(schedule.startTime)}  ${l10n.calendarAllDay}'
-              : l10n.calendarAllDay;
+          timeLabel = isMultiDay
+              ? '${_formatDate(schedule.startTime)} - ${_formatDate(schedule.endTime)}  ${l10n.calendarAllDay}'
+              : (showDate
+                  ? '${_formatDate(schedule.startTime)}  ${l10n.calendarAllDay}'
+                  : l10n.calendarAllDay);
+        } else if (isMultiDay) {
+          timeLabel =
+              '${_formatDate(schedule.startTime)} ${_formatTime(schedule.startTime)} → '
+              '${_formatDate(schedule.endTime)} ${_formatTime(schedule.endTime)}';
         } else {
           timeLabel = showDate
               ? '${_formatDate(schedule.startTime)}  ${_formatTime(schedule.startTime)} - ${_formatTime(schedule.endTime)}'

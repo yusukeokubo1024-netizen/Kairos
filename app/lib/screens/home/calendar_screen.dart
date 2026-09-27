@@ -361,8 +361,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
           Row(
             children: [
               Container(
-                width: 18,
-                height: 18,
+                constraints: const BoxConstraints(minWidth: 20, minHeight: 20),
+                padding: const EdgeInsets.symmetric(horizontal: 2),
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
@@ -371,7 +371,20 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       ? Border.all(color: Theme.of(context).colorScheme.primary)
                       : null,
                 ),
-                child: Text('${day.day}', style: TextStyle(fontSize: 13, color: numberColor)),
+                // A fixed 18x18 box here used to clip 2-digit day numbers:
+                // most digit pairs (e.g. "22", "27") are just wide enough at
+                // fontSize 13 to wrap to a second line, which then fell
+                // outside the box's fixed height and silently vanished — so
+                // only the first digit showed. "21" happened to fit because
+                // "1" is a narrow glyph, which is what made this easy to
+                // miss. Now the box only has a *minimum* size and the text
+                // is forced onto one line instead of wrapping.
+                child: Text(
+                  '${day.day}',
+                  maxLines: 1,
+                  softWrap: false,
+                  style: TextStyle(fontSize: 13, color: numberColor),
+                ),
               ),
               const Spacer(),
               if (weather != null) Text(weather.emoji, style: const TextStyle(fontSize: 11)),

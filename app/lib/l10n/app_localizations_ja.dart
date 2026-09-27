@@ -676,6 +676,30 @@ class AppLocalizationsJa extends AppLocalizations {
   String get scheduleFormColor => '色';
 
   @override
+  String get scheduleFormRecurrence => '繰り返し';
+
+  @override
+  String get scheduleFormRecurrenceNone => '繰り返しなし';
+
+  @override
+  String get scheduleFormRecurrenceDaily => '毎日';
+
+  @override
+  String get scheduleFormRecurrenceWeekly => '毎週';
+
+  @override
+  String get scheduleFormRecurrenceMonthly => '毎月';
+
+  @override
+  String get scheduleFormRecurrenceYearly => '毎年';
+
+  @override
+  String get scheduleFormRecurrenceEndDate => '終了日';
+
+  @override
+  String get scheduleFormRecurrenceNoEnd => '終了しない';
+
+  @override
   String get scheduleFormNotification => '通知';
 
   @override

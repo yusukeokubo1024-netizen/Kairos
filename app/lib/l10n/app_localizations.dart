@@ -1356,6 +1356,54 @@ abstract class AppLocalizations {
   /// **'色'**
   String get scheduleFormColor;
 
+  /// No description provided for @scheduleFormRecurrence.
+  ///
+  /// In ja, this message translates to:
+  /// **'繰り返し'**
+  String get scheduleFormRecurrence;
+
+  /// No description provided for @scheduleFormRecurrenceNone.
+  ///
+  /// In ja, this message translates to:
+  /// **'繰り返しなし'**
+  String get scheduleFormRecurrenceNone;
+
+  /// No description provided for @scheduleFormRecurrenceDaily.
+  ///
+  /// In ja, this message translates to:
+  /// **'毎日'**
+  String get scheduleFormRecurrenceDaily;
+
+  /// No description provided for @scheduleFormRecurrenceWeekly.
+  ///
+  /// In ja, this message translates to:
+  /// **'毎週'**
+  String get scheduleFormRecurrenceWeekly;
+
+  /// No description provided for @scheduleFormRecurrenceMonthly.
+  ///
+  /// In ja, this message translates to:
+  /// **'毎月'**
+  String get scheduleFormRecurrenceMonthly;
+
+  /// No description provided for @scheduleFormRecurrenceYearly.
+  ///
+  /// In ja, this message translates to:
+  /// **'毎年'**
+  String get scheduleFormRecurrenceYearly;
+
+  /// No description provided for @scheduleFormRecurrenceEndDate.
+  ///
+  /// In ja, this message translates to:
+  /// **'終了日'**
+  String get scheduleFormRecurrenceEndDate;
+
+  /// No description provided for @scheduleFormRecurrenceNoEnd.
+  ///
+  /// In ja, this message translates to:
+  /// **'終了しない'**
+  String get scheduleFormRecurrenceNoEnd;
+
   /// No description provided for @scheduleFormNotification.
   ///
   /// In ja, this message translates to:

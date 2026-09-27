@@ -106,6 +106,52 @@ class _CalendarScreenState extends State<CalendarScreen> {
     return a.year == b.year && a.month == b.month && a.day == b.day;
   }
 
+  // How far out a recurring schedule with no end date still gets expanded
+  // for display, so an indefinite daily/weekly repeat can't make the
+  // calendar generate occurrences forever.
+  static final DateTime _recurrenceDisplayCap = DateTime.now().add(const Duration(days: 730));
+
+  /// The date/time of the [n]th occurrence of a recurring schedule, counting
+  /// from its own start (n=0). Monthly/yearly just add months/years to the
+  /// original day-of-month, so a schedule anchored on the 31st can land on
+  /// a different day in a shorter month (e.g. Jan 31 → Mar 3) — the same
+  /// trade-off most calendar apps make rather than silently reinterpreting
+  /// the date.
+  DateTime _occurrenceAt(Schedule schedule, int n) {
+    final start = schedule.startTime;
+    switch (schedule.recurrence) {
+      case 'daily':
+        return start.add(Duration(days: n));
+      case 'weekly':
+        return start.add(Duration(days: 7 * n));
+      case 'monthly':
+        return DateTime(start.year, start.month + n, start.day, start.hour, start.minute);
+      case 'yearly':
+        return DateTime(start.year + n, start.month, start.day, start.hour, start.minute);
+      default:
+        return start;
+    }
+  }
+
+  /// Expands a recurring schedule into one virtual [Schedule] copy per
+  /// occurrence (each keeping the same id, so editing/deleting any of them
+  /// acts on the one underlying document). A non-recurring schedule expands
+  /// to just itself.
+  List<Schedule> _expandRecurrences(Schedule schedule) {
+    if (!schedule.isRecurring) return [schedule];
+    final cap = schedule.recurrenceEndDate != null &&
+            schedule.recurrenceEndDate!.isBefore(_recurrenceDisplayCap)
+        ? schedule.recurrenceEndDate!
+        : _recurrenceDisplayCap;
+    final occurrences = <Schedule>[];
+    for (var n = 0; n < 2000; n++) {
+      final occurrenceStart = _occurrenceAt(schedule, n);
+      if (occurrenceStart.isAfter(cap)) break;
+      occurrences.add(schedule.copyAsOccurrence(occurrenceStart));
+    }
+    return occurrences;
+  }
+
   /// Every calendar day a schedule touches, from its start date through its
   /// end date inclusive — so a 3-day trip (11/20〜11/22) shows up on all
   /// three days, not just the day it starts. Capped at 60 days so a
@@ -548,10 +594,16 @@ class _CalendarScreenState extends State<CalendarScreen> {
               // Even if the schedules failed to load, still show the
               // calendar grid itself (empty) instead of blanking the screen.
               final schedules = snapshot.hasData
-                  ? snapshot.data!.docs
-                      .map((doc) => Schedule.fromFirestore(doc))
-                      .where((s) => !_hiddenCalendarIds.contains(s.groupId))
-                      .toList()
+                  ? (snapshot.data!.docs
+                          .map((doc) => Schedule.fromFirestore(doc))
+                          .where((s) => !_hiddenCalendarIds.contains(s.groupId))
+                          .expand(_expandRecurrences)
+                          .toList()
+                        // The query's orderBy('startTime') only sorted the
+                        // underlying documents — expanding recurring ones
+                        // into several occurrences each can interleave them
+                        // out of order, so re-sort the flattened list.
+                        ..sort((a, b) => a.startTime.compareTo(b.startTime)))
                   : <Schedule>[];
 
               final content = _viewMode == _ViewMode.calendar
@@ -880,7 +932,16 @@ class _ScheduleListView extends StatelessWidget {
             margin: const EdgeInsets.only(top: 4),
             decoration: BoxDecoration(color: schedule.color, shape: BoxShape.circle),
           ),
-          title: Text(schedule.title),
+          title: schedule.isRecurring
+              ? Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Flexible(child: Text(schedule.title, overflow: TextOverflow.ellipsis)),
+                    const SizedBox(width: 4),
+                    Icon(Icons.repeat, size: 14, color: Colors.grey.shade600),
+                  ],
+                )
+              : Text(schedule.title),
           subtitle: Text(timeLabel),
           onTap: () => Navigator.of(context).push(
             MaterialPageRoute(builder: (_) => ScheduleDetailScreen(schedule: schedule)),

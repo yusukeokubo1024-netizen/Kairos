@@ -666,6 +666,30 @@ class AppLocalizationsZh extends AppLocalizations {
   String get scheduleFormColor => '颜色';
 
   @override
+  String get scheduleFormRecurrence => '重复';
+
+  @override
+  String get scheduleFormRecurrenceNone => '不重复';
+
+  @override
+  String get scheduleFormRecurrenceDaily => '每天';
+
+  @override
+  String get scheduleFormRecurrenceWeekly => '每周';
+
+  @override
+  String get scheduleFormRecurrenceMonthly => '每月';
+
+  @override
+  String get scheduleFormRecurrenceYearly => '每年';
+
+  @override
+  String get scheduleFormRecurrenceEndDate => '结束日期';
+
+  @override
+  String get scheduleFormRecurrenceNoEnd => '不设结束日期';
+
+  @override
   String get scheduleFormNotification => '通知';
 
   @override

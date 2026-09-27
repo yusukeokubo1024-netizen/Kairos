@@ -694,6 +694,30 @@ class AppLocalizationsEn extends AppLocalizations {
   String get scheduleFormColor => 'Color';
 
   @override
+  String get scheduleFormRecurrence => 'Repeat';
+
+  @override
+  String get scheduleFormRecurrenceNone => 'Does not repeat';
+
+  @override
+  String get scheduleFormRecurrenceDaily => 'Daily';
+
+  @override
+  String get scheduleFormRecurrenceWeekly => 'Weekly';
+
+  @override
+  String get scheduleFormRecurrenceMonthly => 'Monthly';
+
+  @override
+  String get scheduleFormRecurrenceYearly => 'Yearly';
+
+  @override
+  String get scheduleFormRecurrenceEndDate => 'Ends on';
+
+  @override
+  String get scheduleFormRecurrenceNoEnd => 'Never ends';
+
+  @override
   String get scheduleFormNotification => 'Notification';
 
   @override

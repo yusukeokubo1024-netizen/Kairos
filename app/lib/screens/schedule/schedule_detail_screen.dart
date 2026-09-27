@@ -70,6 +70,18 @@ class ScheduleDetailScreen extends StatelessWidget {
     return '${dt.year}/${dt.month.toString().padLeft(2, '0')}/${dt.day.toString().padLeft(2, '0')}';
   }
 
+  String _recurrenceLabel(AppLocalizations l10n, String recurrence, DateTime? endDate) {
+    final pattern = switch (recurrence) {
+      'daily' => l10n.scheduleFormRecurrenceDaily,
+      'weekly' => l10n.scheduleFormRecurrenceWeekly,
+      'monthly' => l10n.scheduleFormRecurrenceMonthly,
+      'yearly' => l10n.scheduleFormRecurrenceYearly,
+      _ => '',
+    };
+    if (endDate == null) return pattern;
+    return '$pattern (${l10n.scheduleFormRecurrenceEndDate} ${_formatDate(endDate)})';
+  }
+
   Future<void> _openInMaps(BuildContext context) async {
     final l10n = AppLocalizations.of(context)!;
     final uri = Uri.https('www.google.com', '/maps/search/', {
@@ -140,6 +152,16 @@ class ScheduleDetailScreen extends StatelessWidget {
                   ),
                 ],
               ),
+              if (schedule.isRecurring) ...[
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    const Icon(Icons.repeat, size: 20),
+                    const SizedBox(width: 8),
+                    Text(_recurrenceLabel(l10n, schedule.recurrence, schedule.recurrenceEndDate)),
+                  ],
+                ),
+              ],
               if (schedule.location.isNotEmpty) ...[
                 const SizedBox(height: 8),
                 InkWell(

@@ -680,6 +680,30 @@ class AppLocalizationsKo extends AppLocalizations {
   String get scheduleFormColor => '색상';
 
   @override
+  String get scheduleFormRecurrence => '반복';
+
+  @override
+  String get scheduleFormRecurrenceNone => '반복 안 함';
+
+  @override
+  String get scheduleFormRecurrenceDaily => '매일';
+
+  @override
+  String get scheduleFormRecurrenceWeekly => '매주';
+
+  @override
+  String get scheduleFormRecurrenceMonthly => '매월';
+
+  @override
+  String get scheduleFormRecurrenceYearly => '매년';
+
+  @override
+  String get scheduleFormRecurrenceEndDate => '종료일';
+
+  @override
+  String get scheduleFormRecurrenceNoEnd => '종료 없음';
+
+  @override
   String get scheduleFormNotification => '알림';
 
   @override

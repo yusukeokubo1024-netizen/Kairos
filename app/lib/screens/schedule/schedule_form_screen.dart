@@ -54,6 +54,8 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
   // Which group calendar this schedule is categorized under (null = 個人の予定).
   // Used only for show/hide filtering on the home calendar.
   String? _groupId;
+  String _recurrence = Schedule.noRecurrence;
+  DateTime? _recurrenceEndDate;
 
   Map<int?, String> _reminderOptions(AppLocalizations l10n) => {
         null: l10n.scheduleFormReminderNone,
@@ -62,6 +64,14 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
         30: l10n.scheduleFormReminder30,
         60: l10n.scheduleFormReminder60,
         1440: l10n.scheduleFormReminder1440,
+      };
+
+  Map<String, String> _recurrenceOptions(AppLocalizations l10n) => {
+        Schedule.noRecurrence: l10n.scheduleFormRecurrenceNone,
+        'daily': l10n.scheduleFormRecurrenceDaily,
+        'weekly': l10n.scheduleFormRecurrenceWeekly,
+        'monthly': l10n.scheduleFormRecurrenceMonthly,
+        'yearly': l10n.scheduleFormRecurrenceYearly,
       };
 
   bool get _isEditing => widget.schedule != null;
@@ -81,6 +91,8 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
       _color = schedule.color;
       _reminderMinutes = schedule.reminderMinutes;
       _groupId = schedule.groupId;
+      _recurrence = schedule.recurrence;
+      _recurrenceEndDate = schedule.recurrenceEndDate;
       _selectedPersonIds.addAll(schedule.participantIds.where((id) => id != uid));
     } else {
       final base = widget.initialDate ?? DateTime.now();
@@ -266,6 +278,8 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
           participantIds: participantIds.toList(),
           color: _color,
           reminderMinutes: _reminderMinutes,
+          recurrence: _recurrence,
+          recurrenceEndDate: _recurrenceEndDate,
         );
         await db.collection('schedules').doc(updated.id).update(updated.toUpdateMap());
         unawaited(AuditService.instance.logUpdate(
@@ -290,6 +304,8 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
           participantIds: participantIds.toList(),
           color: _color,
           reminderMinutes: _reminderMinutes,
+          recurrence: _recurrence,
+          recurrenceEndDate: _recurrenceEndDate,
         );
         final ref = await db.collection('schedules').add(newSchedule.toCreateMap());
         unawaited(AnalyticsService.instance.logScheduleCreated());
@@ -307,6 +323,8 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
           participantIds: newSchedule.participantIds,
           color: newSchedule.color,
           reminderMinutes: newSchedule.reminderMinutes,
+          recurrence: newSchedule.recurrence,
+          recurrenceEndDate: newSchedule.recurrenceEndDate,
         );
         unawaited(ScheduleActivityService.instance.logCreate(createdSchedule));
         await NotificationService.instance.scheduleForSchedule(createdSchedule);
@@ -433,6 +451,43 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
                   trailing: const Icon(Icons.edit_calendar_outlined),
                   onTap: () => _pickDateTime(isStart: false),
                 ),
+                const SizedBox(height: 16),
+                Text(l10n.scheduleFormRecurrence, style: const TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                DropdownButtonFormField<String>(
+                  initialValue: _recurrence,
+                  items: _recurrenceOptions(l10n)
+                      .entries
+                      .map((entry) => DropdownMenuItem(value: entry.key, child: Text(entry.value)))
+                      .toList(),
+                  onChanged: (value) => setState(() {
+                    _recurrence = value ?? Schedule.noRecurrence;
+                    if (_recurrence == Schedule.noRecurrence) _recurrenceEndDate = null;
+                  }),
+                ),
+                if (_recurrence != Schedule.noRecurrence)
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(l10n.scheduleFormRecurrenceEndDate),
+                    subtitle: Text(_recurrenceEndDate != null
+                        ? _formatDate(_recurrenceEndDate!)
+                        : l10n.scheduleFormRecurrenceNoEnd),
+                    trailing: _recurrenceEndDate != null
+                        ? IconButton(
+                            icon: const Icon(Icons.clear),
+                            onPressed: () => setState(() => _recurrenceEndDate = null),
+                          )
+                        : const Icon(Icons.edit_calendar_outlined),
+                    onTap: () async {
+                      final picked = await showDatePicker(
+                        context: context,
+                        initialDate: _recurrenceEndDate ?? _start,
+                        firstDate: _start,
+                        lastDate: DateTime(_start.year + 10),
+                      );
+                      if (picked != null) setState(() => _recurrenceEndDate = picked);
+                    },
+                  ),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _locationController,

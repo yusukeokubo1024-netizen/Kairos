@@ -20,9 +20,22 @@ class Schedule {
   final int? reminderMinutes;
   final DateTime? createdAt;
   final DateTime? updatedAt;
+  // 'none' | 'daily' | 'weekly' | 'monthly' | 'yearly'. Occurrences are not
+  // stored as separate documents — the calendar expands this one document
+  // into virtual copies for display (see CalendarScreen._expandRecurrences).
+  // Editing/deleting always acts on this one document, so it affects the
+  // whole series; there is no per-occurrence override in this v1.
+  final String recurrence;
+  // Optional last day a recurring schedule still occurs on (inclusive).
+  // Null means it repeats indefinitely (display is still capped to a couple
+  // of years out — see CalendarScreen._recurrenceDisplayCap).
+  final DateTime? recurrenceEndDate;
 
   static const defaultColor = Color(0xFF2563EB);
   static const defaultReminderMinutes = 30;
+  static const noRecurrence = 'none';
+
+  bool get isRecurring => recurrence != noRecurrence;
 
   Schedule({
     required this.id,
@@ -39,7 +52,38 @@ class Schedule {
     this.reminderMinutes = defaultReminderMinutes,
     this.createdAt,
     this.updatedAt,
+    this.recurrence = noRecurrence,
+    this.recurrenceEndDate,
   });
+
+  /// A copy representing one virtual occurrence of a recurring series —
+  /// same id/fields, but [startTime]/[endTime] shifted to that occurrence's
+  /// date (keeping the original duration). Saving from this copy (e.g. after
+  /// editing it) still writes to the same document, so it edits the series;
+  /// this is safe because every occurrence shares the same weekday/day-of-
+  /// month/time-of-day, so re-anchoring to any one of them doesn't change
+  /// the pattern.
+  Schedule copyAsOccurrence(DateTime occurrenceStart) {
+    final duration = endTime.difference(startTime);
+    return Schedule(
+      id: id,
+      ownerId: ownerId,
+      title: title,
+      startTime: occurrenceStart,
+      endTime: occurrenceStart.add(duration),
+      isAllDay: isAllDay,
+      location: location,
+      notes: notes,
+      groupId: groupId,
+      participantIds: participantIds,
+      color: color,
+      reminderMinutes: reminderMinutes,
+      createdAt: createdAt,
+      updatedAt: updatedAt,
+      recurrence: recurrence,
+      recurrenceEndDate: recurrenceEndDate,
+    );
+  }
 
   factory Schedule.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
     final data = doc.data()!;
@@ -59,6 +103,8 @@ class Schedule {
       reminderMinutes: data['reminderMinutes'] as int?,
       createdAt: (data['createdAt'] as Timestamp?)?.toDate(),
       updatedAt: (data['updatedAt'] as Timestamp?)?.toDate(),
+      recurrence: data['recurrence'] as String? ?? noRecurrence,
+      recurrenceEndDate: (data['recurrenceEndDate'] as Timestamp?)?.toDate(),
     );
   }
 
@@ -75,6 +121,9 @@ class Schedule {
       'participantIds': participantIds,
       'color': color.toARGB32(),
       'reminderMinutes': reminderMinutes,
+      'recurrence': recurrence,
+      'recurrenceEndDate':
+          recurrenceEndDate != null ? Timestamp.fromDate(recurrenceEndDate!) : null,
       'createdAt': FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
     };
@@ -93,6 +142,9 @@ class Schedule {
       'participantIds': participantIds,
       'color': color.toARGB32(),
       'reminderMinutes': reminderMinutes,
+      'recurrence': recurrence,
+      'recurrenceEndDate':
+          recurrenceEndDate != null ? Timestamp.fromDate(recurrenceEndDate!) : null,
       'updatedAt': FieldValue.serverTimestamp(),
     };
   }

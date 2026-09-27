@@ -77,7 +77,50 @@ class NotificationService {
     return doc.data()?['notifications_enabled'] as bool? ?? true;
   }
 
-  /// Reminds the user 30 minutes before a schedule starts.
+  /// One step forward along a recurrence pattern, used only to roll an
+  /// already-past reminder time forward to its next future occurrence
+  /// before handing it to zonedSchedule (which requires a future date even
+  /// when [matchDateTimeComponents] makes it repeat after that).
+  DateTime _stepForward(String recurrence, DateTime from) {
+    switch (recurrence) {
+      case 'daily':
+        return from.add(const Duration(days: 1));
+      case 'weekly':
+        return from.add(const Duration(days: 7));
+      case 'monthly':
+        return DateTime(from.year, from.month + 1, from.day, from.hour, from.minute);
+      case 'yearly':
+        return DateTime(from.year + 1, from.month, from.day, from.hour, from.minute);
+      default:
+        return from;
+    }
+  }
+
+  /// The [DateTimeComponents] that makes zonedSchedule repeat matching a
+  /// recurrence pattern natively (one alarm the OS re-fires itself), or null
+  /// for a one-off, non-repeating schedule.
+  DateTimeComponents? _matchComponentsFor(String recurrence) {
+    switch (recurrence) {
+      case 'daily':
+        return DateTimeComponents.time;
+      case 'weekly':
+        return DateTimeComponents.dayOfWeekAndTime;
+      case 'monthly':
+        return DateTimeComponents.dayOfMonthAndTime;
+      case 'yearly':
+        return DateTimeComponents.dateAndTime;
+      default:
+        return null;
+    }
+  }
+
+  /// Reminds the user before a schedule starts (30 minutes by default). For
+  /// a recurring schedule this is scheduled once as a natively-repeating
+  /// alarm (same mechanism as [scheduleForAnniversary]) rather than one
+  /// notification per occurrence, so it isn't limited by iOS's ~64 pending
+  /// local notification cap. The trade-off: [Schedule.recurrenceEndDate] and
+  /// a single skipped occurrence aren't honored by the reminder itself —
+  /// it just keeps firing until the schedule/reminder is edited or deleted.
   Future<void> scheduleForSchedule(Schedule schedule) async {
     final reminderMinutes = schedule.reminderMinutes;
     if (reminderMinutes == null || !await _notificationsEnabled()) {
@@ -89,8 +132,19 @@ class NotificationService {
     final baseTime = schedule.isAllDay
         ? DateTime(schedule.startTime.year, schedule.startTime.month, schedule.startTime.day, 9)
         : schedule.startTime;
-    final reminderTime = baseTime.subtract(Duration(minutes: reminderMinutes));
-    if (reminderTime.isBefore(DateTime.now())) return;
+    var reminderTime = baseTime.subtract(Duration(minutes: reminderMinutes));
+
+    final matchComponents = _matchComponentsFor(schedule.recurrence);
+    if (matchComponents == null) {
+      if (reminderTime.isBefore(DateTime.now())) return;
+    } else {
+      // Roll a past anchor forward to the next future occurrence — capped
+      // so a stale/corrupt date can't loop indefinitely.
+      for (var i = 0; i < 2000 && reminderTime.isBefore(DateTime.now()); i++) {
+        reminderTime = _stepForward(schedule.recurrence, reminderTime);
+      }
+      if (reminderTime.isBefore(DateTime.now())) return;
+    }
 
     try {
       await _plugin.zonedSchedule(
@@ -108,6 +162,7 @@ class NotificationService {
           iOS: const DarwinNotificationDetails(),
         ),
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        matchDateTimeComponents: matchComponents,
       );
     } catch (e, st) {
       // Most commonly a missing/revoked Android "exact alarm" permission —

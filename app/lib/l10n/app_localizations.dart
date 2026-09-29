@@ -750,6 +750,114 @@ abstract class AppLocalizations {
   /// **'保存に失敗しました。時間をおいて再度お試しください'**
   String get colorLabelsSaveFailed;
 
+  /// No description provided for @settingsPackingTemplates.
+  ///
+  /// In ja, this message translates to:
+  /// **'持ち物リストのテンプレート'**
+  String get settingsPackingTemplates;
+
+  /// No description provided for @packingTemplatesTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'持ち物リストのテンプレート'**
+  String get packingTemplatesTitle;
+
+  /// No description provided for @packingTemplatesExplanation.
+  ///
+  /// In ja, this message translates to:
+  /// **'「プール」「旅行」のようなテンプレートを作っておくと、予定を作るときに持ち物リストとしてまとめて追加できます。'**
+  String get packingTemplatesExplanation;
+
+  /// No description provided for @packingTemplatesEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'まだ登録されていません'**
+  String get packingTemplatesEmpty;
+
+  /// No description provided for @packingTemplatesAddButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'追加する'**
+  String get packingTemplatesAddButton;
+
+  /// No description provided for @packingTemplatesNameLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'テンプレート名（例：プール、旅行）'**
+  String get packingTemplatesNameLabel;
+
+  /// No description provided for @packingTemplatesNameRequired.
+  ///
+  /// In ja, this message translates to:
+  /// **'名前を入力してください'**
+  String get packingTemplatesNameRequired;
+
+  /// No description provided for @packingTemplatesItemsLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'持ち物（1行に1つ）'**
+  String get packingTemplatesItemsLabel;
+
+  /// No description provided for @packingTemplatesItemsHelper.
+  ///
+  /// In ja, this message translates to:
+  /// **'改行して複数入力できます'**
+  String get packingTemplatesItemsHelper;
+
+  /// No description provided for @packingTemplatesItemsRequired.
+  ///
+  /// In ja, this message translates to:
+  /// **'持ち物を1つ以上入力してください'**
+  String get packingTemplatesItemsRequired;
+
+  /// No description provided for @packingTemplatesDeleteConfirmTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'削除しますか？'**
+  String get packingTemplatesDeleteConfirmTitle;
+
+  /// No description provided for @packingTemplatesDeleteConfirmBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'このテンプレートを削除します。すでに予定に追加した持ち物リストは変わりません。'**
+  String get packingTemplatesDeleteConfirmBody;
+
+  /// No description provided for @packingTemplatesSaveFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'保存に失敗しました。時間をおいて再度お試しください'**
+  String get packingTemplatesSaveFailed;
+
+  /// No description provided for @scheduleFormPacking.
+  ///
+  /// In ja, this message translates to:
+  /// **'持ち物リスト'**
+  String get scheduleFormPacking;
+
+  /// No description provided for @scheduleFormPackingFromTemplate.
+  ///
+  /// In ja, this message translates to:
+  /// **'テンプレートから追加'**
+  String get scheduleFormPackingFromTemplate;
+
+  /// No description provided for @scheduleFormPackingPickTemplate.
+  ///
+  /// In ja, this message translates to:
+  /// **'テンプレートを選ぶ'**
+  String get scheduleFormPackingPickTemplate;
+
+  /// No description provided for @scheduleFormPackingAddHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'持ち物を入力して追加'**
+  String get scheduleFormPackingAddHint;
+
+  /// No description provided for @scheduleDetailPacking.
+  ///
+  /// In ja, this message translates to:
+  /// **'持ち物リスト'**
+  String get scheduleDetailPacking;
+
   /// No description provided for @scheduleFormColorPerson.
   ///
   /// In ja, this message translates to:
@@ -1751,6 +1859,18 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **' / 降水確率{percent}%'**
   String calendarWeatherPrecipitation(Object percent);
+
+  /// No description provided for @calendarWeatherMorning.
+  ///
+  /// In ja, this message translates to:
+  /// **'午前 {emoji} {temp}°'**
+  String calendarWeatherMorning(Object emoji, Object temp);
+
+  /// No description provided for @calendarWeatherAfternoon.
+  ///
+  /// In ja, this message translates to:
+  /// **'午後 {emoji} {temp}°'**
+  String calendarWeatherAfternoon(Object emoji, Object temp);
 
   /// No description provided for @calendarAllDay.
   ///

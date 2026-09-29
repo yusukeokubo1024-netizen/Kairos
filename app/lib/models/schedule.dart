@@ -1,6 +1,28 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
+/// One line of a schedule's packing checklist ("忘れ物防止"). Filled in
+/// manually or from a saved PackingTemplatesScreen template; [checked]
+/// persists back to Firestore when toggled from ScheduleDetailScreen.
+class PackingItem {
+  final String text;
+  final bool checked;
+
+  const PackingItem({required this.text, this.checked = false});
+
+  factory PackingItem.fromMap(Map<String, dynamic> map) {
+    return PackingItem(
+      text: map['text'] as String? ?? '',
+      checked: map['checked'] as bool? ?? false,
+    );
+  }
+
+  Map<String, dynamic> toMap() => {'text': text, 'checked': checked};
+
+  PackingItem copyWith({bool? checked}) =>
+      PackingItem(text: text, checked: checked ?? this.checked);
+}
+
 class Schedule {
   final String id;
   final String ownerId;
@@ -35,6 +57,10 @@ class Schedule {
   // notification. No effect on iOS in this v1 — Apple's equivalent (a
   // "critical alert") needs a special entitlement this app doesn't have.
   final bool alarmStyle;
+  // "忘れ物防止" checklist — see PackingItem. Only the schedule's owner can
+  // edit/check it (same as every other field), matching the existing
+  // owner-only schedule update rule.
+  final List<PackingItem> packingItems;
 
   static const defaultColor = Color(0xFF2563EB);
   static const defaultReminderMinutes = 30;
@@ -60,6 +86,7 @@ class Schedule {
     this.recurrence = noRecurrence,
     this.recurrenceEndDate,
     this.alarmStyle = false,
+    this.packingItems = const [],
   });
 
   /// A copy representing one virtual occurrence of a recurring series —
@@ -89,6 +116,7 @@ class Schedule {
       recurrence: recurrence,
       recurrenceEndDate: recurrenceEndDate,
       alarmStyle: alarmStyle,
+      packingItems: packingItems,
     );
   }
 
@@ -113,6 +141,9 @@ class Schedule {
       recurrence: data['recurrence'] as String? ?? noRecurrence,
       recurrenceEndDate: (data['recurrenceEndDate'] as Timestamp?)?.toDate(),
       alarmStyle: data['alarmStyle'] as bool? ?? false,
+      packingItems: (data['packingItems'] as List? ?? [])
+          .map((e) => PackingItem.fromMap(Map<String, dynamic>.from(e as Map)))
+          .toList(),
     );
   }
 
@@ -133,6 +164,7 @@ class Schedule {
       'recurrenceEndDate':
           recurrenceEndDate != null ? Timestamp.fromDate(recurrenceEndDate!) : null,
       'alarmStyle': alarmStyle,
+      'packingItems': packingItems.map((e) => e.toMap()).toList(),
       'createdAt': FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
     };
@@ -155,6 +187,7 @@ class Schedule {
       'recurrenceEndDate':
           recurrenceEndDate != null ? Timestamp.fromDate(recurrenceEndDate!) : null,
       'alarmStyle': alarmStyle,
+      'packingItems': packingItems.map((e) => e.toMap()).toList(),
       'updatedAt': FieldValue.serverTimestamp(),
     };
   }

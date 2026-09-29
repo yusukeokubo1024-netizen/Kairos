@@ -354,6 +354,62 @@ class AppLocalizationsKo extends AppLocalizations {
   String get colorLabelsSaveFailed => '저장에 실패했습니다. 잠시 후 다시 시도해 주세요';
 
   @override
+  String get settingsPackingTemplates => '준비물 리스트 템플릿';
+
+  @override
+  String get packingTemplatesTitle => '준비물 리스트 템플릿';
+
+  @override
+  String get packingTemplatesExplanation =>
+      '\"수영장\", \"여행\"처럼 템플릿을 만들어두면 일정을 만들 때 준비물 리스트로 한번에 추가할 수 있습니다.';
+
+  @override
+  String get packingTemplatesEmpty => '아직 등록된 템플릿이 없습니다';
+
+  @override
+  String get packingTemplatesAddButton => '추가하기';
+
+  @override
+  String get packingTemplatesNameLabel => '템플릿 이름 (예: 수영장, 여행)';
+
+  @override
+  String get packingTemplatesNameRequired => '이름을 입력해 주세요';
+
+  @override
+  String get packingTemplatesItemsLabel => '준비물 (한 줄에 하나씩)';
+
+  @override
+  String get packingTemplatesItemsHelper => '줄바꿈으로 여러 개를 입력할 수 있습니다';
+
+  @override
+  String get packingTemplatesItemsRequired => '준비물을 하나 이상 입력해 주세요';
+
+  @override
+  String get packingTemplatesDeleteConfirmTitle => '삭제하시겠습니까?';
+
+  @override
+  String get packingTemplatesDeleteConfirmBody =>
+      '이 템플릿을 삭제합니다. 이미 일정에 추가된 준비물 리스트는 변경되지 않습니다';
+
+  @override
+  String get packingTemplatesSaveFailed => '저장에 실패했습니다. 잠시 후 다시 시도해 주세요';
+
+  @override
+  String get scheduleFormPacking => '준비물 리스트';
+
+  @override
+  String get scheduleFormPackingFromTemplate => '템플릿에서 추가';
+
+  @override
+  String get scheduleFormPackingPickTemplate => '템플릿 선택';
+
+  @override
+  String get scheduleFormPackingAddHint => '준비물을 입력하고 추가';
+
+  @override
+  String get scheduleDetailPacking => '준비물 리스트';
+
+  @override
   String get scheduleFormColorPerson => '누구의 일정인가요?';
 
   @override
@@ -886,6 +942,16 @@ class AppLocalizationsKo extends AppLocalizations {
   @override
   String calendarWeatherPrecipitation(Object percent) {
     return ' / 강수확률 $percent%';
+  }
+
+  @override
+  String calendarWeatherMorning(Object emoji, Object temp) {
+    return '오전 $emoji $temp°';
+  }
+
+  @override
+  String calendarWeatherAfternoon(Object emoji, Object temp) {
+    return '오후 $emoji $temp°';
   }
 
   @override

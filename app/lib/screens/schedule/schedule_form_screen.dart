@@ -58,6 +58,9 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
   String _recurrence = Schedule.noRecurrence;
   DateTime? _recurrenceEndDate;
   bool _alarmStyle = false;
+  final List<PackingItem> _packingItems = [];
+  final _packingItemController = TextEditingController();
+  List<({String name, List<String> items})> _packingTemplates = [];
 
   Map<int?, String> _reminderOptions(AppLocalizations l10n) => {
         null: l10n.scheduleFormReminderNone,
@@ -96,6 +99,7 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
       _recurrence = schedule.recurrence;
       _recurrenceEndDate = schedule.recurrenceEndDate;
       _alarmStyle = schedule.alarmStyle;
+      _packingItems.addAll(schedule.packingItems);
       _selectedPersonIds.addAll(schedule.participantIds.where((id) => id != uid));
       // [schedule] may be one virtual occurrence of a recurring series with
       // startTime/endTime shifted to that occurrence's date (see
@@ -116,6 +120,7 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
       _reminderMinutes = Schedule.defaultReminderMinutes;
     }
     _loadColorLabels();
+    _loadPackingTemplates();
   }
 
   Future<void> _loadCanonicalRecurrenceAnchor(String id) async {
@@ -180,9 +185,59 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
     }
   }
 
+  Future<void> _loadPackingTemplates() async {
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+    final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+    final raw = doc.data()?['packingTemplates'] as List? ?? [];
+    if (mounted) {
+      setState(() {
+        _packingTemplates = raw.cast<Map<String, dynamic>>().map((e) {
+          return (
+            name: e['name'] as String,
+            items: List<String>.from(e['items'] as List? ?? []),
+          );
+        }).toList();
+      });
+    }
+  }
+
+  void _addPackingItem(String text) {
+    final trimmed = text.trim();
+    if (trimmed.isEmpty) return;
+    setState(() {
+      _packingItems.add(PackingItem(text: trimmed));
+      _packingItemController.clear();
+    });
+  }
+
+  Future<void> _pickPackingTemplate() async {
+    final l10n = AppLocalizations.of(context)!;
+    final selected = await showDialog<({String name, List<String> items})>(
+      context: context,
+      builder: (context) => SimpleDialog(
+        title: Text(l10n.scheduleFormPackingPickTemplate),
+        children: [
+          for (final template in _packingTemplates)
+            SimpleDialogOption(
+              onPressed: () => Navigator.pop(context, template),
+              child: Text('${template.name}（${template.items.join('、')}）'),
+            ),
+        ],
+      ),
+    );
+    if (selected == null) return;
+    setState(() {
+      final existingTexts = _packingItems.map((e) => e.text).toSet();
+      for (final item in selected.items) {
+        if (existingTexts.add(item)) _packingItems.add(PackingItem(text: item));
+      }
+    });
+  }
+
   @override
   void dispose() {
     _titleController.dispose();
+    _packingItemController.dispose();
     _locationController.dispose();
     _notesController.dispose();
     _emailSearchController.dispose();
@@ -310,6 +365,7 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
           recurrence: _recurrence,
           recurrenceEndDate: _recurrenceEndDate,
           alarmStyle: _alarmStyle,
+          packingItems: _packingItems,
         );
         await db.collection('schedules').doc(updated.id).update(updated.toUpdateMap());
         unawaited(AuditService.instance.logUpdate(
@@ -337,6 +393,7 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
           recurrence: _recurrence,
           recurrenceEndDate: _recurrenceEndDate,
           alarmStyle: _alarmStyle,
+          packingItems: _packingItems,
         );
         final ref = await db.collection('schedules').add(newSchedule.toCreateMap());
         unawaited(AnalyticsService.instance.logScheduleCreated());
@@ -357,6 +414,7 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
           recurrence: newSchedule.recurrence,
           recurrenceEndDate: newSchedule.recurrenceEndDate,
           alarmStyle: newSchedule.alarmStyle,
+          packingItems: newSchedule.packingItems,
         );
         unawaited(ScheduleActivityService.instance.logCreate(createdSchedule));
         await NotificationService.instance.scheduleForSchedule(createdSchedule);
@@ -614,6 +672,46 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
                     value: _alarmStyle,
                     onChanged: (value) => setState(() => _alarmStyle = value),
                   ),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(l10n.scheduleFormPacking, style: const TextStyle(fontWeight: FontWeight.bold)),
+                    if (_packingTemplates.isNotEmpty)
+                      TextButton(
+                        onPressed: _pickPackingTemplate,
+                        child: Text(l10n.scheduleFormPackingFromTemplate),
+                      ),
+                  ],
+                ),
+                if (_packingItems.isNotEmpty)
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 4,
+                    children: [
+                      for (final item in _packingItems)
+                        Chip(
+                          label: Text(item.text),
+                          onDeleted: () => setState(() => _packingItems.remove(item)),
+                        ),
+                    ],
+                  ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _packingItemController,
+                        decoration: InputDecoration(hintText: l10n.scheduleFormPackingAddHint),
+                        onSubmitted: _addPackingItem,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.add_circle_outline),
+                      onPressed: () => _addPackingItem(_packingItemController.text),
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 16),
                 Text(l10n.scheduleFormCalendar, style: const TextStyle(fontWeight: FontWeight.bold)),
                 Text(

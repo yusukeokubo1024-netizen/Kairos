@@ -348,6 +348,61 @@ class AppLocalizationsZh extends AppLocalizations {
   String get colorLabelsSaveFailed => '保存失败，请稍后再试';
 
   @override
+  String get settingsPackingTemplates => '随身物品清单模板';
+
+  @override
+  String get packingTemplatesTitle => '随身物品清单模板';
+
+  @override
+  String get packingTemplatesExplanation =>
+      '预先创建“游泳池”“旅行”等模板，创建日程时即可一次性添加随身物品清单。';
+
+  @override
+  String get packingTemplatesEmpty => '还没有模板';
+
+  @override
+  String get packingTemplatesAddButton => '添加';
+
+  @override
+  String get packingTemplatesNameLabel => '模板名称（例如：游泳池、旅行）';
+
+  @override
+  String get packingTemplatesNameRequired => '请输入名称';
+
+  @override
+  String get packingTemplatesItemsLabel => '物品（每行一项）';
+
+  @override
+  String get packingTemplatesItemsHelper => '可换行输入多项';
+
+  @override
+  String get packingTemplatesItemsRequired => '请至少输入一项物品';
+
+  @override
+  String get packingTemplatesDeleteConfirmTitle => '要删除吗？';
+
+  @override
+  String get packingTemplatesDeleteConfirmBody => '将删除该模板。已添加到日程中的随身物品清单不会改变。';
+
+  @override
+  String get packingTemplatesSaveFailed => '保存失败，请稍后再试';
+
+  @override
+  String get scheduleFormPacking => '随身物品清单';
+
+  @override
+  String get scheduleFormPackingFromTemplate => '从模板添加';
+
+  @override
+  String get scheduleFormPackingPickTemplate => '选择模板';
+
+  @override
+  String get scheduleFormPackingAddHint => '输入物品并添加';
+
+  @override
+  String get scheduleDetailPacking => '随身物品清单';
+
+  @override
   String get scheduleFormColorPerson => '这是谁的日程？';
 
   @override
@@ -870,6 +925,16 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String calendarWeatherPrecipitation(Object percent) {
     return ' / 降水概率$percent%';
+  }
+
+  @override
+  String calendarWeatherMorning(Object emoji, Object temp) {
+    return '上午 $emoji $temp°';
+  }
+
+  @override
+  String calendarWeatherAfternoon(Object emoji, Object temp) {
+    return '下午 $emoji $temp°';
   }
 
   @override

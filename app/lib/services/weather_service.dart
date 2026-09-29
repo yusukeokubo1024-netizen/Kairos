@@ -2,12 +2,48 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+/// Weather over one part of a day (morning or afternoon) — see
+/// [WeatherDay.morning]/[WeatherDay.afternoon]. A single end-of-day icon
+/// hides a lot: rain in the morning and clear in the afternoon (or the
+/// reverse) both used to collapse into one emoji for the whole day.
+class WeatherPeriod {
+  final int weatherCode;
+  final double temp;
+  final int? precipitationProbability;
+
+  WeatherPeriod({required this.weatherCode, required this.temp, this.precipitationProbability});
+
+  /// Maps Open-Meteo's WMO weather codes to a simple emoji.
+  /// https://open-meteo.com/en/docs (WMO Weather interpretation codes)
+  String get emoji => _emojiForWeatherCode(weatherCode);
+}
+
+/// Maps Open-Meteo's WMO weather codes to a simple emoji.
+/// https://open-meteo.com/en/docs (WMO Weather interpretation codes)
+String _emojiForWeatherCode(int weatherCode) {
+  if (weatherCode == 0) return '☀️';
+  if (weatherCode <= 3) return '🌤️';
+  if (weatherCode == 45 || weatherCode == 48) return '🌫️';
+  if (weatherCode >= 51 && weatherCode <= 67) return '🌧️';
+  if (weatherCode >= 71 && weatherCode <= 77) return '❄️';
+  if (weatherCode >= 80 && weatherCode <= 82) return '🌦️';
+  if (weatherCode >= 85 && weatherCode <= 86) return '🌨️';
+  if (weatherCode >= 95) return '⛈️';
+  return '☁️';
+}
+
 class WeatherDay {
   final DateTime date;
   final int weatherCode;
   final double maxTemp;
   final double minTemp;
   final int? precipitationProbability;
+  // Representative conditions for 6:00-11:59 and 12:00-17:59. Null if the
+  // hourly data needed to compute them wasn't available (e.g. a request
+  // that only asked for daily fields), in which case callers should fall
+  // back to the whole-day fields above.
+  final WeatherPeriod? morning;
+  final WeatherPeriod? afternoon;
 
   WeatherDay({
     required this.date,
@@ -15,21 +51,13 @@ class WeatherDay {
     required this.maxTemp,
     required this.minTemp,
     this.precipitationProbability,
+    this.morning,
+    this.afternoon,
   });
 
   /// Maps Open-Meteo's WMO weather codes to a simple emoji.
   /// https://open-meteo.com/en/docs (WMO Weather interpretation codes)
-  String get emoji {
-    if (weatherCode == 0) return '☀️';
-    if (weatherCode <= 3) return '🌤️';
-    if (weatherCode == 45 || weatherCode == 48) return '🌫️';
-    if (weatherCode >= 51 && weatherCode <= 67) return '🌧️';
-    if (weatherCode >= 71 && weatherCode <= 77) return '❄️';
-    if (weatherCode >= 80 && weatherCode <= 82) return '🌦️';
-    if (weatherCode >= 85 && weatherCode <= 86) return '🌨️';
-    if (weatherCode >= 95) return '⛈️';
-    return '☁️';
-  }
+  String get emoji => _emojiForWeatherCode(weatherCode);
 }
 
 /// Free weather forecasts via Open-Meteo (no API key, no cost — see
@@ -218,10 +246,15 @@ class WeatherService {
       'longitude': '$lon',
       'daily':
           'weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_max',
+      // For the 午前/午後 (morning/afternoon) breakdown — a single
+      // end-of-day code hides e.g. "rain in the morning, clear by
+      // afternoon". Hourly is still on Open-Meteo's free tier (no API key,
+      // no cost) same as the daily fields.
+      'hourly': 'weathercode,temperature_2m,precipitation_probability',
       // Must match the queried location's own timezone, not be hardcoded —
-      // Open-Meteo uses this to decide each "daily" entry's date boundaries,
-      // so a mismatched timezone shifts which calendar day gets labeled
-      // "today" and can show the wrong day's weather. 'auto' resolves the
+      // Open-Meteo uses this to decide each "daily"/"hourly" entry's date
+      // boundaries, so a mismatched timezone shifts which calendar day (and
+      // which local hour) gets labeled "today"/"9am". 'auto' resolves the
       // correct IANA timezone from lat/lon.
       'timezone': 'auto',
     });
@@ -236,6 +269,42 @@ class WeatherService {
     final minTemps = daily['temperature_2m_min'] as List<dynamic>;
     final precipitationChances = daily['precipitation_probability_max'] as List<dynamic>?;
 
+    final hourly = data['hourly'] as Map<String, dynamic>?;
+    final hourlyTimes = hourly?['time'] as List<dynamic>?;
+    final hourlyCodes = hourly?['weathercode'] as List<dynamic>?;
+    final hourlyTemps = hourly?['temperature_2m'] as List<dynamic>?;
+    final hourlyPrecip = hourly?['precipitation_probability'] as List<dynamic>?;
+
+    // Picks a representative period (e.g. 6:00-11:59) for [date]: the
+    // weather code/temp at that period's middle hour (a single snapshot is
+    // plenty for an icon+temp), but the *worst-case* (max) precipitation
+    // chance across the whole period, since "will it rain at some point
+    // this morning" matters more for planning than one hour's number.
+    WeatherPeriod? periodFor(DateTime date, int startHour, int endHourExclusive) {
+      if (hourlyTimes == null || hourlyCodes == null || hourlyTemps == null) return null;
+      final midHour = (startHour + endHourExclusive - 1) ~/ 2;
+      int? midIndex;
+      var maxPrecip = 0;
+      var hasPrecip = false;
+      for (var i = 0; i < hourlyTimes.length; i++) {
+        final t = DateTime.parse(hourlyTimes[i] as String);
+        if (t.year != date.year || t.month != date.month || t.day != date.day) continue;
+        if (t.hour < startHour || t.hour >= endHourExclusive) continue;
+        if (t.hour == midHour) midIndex = i;
+        final p = (hourlyPrecip?[i] as num?)?.toInt();
+        if (p != null) {
+          hasPrecip = true;
+          if (p > maxPrecip) maxPrecip = p;
+        }
+      }
+      if (midIndex == null) return null;
+      return WeatherPeriod(
+        weatherCode: hourlyCodes[midIndex] as int,
+        temp: (hourlyTemps[midIndex] as num).toDouble(),
+        precipitationProbability: hasPrecip ? maxPrecip : null,
+      );
+    }
+
     final forecast = <WeatherDay>[
       for (var i = 0; i < dates.length; i++)
         WeatherDay(
@@ -244,6 +313,8 @@ class WeatherService {
           maxTemp: (maxTemps[i] as num).toDouble(),
           minTemp: (minTemps[i] as num).toDouble(),
           precipitationProbability: (precipitationChances?[i] as num?)?.toInt(),
+          morning: periodFor(DateTime.parse(dates[i] as String), 6, 12),
+          afternoon: periodFor(DateTime.parse(dates[i] as String), 12, 18),
         ),
     ];
 

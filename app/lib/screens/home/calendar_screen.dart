@@ -860,15 +860,45 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 child: Row(
                   children: [
                     Expanded(
-                      child: Text(
-                        '${weather.emoji} '
-                        '${l10n.calendarWeatherLine(weather.maxTemp.round(), weather.minTemp.round())}'
-                        // Only worth calling out once there's a meaningful
-                        // chance of rain — 30% is the usual "bring an
-                        // umbrella" threshold in Japanese forecasts.
-                        '${(weather.precipitationProbability ?? 0) >= 30 ? l10n.calendarWeatherPrecipitation(weather.precipitationProbability!) : ''}',
-                        style: const TextStyle(color: Color(0xFF2563EB)),
-                      ),
+                      // 午前/午後 (morning/afternoon) when the hourly data to
+                      // compute them came back — falls back to the old
+                      // single whole-day line otherwise (e.g. a day beyond
+                      // Open-Meteo's hourly horizon).
+                      child: weather.morning != null && weather.afternoon != null
+                          ? Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  l10n.calendarWeatherMorning(
+                                          weather.morning!.emoji, weather.morning!.temp.round()) +
+                                      // Only worth calling out once there's a
+                                      // meaningful chance of rain — 30% is the
+                                      // usual "bring an umbrella" threshold in
+                                      // Japanese forecasts.
+                                      ((weather.morning!.precipitationProbability ?? 0) >= 30
+                                          ? l10n.calendarWeatherPrecipitation(
+                                              weather.morning!.precipitationProbability!)
+                                          : ''),
+                                  style: const TextStyle(color: Color(0xFF2563EB), fontSize: 12),
+                                ),
+                                Text(
+                                  l10n.calendarWeatherAfternoon(weather.afternoon!.emoji,
+                                          weather.afternoon!.temp.round()) +
+                                      ((weather.afternoon!.precipitationProbability ?? 0) >= 30
+                                          ? l10n.calendarWeatherPrecipitation(
+                                              weather.afternoon!.precipitationProbability!)
+                                          : ''),
+                                  style: const TextStyle(color: Color(0xFF2563EB), fontSize: 12),
+                                ),
+                              ],
+                            )
+                          : Text(
+                              '${weather.emoji} '
+                              '${l10n.calendarWeatherLine(weather.maxTemp.round(), weather.minTemp.round())}'
+                              '${(weather.precipitationProbability ?? 0) >= 30 ? l10n.calendarWeatherPrecipitation(weather.precipitationProbability!) : ''}',
+                              style: const TextStyle(color: Color(0xFF2563EB)),
+                            ),
                     ),
                     const Icon(Icons.chevron_right, size: 18, color: Color(0xFF2563EB)),
                   ],

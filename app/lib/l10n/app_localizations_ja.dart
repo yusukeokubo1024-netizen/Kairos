@@ -351,6 +351,62 @@ class AppLocalizationsJa extends AppLocalizations {
   String get colorLabelsSaveFailed => '保存に失敗しました。時間をおいて再度お試しください';
 
   @override
+  String get settingsPackingTemplates => '持ち物リストのテンプレート';
+
+  @override
+  String get packingTemplatesTitle => '持ち物リストのテンプレート';
+
+  @override
+  String get packingTemplatesExplanation =>
+      '「プール」「旅行」のようなテンプレートを作っておくと、予定を作るときに持ち物リストとしてまとめて追加できます。';
+
+  @override
+  String get packingTemplatesEmpty => 'まだ登録されていません';
+
+  @override
+  String get packingTemplatesAddButton => '追加する';
+
+  @override
+  String get packingTemplatesNameLabel => 'テンプレート名（例：プール、旅行）';
+
+  @override
+  String get packingTemplatesNameRequired => '名前を入力してください';
+
+  @override
+  String get packingTemplatesItemsLabel => '持ち物（1行に1つ）';
+
+  @override
+  String get packingTemplatesItemsHelper => '改行して複数入力できます';
+
+  @override
+  String get packingTemplatesItemsRequired => '持ち物を1つ以上入力してください';
+
+  @override
+  String get packingTemplatesDeleteConfirmTitle => '削除しますか？';
+
+  @override
+  String get packingTemplatesDeleteConfirmBody =>
+      'このテンプレートを削除します。すでに予定に追加した持ち物リストは変わりません。';
+
+  @override
+  String get packingTemplatesSaveFailed => '保存に失敗しました。時間をおいて再度お試しください';
+
+  @override
+  String get scheduleFormPacking => '持ち物リスト';
+
+  @override
+  String get scheduleFormPackingFromTemplate => 'テンプレートから追加';
+
+  @override
+  String get scheduleFormPackingPickTemplate => 'テンプレートを選ぶ';
+
+  @override
+  String get scheduleFormPackingAddHint => '持ち物を入力して追加';
+
+  @override
+  String get scheduleDetailPacking => '持ち物リスト';
+
+  @override
   String get scheduleFormColorPerson => '誰の予定？';
 
   @override
@@ -880,6 +936,16 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String calendarWeatherPrecipitation(Object percent) {
     return ' / 降水確率$percent%';
+  }
+
+  @override
+  String calendarWeatherMorning(Object emoji, Object temp) {
+    return '午前 $emoji $temp°';
+  }
+
+  @override
+  String calendarWeatherAfternoon(Object emoji, Object temp) {
+    return '午後 $emoji $temp°';
   }
 
   @override

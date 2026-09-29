@@ -362,6 +362,64 @@ class AppLocalizationsEn extends AppLocalizations {
   String get colorLabelsSaveFailed => 'Failed to save. Please try again later';
 
   @override
+  String get settingsPackingTemplates => 'Packing list templates';
+
+  @override
+  String get packingTemplatesTitle => 'Packing list templates';
+
+  @override
+  String get packingTemplatesExplanation =>
+      'Create templates like \"Pool\" or \"Trip\" to quickly add a packing checklist when creating a schedule.';
+
+  @override
+  String get packingTemplatesEmpty => 'No templates yet';
+
+  @override
+  String get packingTemplatesAddButton => 'Add';
+
+  @override
+  String get packingTemplatesNameLabel => 'Template name (e.g. Pool, Trip)';
+
+  @override
+  String get packingTemplatesNameRequired => 'Please enter a name';
+
+  @override
+  String get packingTemplatesItemsLabel => 'Items (one per line)';
+
+  @override
+  String get packingTemplatesItemsHelper =>
+      'Add multiple items on separate lines';
+
+  @override
+  String get packingTemplatesItemsRequired => 'Please enter at least one item';
+
+  @override
+  String get packingTemplatesDeleteConfirmTitle => 'Delete this template?';
+
+  @override
+  String get packingTemplatesDeleteConfirmBody =>
+      'This deletes the template. Packing lists already added to schedules won\'t change.';
+
+  @override
+  String get packingTemplatesSaveFailed =>
+      'Failed to save. Please try again later';
+
+  @override
+  String get scheduleFormPacking => 'Packing list';
+
+  @override
+  String get scheduleFormPackingFromTemplate => 'Add from template';
+
+  @override
+  String get scheduleFormPackingPickTemplate => 'Choose a template';
+
+  @override
+  String get scheduleFormPackingAddHint => 'Type an item and add it';
+
+  @override
+  String get scheduleDetailPacking => 'Packing list';
+
+  @override
   String get scheduleFormColorPerson => 'Whose event is this?';
 
   @override
@@ -905,6 +963,16 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String calendarWeatherPrecipitation(Object percent) {
     return ' / $percent% rain';
+  }
+
+  @override
+  String calendarWeatherMorning(Object emoji, Object temp) {
+    return 'AM $emoji $temp°';
+  }
+
+  @override
+  String calendarWeatherAfternoon(Object emoji, Object temp) {
+    return 'PM $emoji $temp°';
   }
 
   @override

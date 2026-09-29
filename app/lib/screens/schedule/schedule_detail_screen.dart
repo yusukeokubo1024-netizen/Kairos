@@ -216,6 +216,13 @@ class ScheduleDetailScreen extends StatelessWidget {
                   ),
                 ],
               ),
+              if (schedule.packingItems.isNotEmpty) ...[
+                const SizedBox(height: 16),
+                const Divider(),
+                const SizedBox(height: 8),
+                Text(l10n.scheduleDetailPacking, style: const TextStyle(fontWeight: FontWeight.bold)),
+                _PackingChecklist(schedule: schedule, editable: isOwner),
+              ],
               if (schedule.notes.isNotEmpty) ...[
                 const SizedBox(height: 16),
                 const Divider(),
@@ -226,6 +233,60 @@ class ScheduleDetailScreen extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// The "忘れ物防止" checklist. Only the schedule's owner can check items off
+/// (same as every other field — schedules can only be updated by their
+/// owner), so a non-owner sees it read-only.
+class _PackingChecklist extends StatefulWidget {
+  final Schedule schedule;
+  final bool editable;
+
+  const _PackingChecklist({required this.schedule, required this.editable});
+
+  @override
+  State<_PackingChecklist> createState() => _PackingChecklistState();
+}
+
+class _PackingChecklistState extends State<_PackingChecklist> {
+  final List<PackingItem> _items = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _items.addAll(widget.schedule.packingItems);
+  }
+
+  Future<void> _toggle(int index, bool checked) async {
+    setState(() => _items[index] = _items[index].copyWith(checked: checked));
+    try {
+      await FirebaseFirestore.instance.collection('schedules').doc(widget.schedule.id).update({
+        'packingItems': _items.map((e) => e.toMap()).toList(),
+      });
+    } catch (_) {
+      // Best-effort — worst case the checkbox reverts next time this screen
+      // is reopened with fresh data, no need to surface an error for a
+      // checklist tick.
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (var i = 0; i < _items.length; i++)
+          CheckboxListTile(
+            contentPadding: EdgeInsets.zero,
+            controlAffinity: ListTileControlAffinity.leading,
+            dense: true,
+            title: Text(_items[i].text),
+            value: _items[i].checked,
+            onChanged: widget.editable ? (checked) => _toggle(i, checked ?? false) : null,
+          ),
+      ],
     );
   }
 }

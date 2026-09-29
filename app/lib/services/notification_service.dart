@@ -64,6 +64,10 @@ class NotificationService {
 
   String get _scheduleReminderBody => _isJa ? 'まもなく予定の時間です' : 'Your schedule is coming up soon';
   String get _scheduleChannelName => _isJa ? '予定のリマインダー' : 'Schedule reminders';
+  String get _scheduleAlarmChannelName => _isJa ? '予定のアラーム' : 'Schedule alarms';
+  String get _scheduleAlarmChannelDescription => _isJa
+      ? 'アラームのように、画面ロック中でも大きく表示される通知です'
+      : 'Full-screen, alarm-style notifications for schedules you\'ve marked as important';
   String get _taskReminderBody => _isJa ? '今日が期限のタスクです' : 'A task is due today';
   String get _taskChannelName => _isJa ? 'タスクのリマインダー' : 'Task reminders';
   String get _anniversaryChannelName => _isJa ? '記念日の通知' : 'Anniversary reminders';
@@ -147,6 +151,32 @@ class NotificationService {
       if (reminderTime.isBefore(DateTime.now())) return;
     }
 
+    // "Alarm-style" (Android only): full-screen, shows over the lock
+    // screen, on its own channel so the user can pick a louder sound for it
+    // in system settings than the regular reminder channel. Not a true
+    // alarm-clock — it's still a notification, so silent mode/Do Not
+    // Disturb can still mute it unless the user has separately granted
+    // "Alarms & reminders" access, and Android 14+ requires the full-screen
+    // permission to be turned on manually (see AndroidManifest.xml).
+    final android = schedule.alarmStyle
+        ? AndroidNotificationDetails(
+            'schedule_alarms',
+            _scheduleAlarmChannelName,
+            channelDescription: _scheduleAlarmChannelDescription,
+            importance: Importance.max,
+            priority: Priority.max,
+            category: AndroidNotificationCategory.alarm,
+            fullScreenIntent: true,
+            visibility: NotificationVisibility.public,
+            autoCancel: false,
+          )
+        : AndroidNotificationDetails(
+            'schedule_reminders',
+            _scheduleChannelName,
+            importance: Importance.high,
+            priority: Priority.high,
+          );
+
     try {
       await _plugin.zonedSchedule(
         id: _scheduleNotificationId('schedule_', schedule.id),
@@ -154,12 +184,7 @@ class NotificationService {
         body: _scheduleReminderBody,
         scheduledDate: tz.TZDateTime.from(reminderTime, tz.local),
         notificationDetails: NotificationDetails(
-          android: AndroidNotificationDetails(
-            'schedule_reminders',
-            _scheduleChannelName,
-            importance: Importance.high,
-            priority: Priority.high,
-          ),
+          android: android,
           iOS: const DarwinNotificationDetails(),
         ),
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,

@@ -30,6 +30,11 @@ class Schedule {
   // Null means it repeats indefinitely (display is still capped to a couple
   // of years out — see CalendarScreen._recurrenceDisplayCap).
   final DateTime? recurrenceEndDate;
+  // Android only (see NotificationService.scheduleForSchedule): makes the
+  // reminder notification full-screen/alarm-like instead of a normal quiet
+  // notification. No effect on iOS in this v1 — Apple's equivalent (a
+  // "critical alert") needs a special entitlement this app doesn't have.
+  final bool alarmStyle;
 
   static const defaultColor = Color(0xFF2563EB);
   static const defaultReminderMinutes = 30;
@@ -54,6 +59,7 @@ class Schedule {
     this.updatedAt,
     this.recurrence = noRecurrence,
     this.recurrenceEndDate,
+    this.alarmStyle = false,
   });
 
   /// A copy representing one virtual occurrence of a recurring series —
@@ -82,6 +88,7 @@ class Schedule {
       updatedAt: updatedAt,
       recurrence: recurrence,
       recurrenceEndDate: recurrenceEndDate,
+      alarmStyle: alarmStyle,
     );
   }
 
@@ -105,6 +112,7 @@ class Schedule {
       updatedAt: (data['updatedAt'] as Timestamp?)?.toDate(),
       recurrence: data['recurrence'] as String? ?? noRecurrence,
       recurrenceEndDate: (data['recurrenceEndDate'] as Timestamp?)?.toDate(),
+      alarmStyle: data['alarmStyle'] as bool? ?? false,
     );
   }
 
@@ -124,6 +132,7 @@ class Schedule {
       'recurrence': recurrence,
       'recurrenceEndDate':
           recurrenceEndDate != null ? Timestamp.fromDate(recurrenceEndDate!) : null,
+      'alarmStyle': alarmStyle,
       'createdAt': FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
     };
@@ -145,6 +154,7 @@ class Schedule {
       'recurrence': recurrence,
       'recurrenceEndDate':
           recurrenceEndDate != null ? Timestamp.fromDate(recurrenceEndDate!) : null,
+      'alarmStyle': alarmStyle,
       'updatedAt': FieldValue.serverTimestamp(),
     };
   }

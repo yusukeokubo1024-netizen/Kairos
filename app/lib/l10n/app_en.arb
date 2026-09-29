@@ -253,6 +253,8 @@
   "scheduleFormReminder30": "30 min before",
   "scheduleFormReminder60": "1 hour before",
   "scheduleFormReminder1440": "1 day before",
+  "scheduleFormAlarmStyle": "Ring like an alarm",
+  "scheduleFormAlarmStyleHint": "Full-screen, even over the lock screen (Android only). Some devices/Android versions require separately allowing \"Alarms & reminders\" in system settings",
   "scheduleFormCalendar": "Calendar",
   "scheduleFormCalendarHint": "This category is used to show/hide it via the filter on the home screen",
   "scheduleFormGroupSuffix": " (group)",

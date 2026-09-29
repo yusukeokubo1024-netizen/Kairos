@@ -1488,6 +1488,18 @@ abstract class AppLocalizations {
   /// **'1日前'**
   String get scheduleFormReminder1440;
 
+  /// No description provided for @scheduleFormAlarmStyle.
+  ///
+  /// In ja, this message translates to:
+  /// **'アラームのように鳴らす'**
+  String get scheduleFormAlarmStyle;
+
+  /// No description provided for @scheduleFormAlarmStyleHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'画面ロック中でも全画面表示（Android限定）。機種やAndroidのバージョンによっては、設定アプリ側で「アラームとリマインダー」の許可が別途必要な場合があります'**
+  String get scheduleFormAlarmStyleHint;
+
   /// No description provided for @scheduleFormCalendar.
   ///
   /// In ja, this message translates to:

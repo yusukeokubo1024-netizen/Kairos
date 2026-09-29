@@ -732,6 +732,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get scheduleFormReminder1440 => '提前1天';
 
   @override
+  String get scheduleFormAlarmStyle => '像闹钟一样响铃';
+
+  @override
+  String get scheduleFormAlarmStyleHint =>
+      '锁屏时也会全屏显示（仅限Android）。部分机型/Android版本需要在系统设置中单独允许“闹钟和提醒”权限';
+
+  @override
   String get scheduleFormCalendar => '日历';
 
   @override

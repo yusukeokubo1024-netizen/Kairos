@@ -253,6 +253,8 @@
   "scheduleFormReminder30": "30分前",
   "scheduleFormReminder60": "1時間前",
   "scheduleFormReminder1440": "1日前",
+  "scheduleFormAlarmStyle": "アラームのように鳴らす",
+  "scheduleFormAlarmStyleHint": "画面ロック中でも全画面表示（Android限定）。機種やAndroidのバージョンによっては、設定アプリ側で「アラームとリマインダー」の許可が別途必要な場合があります",
   "scheduleFormCalendar": "カレンダー",
   "scheduleFormCalendarHint": "ホーム画面のフィルターで表示/非表示を切り替えるための分類です",
   "scheduleFormGroupSuffix": "（グループ）",

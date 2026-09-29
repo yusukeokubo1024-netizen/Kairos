@@ -253,6 +253,8 @@
   "scheduleFormReminder30": "提前30分钟",
   "scheduleFormReminder60": "提前1小时",
   "scheduleFormReminder1440": "提前1天",
+  "scheduleFormAlarmStyle": "像闹钟一样响铃",
+  "scheduleFormAlarmStyleHint": "锁屏时也会全屏显示（仅限Android）。部分机型/Android版本需要在系统设置中单独允许“闹钟和提醒”权限",
   "scheduleFormCalendar": "日历",
   "scheduleFormCalendarHint": "该分类用于在主页的筛选器中切换显示/隐藏",
   "scheduleFormGroupSuffix": "（群组）",

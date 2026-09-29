@@ -747,6 +747,13 @@ class AppLocalizationsKo extends AppLocalizations {
   String get scheduleFormReminder1440 => '1일 전';
 
   @override
+  String get scheduleFormAlarmStyle => '알람처럼 울리기';
+
+  @override
+  String get scheduleFormAlarmStyleHint =>
+      '화면 잠금 중에도 전체 화면으로 표시됩니다 (Android 전용). 기기·Android 버전에 따라 설정 앱에서 \"알람 및 리마인더\" 권한을 별도로 허용해야 할 수 있습니다';
+
+  @override
   String get scheduleFormCalendar => '캘린더';
 
   @override

@@ -742,6 +742,13 @@ class AppLocalizationsJa extends AppLocalizations {
   String get scheduleFormReminder1440 => '1日前';
 
   @override
+  String get scheduleFormAlarmStyle => 'アラームのように鳴らす';
+
+  @override
+  String get scheduleFormAlarmStyleHint =>
+      '画面ロック中でも全画面表示（Android限定）。機種やAndroidのバージョンによっては、設定アプリ側で「アラームとリマインダー」の許可が別途必要な場合があります';
+
+  @override
   String get scheduleFormCalendar => 'カレンダー';
 
   @override

@@ -762,6 +762,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get scheduleFormReminder1440 => '1 day before';
 
   @override
+  String get scheduleFormAlarmStyle => 'Ring like an alarm';
+
+  @override
+  String get scheduleFormAlarmStyleHint =>
+      'Full-screen, even over the lock screen (Android only). Some devices/Android versions require separately allowing \"Alarms & reminders\" in system settings';
+
+  @override
   String get scheduleFormCalendar => 'Calendar';
 
   @override

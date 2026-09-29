@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -56,6 +57,7 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
   String? _groupId;
   String _recurrence = Schedule.noRecurrence;
   DateTime? _recurrenceEndDate;
+  bool _alarmStyle = false;
 
   Map<int?, String> _reminderOptions(AppLocalizations l10n) => {
         null: l10n.scheduleFormReminderNone,
@@ -93,6 +95,7 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
       _groupId = schedule.groupId;
       _recurrence = schedule.recurrence;
       _recurrenceEndDate = schedule.recurrenceEndDate;
+      _alarmStyle = schedule.alarmStyle;
       _selectedPersonIds.addAll(schedule.participantIds.where((id) => id != uid));
     } else {
       final base = widget.initialDate ?? DateTime.now();
@@ -280,6 +283,7 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
           reminderMinutes: _reminderMinutes,
           recurrence: _recurrence,
           recurrenceEndDate: _recurrenceEndDate,
+          alarmStyle: _alarmStyle,
         );
         await db.collection('schedules').doc(updated.id).update(updated.toUpdateMap());
         unawaited(AuditService.instance.logUpdate(
@@ -306,6 +310,7 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
           reminderMinutes: _reminderMinutes,
           recurrence: _recurrence,
           recurrenceEndDate: _recurrenceEndDate,
+          alarmStyle: _alarmStyle,
         );
         final ref = await db.collection('schedules').add(newSchedule.toCreateMap());
         unawaited(AnalyticsService.instance.logScheduleCreated());
@@ -325,6 +330,7 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
           reminderMinutes: newSchedule.reminderMinutes,
           recurrence: newSchedule.recurrence,
           recurrenceEndDate: newSchedule.recurrenceEndDate,
+          alarmStyle: newSchedule.alarmStyle,
         );
         unawaited(ScheduleActivityService.instance.logCreate(createdSchedule));
         await NotificationService.instance.scheduleForSchedule(createdSchedule);
@@ -571,6 +577,17 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
                       .toList(),
                   onChanged: (value) => setState(() => _reminderMinutes = value),
                 ),
+                if (_reminderMinutes != null && Platform.isAndroid)
+                  SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(l10n.scheduleFormAlarmStyle),
+                    subtitle: Text(
+                      l10n.scheduleFormAlarmStyleHint,
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                    value: _alarmStyle,
+                    onChanged: (value) => setState(() => _alarmStyle = value),
+                  ),
                 const SizedBox(height: 16),
                 Text(l10n.scheduleFormCalendar, style: const TextStyle(fontWeight: FontWeight.bold)),
                 Text(

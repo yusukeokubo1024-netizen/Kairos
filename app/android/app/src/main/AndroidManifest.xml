@@ -9,6 +9,12 @@
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
     <!-- Without this, alarms scheduled before a device reboot are silently lost. -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <!-- For the optional "alarm-style" schedule reminder (full-screen, shows
+         over the lock screen). Auto-granted on Android 13 and below; on 14+
+         the user has to separately allow it under Settings > Apps > Kairos >
+         Alarms & reminders (or "Full screen notifications") — declaring it
+         here just makes that option available, it isn't granted by default. -->
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT"/>
     <application
         android:label="Kairos"
         android:name="${applicationName}"

@@ -51,7 +51,7 @@
              see lib/services/home_widget_service.dart). -->
         <receiver
             android:name=".TodayScheduleWidgetProvider"
-            android:exported="false"
+            android:exported="true"
             android:label="Kairos">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>

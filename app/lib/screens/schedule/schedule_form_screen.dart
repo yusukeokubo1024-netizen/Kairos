@@ -97,6 +97,17 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
       _recurrenceEndDate = schedule.recurrenceEndDate;
       _alarmStyle = schedule.alarmStyle;
       _selectedPersonIds.addAll(schedule.participantIds.where((id) => id != uid));
+      // [schedule] may be one virtual occurrence of a recurring series with
+      // startTime/endTime shifted to that occurrence's date (see
+      // CalendarScreen._expandRecurrences), not the series' real anchor
+      // date. There's no per-occurrence override in this v1 — editing
+      // always saves back to the series' one document — so saving from a
+      // shifted date would silently re-anchor (and truncate the history
+      // of) the whole series. Correct _start/_end to the real stored
+      // anchor once loaded.
+      if (schedule.isRecurring) {
+        unawaited(_loadCanonicalRecurrenceAnchor(schedule.id));
+      }
     } else {
       final base = widget.initialDate ?? DateTime.now();
       _start = DateTime(base.year, base.month, base.day, 9, 0);
@@ -105,6 +116,21 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
       _reminderMinutes = Schedule.defaultReminderMinutes;
     }
     _loadColorLabels();
+  }
+
+  Future<void> _loadCanonicalRecurrenceAnchor(String id) async {
+    try {
+      final doc = await FirebaseFirestore.instance.collection('schedules').doc(id).get();
+      if (!mounted || !doc.exists) return;
+      final canonical = Schedule.fromFirestore(doc);
+      setState(() {
+        _start = canonical.startTime;
+        _end = canonical.endTime;
+      });
+    } catch (_) {
+      // Best-effort — worst case the form keeps showing the tapped
+      // occurrence's date, same as before this fix.
+    }
   }
 
   Future<void> _searchByEmail() async {

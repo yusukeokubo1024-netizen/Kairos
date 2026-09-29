@@ -9,14 +9,6 @@ import '../../models/anniversary.dart';
 import '../../services/notification_service.dart';
 import 'anniversary_form_screen.dart';
 
-// A business-day-adjusted anniversary's notification is scheduled as a
-// one-shot for just its next occurrence (see NotificationService docs), so
-// it needs re-scheduling once that's passed to pick up the following
-// month's/year's date. Re-checked once per anniversary per app session the
-// first time this screen is opened — cheap and idempotent, so no harm if
-// it's a little stale between sessions.
-final Set<String> _rescheduledAnniversaryIds = {};
-
 class AnniversaryListScreen extends StatelessWidget {
   const AnniversaryListScreen({super.key});
 
@@ -43,9 +35,17 @@ class AnniversaryListScreen extends StatelessWidget {
                   return cmp != 0 ? cmp : a.day.compareTo(b.day);
                 });
 
+          // A business-day-adjusted anniversary's notification is a
+          // one-shot for just its next occurrence (see NotificationService
+          // docs), so it needs re-scheduling once that's passed to pick up
+          // the following month's/year's date. Re-checked every time this
+          // list's data changes (including the first load) rather than
+          // only once per app session — scheduleForAnniversary is cheap and
+          // idempotent, so there's no benefit to throttling it further, and
+          // a one-time-per-session guard here previously meant it silently
+          // stopped refreshing for the rest of a long-lived app session.
           for (final anniversary in anniversaries) {
-            if (anniversary.businessDayAdjust &&
-                _rescheduledAnniversaryIds.add(anniversary.id)) {
+            if (anniversary.businessDayAdjust) {
               unawaited(NotificationService.instance.scheduleForAnniversary(anniversary));
             }
           }

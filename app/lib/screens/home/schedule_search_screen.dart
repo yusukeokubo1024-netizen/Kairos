@@ -19,6 +19,22 @@ class ScheduleSearchScreen extends StatefulWidget {
 class _ScheduleSearchScreenState extends State<ScheduleSearchScreen> {
   final _controller = TextEditingController();
   String _query = '';
+  // Built once instead of inline in build(): the query is identical on
+  // every keystroke (filtering happens client-side below), so rebuilding it
+  // in build() handed StreamBuilder a new Stream instance each time,
+  // tearing down and resubscribing its Firestore listener on every
+  // character typed for no benefit.
+  late final Stream<QuerySnapshot<Map<String, dynamic>>> _schedulesStream;
+
+  @override
+  void initState() {
+    super.initState();
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+    _schedulesStream = FirebaseFirestore.instance
+        .collection('schedules')
+        .where('participantIds', arrayContains: uid)
+        .snapshots();
+  }
 
   @override
   void dispose() {
@@ -33,10 +49,6 @@ class _ScheduleSearchScreenState extends State<ScheduleSearchScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final uid = FirebaseAuth.instance.currentUser!.uid;
-    final schedulesQuery = FirebaseFirestore.instance
-        .collection('schedules')
-        .where('participantIds', arrayContains: uid);
 
     return Scaffold(
       appBar: AppBar(
@@ -54,7 +66,7 @@ class _ScheduleSearchScreenState extends State<ScheduleSearchScreen> {
       body: _query.isEmpty
           ? Center(child: Text(l10n.scheduleSearchPrompt))
           : StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-              stream: schedulesQuery.snapshots(),
+              stream: _schedulesStream,
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
                   return const Center(child: CircularProgressIndicator());

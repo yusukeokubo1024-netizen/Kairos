@@ -93,12 +93,40 @@ class NotificationService {
       case 'weekly':
         return from.add(const Duration(days: 7));
       case 'monthly':
-        return DateTime(from.year, from.month + 1, from.day, from.hour, from.minute);
+        return _nextMonthWithDay(from.year, from.month, from.day, from.hour, from.minute);
       case 'yearly':
         return DateTime(from.year + 1, from.month, from.day, from.hour, from.minute);
       default:
         return from;
     }
+  }
+
+  /// The next month after (year, month) that actually has [day] as a valid
+  /// date, skipping any that don't (e.g. day 31 skips April, June,
+  /// September, November, February). Plain `DateTime(year, month+1, day,
+  /// ...)` would instead silently overflow into a different day next
+  /// month — harmless for a one-off date, but here that overflowed date
+  /// becomes the anchor for a *native, permanently-repeating* monthly
+  /// notification (matchDateTimeComponents.dayOfMonthAndTime), so the
+  /// wrong day would otherwise get baked in forever instead of just
+  /// affecting a single occurrence.
+  DateTime _nextMonthWithDay(int year, int month, int day, int hour, int minute) {
+    var y = year;
+    var m = month;
+    for (var i = 0; i < 24; i++) {
+      m++;
+      if (m > 12) {
+        m = 1;
+        y++;
+      }
+      final daysInMonth = DateTime(y, m + 1, 0).day;
+      if (day <= daysInMonth) {
+        return DateTime(y, m, day, hour, minute);
+      }
+    }
+    // Shouldn't happen — every day 1-31 has a valid month within a couple
+    // of tries — but fall back rather than loop forever or throw.
+    return DateTime(year, month + 1, day, hour, minute);
   }
 
   /// The [DateTimeComponents] that makes zonedSchedule repeat matching a
@@ -261,13 +289,36 @@ class NotificationService {
     final now = tz.TZDateTime.now(tz.local);
     final isMonthly = anniversary.recurrence == Anniversary.monthly;
 
-    tz.TZDateTime rawOccurrence(int year, int month) =>
-        tz.TZDateTime(tz.local, year, month, anniversary.day, 9);
+    // Null for a month that doesn't have anniversary.day at all (e.g. day
+    // 31 in April) — skipped rather than letting the TZDateTime
+    // constructor silently overflow into a different day, since that
+    // overflowed date would otherwise become the notification's date.
+    tz.TZDateTime? monthlyOccurrence(int year, int month) {
+      final daysInMonth = DateTime(year, month + 1, 0).day;
+      if (anniversary.day > daysInMonth) return null;
+      return tz.TZDateTime(tz.local, year, month, anniversary.day, 9);
+    }
 
     tz.TZDateTime next;
     if (isMonthly) {
-      next = rawOccurrence(now.year, now.month);
-      if (next.isBefore(now)) next = rawOccurrence(now.year, now.month + 1);
+      var year = now.year;
+      var month = now.month;
+      tz.TZDateTime? found;
+      for (var i = 0; i < 24 && found == null; i++) {
+        final candidate = monthlyOccurrence(year, month);
+        if (candidate != null && !candidate.isBefore(now)) {
+          found = candidate;
+        } else {
+          month++;
+          if (month > 12) {
+            month = 1;
+            year++;
+          }
+        }
+      }
+      // Fallback shouldn't happen — every day 1-31 has a valid month within
+      // a couple of tries — but avoids leaving `next` unset.
+      next = found ?? tz.TZDateTime(tz.local, now.year, now.month, 28, 9);
     } else {
       final month = anniversary.month ?? now.month;
       next = tz.TZDateTime(tz.local, now.year, month, anniversary.day, 9);

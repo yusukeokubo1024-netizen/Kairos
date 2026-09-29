@@ -30,12 +30,24 @@ class ScheduleDetailScreen extends StatelessWidget {
     );
     if (confirmed != true) return;
 
+    // [schedule] may be one virtual occurrence of a recurring series (see
+    // CalendarScreen._expandRecurrences) with its startTime/endTime shifted
+    // to that occurrence's date, not the series' real anchor date. Deleting
+    // by id is safe either way (same document), but snapshotting/recreating
+    // from the shifted copy would silently re-anchor the whole series (or
+    // the trash/undo record) to whichever date the user happened to tap —
+    // discarding the series' real start. Re-read the canonical document so
+    // the trash record and undo always use its true stored dates.
+    final canonicalDoc =
+        await FirebaseFirestore.instance.collection('schedules').doc(schedule.id).get();
+    final canonical = canonicalDoc.exists ? Schedule.fromFirestore(canonicalDoc) : schedule;
+
     await AuditService.instance.softDelete(
       collection: 'schedules',
-      targetId: schedule.id,
-      data: schedule.toUpdateMap(),
+      targetId: canonical.id,
+      data: canonical.toUpdateMap(),
     );
-    await NotificationService.instance.cancelForSchedule(schedule.id);
+    await NotificationService.instance.cancelForSchedule(canonical.id);
     if (context.mounted) Navigator.of(context).pop();
 
     rootScaffoldMessengerKey.currentState?.clearSnackBars();
@@ -51,9 +63,9 @@ class ScheduleDetailScreen extends StatelessWidget {
           onPressed: () async {
             await FirebaseFirestore.instance
                 .collection('schedules')
-                .doc(schedule.id)
-                .set(schedule.toCreateMap());
-            await NotificationService.instance.scheduleForSchedule(schedule);
+                .doc(canonical.id)
+                .set(canonical.toCreateMap());
+            await NotificationService.instance.scheduleForSchedule(canonical);
           },
         ),
       ),

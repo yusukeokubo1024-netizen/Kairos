@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import '../../l10n/app_localizations.dart';
 
 /// Lets a user request to join a group by entering its invite code — either
-/// the short 6-character code shown in GroupDetailScreen (resolved via
+/// the short 8-character code shown in GroupDetailScreen (resolved via
 /// groupShortCodes) or, for codes shared before that existed, the group's
 /// raw (long) Firestore document ID. See docs/group-invite-flow.md for the
 /// design.

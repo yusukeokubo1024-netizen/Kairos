@@ -379,6 +379,8 @@
   "anniversaryListEmpty": "No anniversaries registered yet",
   "anniversaryListYearly": "Every {month}/{day}",
   "@anniversaryListYearly": { "placeholders": { "month": {}, "day": {} } },
+  "anniversaryListMonthly": "Day {day} of every month",
+  "@anniversaryListMonthly": { "placeholders": { "day": {} } },
   "anniversaryFormTitleNew": "Add an anniversary",
   "anniversaryFormTitleEdit": "Edit anniversary",
   "anniversaryFormNameLabel": "Name (e.g. anniversary, birthday)",
@@ -388,5 +390,14 @@
   "@anniversaryFormDateValue": { "placeholders": { "month": {}, "day": {} } },
   "anniversaryFormDatePickerHelp": "Pick the month and day (year is unused)",
   "anniversaryFormNotifyHint": "You'll get a notification at 9am on this day every year",
+  "anniversaryFormRecurrence": "Repeat",
+  "anniversaryFormRecurrenceYearly": "Yearly",
+  "anniversaryFormRecurrenceMonthly": "Monthly",
+  "anniversaryFormDayOfMonth": "Day",
+  "anniversaryFormDayOfMonthValue": "Day {day} of every month",
+  "@anniversaryFormDayOfMonthValue": { "placeholders": { "day": {} } },
+  "anniversaryFormBusinessDayAdjust": "Move to next business day on weekends/holidays",
+  "anniversaryFormBusinessDayAdjustHint": "For due dates like a payment day. Not recommended for actual-date anniversaries like birthdays",
+  "anniversaryFormNotifyHintMonthly": "You'll get a notification at 9am on this day every month",
   "anniversaryDeleted": "Anniversary deleted"
 }

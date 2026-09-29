@@ -1088,6 +1088,11 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String anniversaryListMonthly(Object day) {
+    return '每月$day日';
+  }
+
+  @override
   String get anniversaryFormTitleNew => '添加纪念日';
 
   @override
@@ -1112,6 +1117,33 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get anniversaryFormNotifyHint => '每年这一天的上午9点会收到通知';
+
+  @override
+  String get anniversaryFormRecurrence => '重复';
+
+  @override
+  String get anniversaryFormRecurrenceYearly => '每年';
+
+  @override
+  String get anniversaryFormRecurrenceMonthly => '每月';
+
+  @override
+  String get anniversaryFormDayOfMonth => '日期';
+
+  @override
+  String anniversaryFormDayOfMonthValue(Object day) {
+    return '每月$day日';
+  }
+
+  @override
+  String get anniversaryFormBusinessDayAdjust => '遇周末/节假日顺延至下一个工作日';
+
+  @override
+  String get anniversaryFormBusinessDayAdjustHint =>
+      '适用于付款日等需要避开假日的日期。不建议用于生日等实际日期类纪念日';
+
+  @override
+  String get anniversaryFormNotifyHintMonthly => '每月这一天的上午9点会收到通知';
 
   @override
   String get anniversaryDeleted => '纪念日已删除';

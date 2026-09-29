@@ -1107,6 +1107,11 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
+  String anniversaryListMonthly(Object day) {
+    return '매월 $day일';
+  }
+
+  @override
   String get anniversaryFormTitleNew => '기념일 추가';
 
   @override
@@ -1131,6 +1136,33 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get anniversaryFormNotifyHint => '매년 이 날 오전 9시에 알림을 받습니다';
+
+  @override
+  String get anniversaryFormRecurrence => '반복';
+
+  @override
+  String get anniversaryFormRecurrenceYearly => '매년';
+
+  @override
+  String get anniversaryFormRecurrenceMonthly => '매월';
+
+  @override
+  String get anniversaryFormDayOfMonth => '날짜';
+
+  @override
+  String anniversaryFormDayOfMonthValue(Object day) {
+    return '매월 $day일';
+  }
+
+  @override
+  String get anniversaryFormBusinessDayAdjust => '주말·공휴일이면 다음 영업일로 이동';
+
+  @override
+  String get anniversaryFormBusinessDayAdjustHint =>
+      '결제일 등 휴일을 피하고 싶은 날짜용입니다. 생일 등 실제 날짜인 기념일에는 권장하지 않습니다';
+
+  @override
+  String get anniversaryFormNotifyHintMonthly => '매월 이 날 오전 9시에 알림을 받습니다';
 
   @override
   String get anniversaryDeleted => '기념일을 삭제했습니다';

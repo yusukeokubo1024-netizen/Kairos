@@ -379,6 +379,8 @@
   "anniversaryListEmpty": "まだ記念日が登録されていません",
   "anniversaryListYearly": "毎年 {month}月{day}日",
   "@anniversaryListYearly": { "placeholders": { "month": {}, "day": {} } },
+  "anniversaryListMonthly": "毎月{day}日",
+  "@anniversaryListMonthly": { "placeholders": { "day": {} } },
   "anniversaryFormTitleNew": "記念日を追加",
   "anniversaryFormTitleEdit": "記念日を編集",
   "anniversaryFormNameLabel": "名前（例：結婚記念日、誕生日）",
@@ -388,5 +390,14 @@
   "@anniversaryFormDateValue": { "placeholders": { "month": {}, "day": {} } },
   "anniversaryFormDatePickerHelp": "月日を選択（年は使いません）",
   "anniversaryFormNotifyHint": "毎年この日の朝9時に通知します",
+  "anniversaryFormRecurrence": "繰り返し",
+  "anniversaryFormRecurrenceYearly": "毎年",
+  "anniversaryFormRecurrenceMonthly": "毎月",
+  "anniversaryFormDayOfMonth": "日にち",
+  "anniversaryFormDayOfMonthValue": "毎月{day}日",
+  "@anniversaryFormDayOfMonthValue": { "placeholders": { "day": {} } },
+  "anniversaryFormBusinessDayAdjust": "土日祝なら翌営業日にずらす",
+  "anniversaryFormBusinessDayAdjustHint": "支払日など、休日を避けたい日付用です。誕生日などの記念日にはおすすめしません",
+  "anniversaryFormNotifyHintMonthly": "毎月この日の朝9時に通知します",
   "anniversaryDeleted": "記念日を削除しました"
 }

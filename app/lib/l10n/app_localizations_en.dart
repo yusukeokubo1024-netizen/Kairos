@@ -1131,6 +1131,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String anniversaryListMonthly(Object day) {
+    return 'Day $day of every month';
+  }
+
+  @override
   String get anniversaryFormTitleNew => 'Add an anniversary';
 
   @override
@@ -1157,6 +1162,35 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get anniversaryFormNotifyHint =>
       'You\'ll get a notification at 9am on this day every year';
+
+  @override
+  String get anniversaryFormRecurrence => 'Repeat';
+
+  @override
+  String get anniversaryFormRecurrenceYearly => 'Yearly';
+
+  @override
+  String get anniversaryFormRecurrenceMonthly => 'Monthly';
+
+  @override
+  String get anniversaryFormDayOfMonth => 'Day';
+
+  @override
+  String anniversaryFormDayOfMonthValue(Object day) {
+    return 'Day $day of every month';
+  }
+
+  @override
+  String get anniversaryFormBusinessDayAdjust =>
+      'Move to next business day on weekends/holidays';
+
+  @override
+  String get anniversaryFormBusinessDayAdjustHint =>
+      'For due dates like a payment day. Not recommended for actual-date anniversaries like birthdays';
+
+  @override
+  String get anniversaryFormNotifyHintMonthly =>
+      'You\'ll get a notification at 9am on this day every month';
 
   @override
   String get anniversaryDeleted => 'Anniversary deleted';

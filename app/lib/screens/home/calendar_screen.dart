@@ -17,6 +17,7 @@ import '../../models/task.dart';
 import '../../services/audit_service.dart';
 import '../../services/home_widget_service.dart';
 import '../../services/notification_service.dart';
+import '../../utils/business_day.dart';
 import '../../services/weather_service.dart';
 import '../schedule/schedule_detail_screen.dart';
 import 'schedule_search_screen.dart';
@@ -262,10 +263,15 @@ class _CalendarScreenState extends State<CalendarScreen> {
   List<String> _anniversaryNamesForDay(DateTime day) {
     final l10n = AppLocalizations.of(context)!;
     final names = <String>[];
+    final daysInThisMonth = DateTime(day.year, day.month + 1, 0).day;
     for (final anniversary in _anniversaries) {
-      if (anniversary.month == day.month && anniversary.day == day.day) {
-        names.add(anniversary.title);
-      }
+      final isMonthly = anniversary.recurrence == Anniversary.monthly;
+      if (!isMonthly && anniversary.month != day.month) continue;
+      // Skip months that don't have this day at all (e.g. day 31 in April).
+      if (anniversary.day > daysInThisMonth) continue;
+      var occurrence = DateTime(day.year, day.month, anniversary.day);
+      if (anniversary.businessDayAdjust) occurrence = adjustToNextBusinessDay(occurrence);
+      if (_isSameDay(occurrence, day)) names.add(anniversary.title);
     }
     for (final birthday in _friendBirthdays) {
       if (birthday.month == day.month && birthday.day == day.day) {

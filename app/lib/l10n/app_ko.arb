@@ -379,6 +379,8 @@
   "anniversaryListEmpty": "등록된 기념일이 없습니다",
   "anniversaryListYearly": "매년 {month}월 {day}일",
   "@anniversaryListYearly": { "placeholders": { "month": {}, "day": {} } },
+  "anniversaryListMonthly": "매월 {day}일",
+  "@anniversaryListMonthly": { "placeholders": { "day": {} } },
   "anniversaryFormTitleNew": "기념일 추가",
   "anniversaryFormTitleEdit": "기념일 편집",
   "anniversaryFormNameLabel": "이름（예: 결혼기념일, 생일）",
@@ -388,5 +390,14 @@
   "@anniversaryFormDateValue": { "placeholders": { "month": {}, "day": {} } },
   "anniversaryFormDatePickerHelp": "월과 일을 선택하세요（연도는 사용하지 않습니다）",
   "anniversaryFormNotifyHint": "매년 이 날 오전 9시에 알림을 받습니다",
+  "anniversaryFormRecurrence": "반복",
+  "anniversaryFormRecurrenceYearly": "매년",
+  "anniversaryFormRecurrenceMonthly": "매월",
+  "anniversaryFormDayOfMonth": "날짜",
+  "anniversaryFormDayOfMonthValue": "매월 {day}일",
+  "@anniversaryFormDayOfMonthValue": { "placeholders": { "day": {} } },
+  "anniversaryFormBusinessDayAdjust": "주말·공휴일이면 다음 영업일로 이동",
+  "anniversaryFormBusinessDayAdjustHint": "결제일 등 휴일을 피하고 싶은 날짜용입니다. 생일 등 실제 날짜인 기념일에는 권장하지 않습니다",
+  "anniversaryFormNotifyHintMonthly": "매월 이 날 오전 9시에 알림을 받습니다",
   "anniversaryDeleted": "기념일을 삭제했습니다"
 }

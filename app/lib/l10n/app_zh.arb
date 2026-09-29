@@ -379,6 +379,8 @@
   "anniversaryListEmpty": "还没有登记纪念日",
   "anniversaryListYearly": "每年{month}月{day}日",
   "@anniversaryListYearly": { "placeholders": { "month": {}, "day": {} } },
+  "anniversaryListMonthly": "每月{day}日",
+  "@anniversaryListMonthly": { "placeholders": { "day": {} } },
   "anniversaryFormTitleNew": "添加纪念日",
   "anniversaryFormTitleEdit": "编辑纪念日",
   "anniversaryFormNameLabel": "名称（例如：结婚纪念日、生日）",
@@ -388,5 +390,14 @@
   "@anniversaryFormDateValue": { "placeholders": { "month": {}, "day": {} } },
   "anniversaryFormDatePickerHelp": "请选择月和日（不使用年份）",
   "anniversaryFormNotifyHint": "每年这一天的上午9点会收到通知",
+  "anniversaryFormRecurrence": "重复",
+  "anniversaryFormRecurrenceYearly": "每年",
+  "anniversaryFormRecurrenceMonthly": "每月",
+  "anniversaryFormDayOfMonth": "日期",
+  "anniversaryFormDayOfMonthValue": "每月{day}日",
+  "@anniversaryFormDayOfMonthValue": { "placeholders": { "day": {} } },
+  "anniversaryFormBusinessDayAdjust": "遇周末/节假日顺延至下一个工作日",
+  "anniversaryFormBusinessDayAdjustHint": "适用于付款日等需要避开假日的日期。不建议用于生日等实际日期类纪念日",
+  "anniversaryFormNotifyHintMonthly": "每月这一天的上午9点会收到通知",
   "anniversaryDeleted": "纪念日已删除"
 }

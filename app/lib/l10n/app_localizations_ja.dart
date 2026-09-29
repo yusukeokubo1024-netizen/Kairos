@@ -1100,6 +1100,11 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String anniversaryListMonthly(Object day) {
+    return '毎月$day日';
+  }
+
+  @override
   String get anniversaryFormTitleNew => '記念日を追加';
 
   @override
@@ -1124,6 +1129,33 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get anniversaryFormNotifyHint => '毎年この日の朝9時に通知します';
+
+  @override
+  String get anniversaryFormRecurrence => '繰り返し';
+
+  @override
+  String get anniversaryFormRecurrenceYearly => '毎年';
+
+  @override
+  String get anniversaryFormRecurrenceMonthly => '毎月';
+
+  @override
+  String get anniversaryFormDayOfMonth => '日にち';
+
+  @override
+  String anniversaryFormDayOfMonthValue(Object day) {
+    return '毎月$day日';
+  }
+
+  @override
+  String get anniversaryFormBusinessDayAdjust => '土日祝なら翌営業日にずらす';
+
+  @override
+  String get anniversaryFormBusinessDayAdjustHint =>
+      '支払日など、休日を避けたい日付用です。誕生日などの記念日にはおすすめしません';
+
+  @override
+  String get anniversaryFormNotifyHintMonthly => '毎月この日の朝9時に通知します';
 
   @override
   String get anniversaryDeleted => '記念日を削除しました';

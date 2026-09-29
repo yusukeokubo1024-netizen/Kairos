@@ -2160,6 +2160,12 @@ abstract class AppLocalizations {
   /// **'毎年 {month}月{day}日'**
   String anniversaryListYearly(Object month, Object day);
 
+  /// No description provided for @anniversaryListMonthly.
+  ///
+  /// In ja, this message translates to:
+  /// **'毎月{day}日'**
+  String anniversaryListMonthly(Object day);
+
   /// No description provided for @anniversaryFormTitleNew.
   ///
   /// In ja, this message translates to:
@@ -2207,6 +2213,54 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'毎年この日の朝9時に通知します'**
   String get anniversaryFormNotifyHint;
+
+  /// No description provided for @anniversaryFormRecurrence.
+  ///
+  /// In ja, this message translates to:
+  /// **'繰り返し'**
+  String get anniversaryFormRecurrence;
+
+  /// No description provided for @anniversaryFormRecurrenceYearly.
+  ///
+  /// In ja, this message translates to:
+  /// **'毎年'**
+  String get anniversaryFormRecurrenceYearly;
+
+  /// No description provided for @anniversaryFormRecurrenceMonthly.
+  ///
+  /// In ja, this message translates to:
+  /// **'毎月'**
+  String get anniversaryFormRecurrenceMonthly;
+
+  /// No description provided for @anniversaryFormDayOfMonth.
+  ///
+  /// In ja, this message translates to:
+  /// **'日にち'**
+  String get anniversaryFormDayOfMonth;
+
+  /// No description provided for @anniversaryFormDayOfMonthValue.
+  ///
+  /// In ja, this message translates to:
+  /// **'毎月{day}日'**
+  String anniversaryFormDayOfMonthValue(Object day);
+
+  /// No description provided for @anniversaryFormBusinessDayAdjust.
+  ///
+  /// In ja, this message translates to:
+  /// **'土日祝なら翌営業日にずらす'**
+  String get anniversaryFormBusinessDayAdjust;
+
+  /// No description provided for @anniversaryFormBusinessDayAdjustHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'支払日など、休日を避けたい日付用です。誕生日などの記念日にはおすすめしません'**
+  String get anniversaryFormBusinessDayAdjustHint;
+
+  /// No description provided for @anniversaryFormNotifyHintMonthly.
+  ///
+  /// In ja, this message translates to:
+  /// **'毎月この日の朝9時に通知します'**
+  String get anniversaryFormNotifyHintMonthly;
 
   /// No description provided for @anniversaryDeleted.
   ///

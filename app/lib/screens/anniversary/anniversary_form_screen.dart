@@ -24,6 +24,8 @@ class _AnniversaryFormScreenState extends State<AnniversaryFormScreen> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   late DateTime _date;
+  String _recurrence = Anniversary.yearly;
+  bool _businessDayAdjust = false;
   bool _isSaving = false;
 
   bool get _isEditing => widget.anniversary != null;
@@ -35,7 +37,9 @@ class _AnniversaryFormScreenState extends State<AnniversaryFormScreen> {
     final now = DateTime.now();
     if (anniversary != null) {
       _titleController.text = anniversary.title;
-      _date = DateTime(now.year, anniversary.month, anniversary.day);
+      _date = DateTime(now.year, anniversary.month ?? now.month, anniversary.day);
+      _recurrence = anniversary.recurrence;
+      _businessDayAdjust = anniversary.businessDayAdjust;
     } else {
       _date = now;
     }
@@ -73,8 +77,10 @@ class _AnniversaryFormScreenState extends State<AnniversaryFormScreen> {
           id: widget.anniversary!.id,
           ownerId: widget.anniversary!.ownerId,
           title: _titleController.text.trim(),
-          month: _date.month,
+          recurrence: _recurrence,
+          month: _recurrence == Anniversary.monthly ? null : _date.month,
           day: _date.day,
+          businessDayAdjust: _businessDayAdjust,
         );
         await db.collection('anniversaries').doc(updated.id).update(updated.toUpdateMap());
         unawaited(AuditService.instance.logUpdate(
@@ -89,8 +95,10 @@ class _AnniversaryFormScreenState extends State<AnniversaryFormScreen> {
           id: '',
           ownerId: uid,
           title: _titleController.text.trim(),
-          month: _date.month,
+          recurrence: _recurrence,
+          month: _recurrence == Anniversary.monthly ? null : _date.month,
           day: _date.day,
+          businessDayAdjust: _businessDayAdjust,
         );
         final ref = await db.collection('anniversaries').add(newAnniversary.toCreateMap());
         unawaited(AnalyticsService.instance.logAnniversaryCreated());
@@ -100,8 +108,10 @@ class _AnniversaryFormScreenState extends State<AnniversaryFormScreen> {
             id: ref.id,
             ownerId: newAnniversary.ownerId,
             title: newAnniversary.title,
+            recurrence: newAnniversary.recurrence,
             month: newAnniversary.month,
             day: newAnniversary.day,
+            businessDayAdjust: newAnniversary.businessDayAdjust,
           ),
         );
       }
@@ -171,15 +181,57 @@ class _AnniversaryFormScreenState extends State<AnniversaryFormScreen> {
                       (value == null || value.trim().isEmpty) ? l10n.anniversaryFormNameRequired : null,
                 ),
                 const SizedBox(height: 16),
-                ListTile(
+                Text(l10n.anniversaryFormRecurrence, style: const TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                SegmentedButton<String>(
+                  segments: [
+                    ButtonSegment(
+                      value: Anniversary.yearly,
+                      label: Text(l10n.anniversaryFormRecurrenceYearly),
+                    ),
+                    ButtonSegment(
+                      value: Anniversary.monthly,
+                      label: Text(l10n.anniversaryFormRecurrenceMonthly),
+                    ),
+                  ],
+                  selected: {_recurrence},
+                  onSelectionChanged: (selected) => setState(() => _recurrence = selected.first),
+                ),
+                const SizedBox(height: 16),
+                if (_recurrence == Anniversary.monthly)
+                  DropdownButtonFormField<int>(
+                    initialValue: _date.day,
+                    decoration: InputDecoration(labelText: l10n.anniversaryFormDayOfMonth),
+                    items: [
+                      for (var day = 1; day <= 31; day++)
+                        DropdownMenuItem(value: day, child: Text(l10n.anniversaryFormDayOfMonthValue(day))),
+                    ],
+                    onChanged: (value) {
+                      if (value != null) setState(() => _date = DateTime(_date.year, _date.month, value));
+                    },
+                  )
+                else
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(l10n.anniversaryFormDate),
+                    subtitle: Text(l10n.anniversaryFormDateValue(_date.month, _date.day)),
+                    trailing: const Icon(Icons.edit_calendar_outlined),
+                    onTap: _pickDate,
+                  ),
+                SwitchListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: Text(l10n.anniversaryFormDate),
-                  subtitle: Text(l10n.anniversaryFormDateValue(_date.month, _date.day)),
-                  trailing: const Icon(Icons.edit_calendar_outlined),
-                  onTap: _pickDate,
+                  title: Text(l10n.anniversaryFormBusinessDayAdjust),
+                  subtitle: Text(
+                    l10n.anniversaryFormBusinessDayAdjustHint,
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                  value: _businessDayAdjust,
+                  onChanged: (value) => setState(() => _businessDayAdjust = value),
                 ),
                 Text(
-                  l10n.anniversaryFormNotifyHint,
+                  _recurrence == Anniversary.monthly
+                      ? l10n.anniversaryFormNotifyHintMonthly
+                      : l10n.anniversaryFormNotifyHint,
                   style: const TextStyle(fontSize: 12, color: Colors.grey),
                 ),
                 const SizedBox(height: 24),

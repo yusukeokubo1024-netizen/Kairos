@@ -8,6 +8,7 @@ import 'package:timezone/timezone.dart' as tz;
 import '../models/anniversary.dart';
 import '../models/schedule.dart';
 import '../models/task.dart';
+import '../utils/business_day.dart';
 import 'locale_service.dart';
 
 /// Wraps flutter_local_notifications for on-device reminders.
@@ -211,10 +212,21 @@ class NotificationService {
     await _plugin.cancel(id: _scheduleNotificationId('task_', taskId));
   }
 
-  /// Schedules a notification that repeats every year on the anniversary's
-  /// month/day, at 9:00. flutter_local_notifications re-fires this
-  /// automatically each year (DateTimeComponents.dateAndTime), no manual
-  /// rescheduling needed.
+  /// Schedules a notification for an anniversary (yearly on its month/day,
+  /// or monthly on its day), at 9:00.
+  ///
+  /// Without [Anniversary.businessDayAdjust], this is a single native
+  /// repeating alarm (matchDateTimeComponents) that flutter_local_notifications
+  /// re-fires itself every year/month — no rescheduling needed.
+  ///
+  /// With it, each occurrence's date depends on that specific month's
+  /// calendar (does the 25th land on a weekend this month or not?), which a
+  /// fixed OS-repeat pattern can't express — shifting this occurrence to,
+  /// say, the 27th would make the OS repeat on the 27th every month after,
+  /// not re-check next month's 25th. So this case schedules a one-shot
+  /// notification for just the next adjusted occurrence; the caller is
+  /// expected to call this again once that's passed (AnniversaryListScreen
+  /// does this on open) so the following month's date gets picked up.
   Future<void> scheduleForAnniversary(Anniversary anniversary) async {
     if (!await _notificationsEnabled()) {
       await cancelForAnniversary(anniversary.id);
@@ -222,9 +234,28 @@ class NotificationService {
     }
 
     final now = tz.TZDateTime.now(tz.local);
-    var next = tz.TZDateTime(tz.local, now.year, anniversary.month, anniversary.day, 9);
-    if (next.isBefore(now)) {
-      next = tz.TZDateTime(tz.local, now.year + 1, anniversary.month, anniversary.day, 9);
+    final isMonthly = anniversary.recurrence == Anniversary.monthly;
+
+    tz.TZDateTime rawOccurrence(int year, int month) =>
+        tz.TZDateTime(tz.local, year, month, anniversary.day, 9);
+
+    tz.TZDateTime next;
+    if (isMonthly) {
+      next = rawOccurrence(now.year, now.month);
+      if (next.isBefore(now)) next = rawOccurrence(now.year, now.month + 1);
+    } else {
+      final month = anniversary.month ?? now.month;
+      next = tz.TZDateTime(tz.local, now.year, month, anniversary.day, 9);
+      if (next.isBefore(now)) next = tz.TZDateTime(tz.local, now.year + 1, month, anniversary.day, 9);
+    }
+
+    DateTimeComponents? matchComponents = isMonthly
+        ? DateTimeComponents.dayOfMonthAndTime
+        : DateTimeComponents.dateAndTime;
+    if (anniversary.businessDayAdjust) {
+      final adjusted = adjustToNextBusinessDay(next);
+      next = tz.TZDateTime(tz.local, adjusted.year, adjusted.month, adjusted.day, 9);
+      matchComponents = null; // one-shot — see doc comment above
     }
 
     try {
@@ -243,7 +274,7 @@ class NotificationService {
           iOS: const DarwinNotificationDetails(),
         ),
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-        matchDateTimeComponents: DateTimeComponents.dateAndTime,
+        matchDateTimeComponents: matchComponents,
       );
     } catch (e, st) {
       FirebaseCrashlytics.instance

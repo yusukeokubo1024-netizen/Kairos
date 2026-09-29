@@ -286,6 +286,65 @@ class NotificationService {
     await _plugin.cancel(id: _scheduleNotificationId('anniversary_', anniversaryId));
   }
 
+  // Fixed id — there's only ever one daily digest notification per device.
+  static const _dailyDigestId = 0x4441494c; // 'DAIL' as hex, just a stable sentinel
+
+  String get _dailyDigestChannelName => _isJa ? '毎日の予定まとめ' : 'Daily schedule digest';
+
+  /// Notifies once at [hour]:[minute] with today's (or tomorrow's, if that
+  /// time already passed today) schedules, [lines] already formatted by the
+  /// caller. Deliberately a one-shot, not a native-repeating alarm: the
+  /// content changes every day, which a fixed OS repeat pattern can't
+  /// express. The caller (DailyDigestService) is expected to call this
+  /// again whenever the schedule list changes while the app is open, both
+  /// to keep the content fresh and to roll the target date forward.
+  Future<void> scheduleDailyDigest({
+    required DateTime targetDate,
+    required int hour,
+    required int minute,
+    required List<String> lines,
+    required String title,
+    required String emptyBody,
+  }) async {
+    if (!await _notificationsEnabled()) {
+      await cancelDailyDigest();
+      return;
+    }
+    final scheduledDate =
+        tz.TZDateTime(tz.local, targetDate.year, targetDate.month, targetDate.day, hour, minute);
+    if (scheduledDate.isBefore(tz.TZDateTime.now(tz.local))) return;
+
+    final body = lines.isEmpty ? emptyBody : lines.join('\n');
+    try {
+      await _plugin.zonedSchedule(
+        id: _dailyDigestId,
+        title: title,
+        body: body,
+        scheduledDate: scheduledDate,
+        notificationDetails: NotificationDetails(
+          android: AndroidNotificationDetails(
+            'daily_digest',
+            _dailyDigestChannelName,
+            importance: Importance.high,
+            priority: Priority.high,
+            // Android otherwise truncates a multi-line body (up to 5
+            // schedules) to a single line.
+            styleInformation: BigTextStyleInformation(body),
+          ),
+          iOS: const DarwinNotificationDetails(),
+        ),
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      );
+    } catch (e, st) {
+      FirebaseCrashlytics.instance
+          .recordError(e, st, reason: 'failed to schedule daily digest', fatal: false);
+    }
+  }
+
+  Future<void> cancelDailyDigest() async {
+    await _plugin.cancel(id: _dailyDigestId);
+  }
+
   /// Cancels every pending local notification (used when the user turns
   /// notifications off entirely in Settings).
   Future<void> cancelAll() async {

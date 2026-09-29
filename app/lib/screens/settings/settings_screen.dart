@@ -13,6 +13,7 @@ import '../../l10n/app_localizations.dart';
 import '../../models/anniversary.dart';
 import '../../services/auth_service.dart';
 import '../../services/biometric_service.dart';
+import '../../services/daily_digest_service.dart';
 import '../../services/locale_service.dart';
 import '../../services/notification_service.dart';
 import '../../services/theme_service.dart';
@@ -89,6 +90,42 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }, SetOptions(merge: true));
     if (!enabled) {
       await NotificationService.instance.cancelAll();
+    }
+  }
+
+  Future<void> _toggleDailyDigest(bool enabled, int hour, int minute) async {
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+    await FirebaseFirestore.instance.collection('users').doc(uid).set({
+      'uid': uid,
+      'dailyDigestEnabled': enabled,
+      // Written even when just turning it on, so a first-time enable
+      // always has an explicit time on record (not just the UI default).
+      'dailyDigestHour': hour,
+      'dailyDigestMinute': minute,
+    }, SetOptions(merge: true));
+    if (!mounted) return;
+    final l10n = AppLocalizations.of(context)!;
+    if (enabled) {
+      await DailyDigestService.refreshFromFirestore(l10n);
+    } else {
+      await NotificationService.instance.cancelDailyDigest();
+    }
+  }
+
+  Future<void> _pickDailyDigestTime(int hour, int minute) async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay(hour: hour, minute: minute),
+    );
+    if (picked == null) return;
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+    await FirebaseFirestore.instance.collection('users').doc(uid).set({
+      'uid': uid,
+      'dailyDigestHour': picked.hour,
+      'dailyDigestMinute': picked.minute,
+    }, SetOptions(merge: true));
+    if (mounted) {
+      await DailyDigestService.refreshFromFirestore(AppLocalizations.of(context)!);
     }
   }
 
@@ -662,6 +699,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           final email = data?['email'] as String? ?? FirebaseAuth.instance.currentUser?.email ?? '';
           final notificationsEnabled = data?['notifications_enabled'] as bool? ?? true;
           final readReceiptsEnabled = data?['read_receipts_enabled'] as bool? ?? true;
+          final dailyDigestEnabled = data?['dailyDigestEnabled'] as bool? ?? false;
+          final dailyDigestHour = data?['dailyDigestHour'] as int? ?? 7;
+          final dailyDigestMinute = data?['dailyDigestMinute'] as int? ?? 0;
           final isGoogleLinked = _authService.isGoogleLinked;
           final currentLocale = LocaleService.instance.locale.value;
 
@@ -794,6 +834,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 value: readReceiptsEnabled,
                 onChanged: _toggleReadReceipts,
               ),
+              SwitchListTile(
+                secondary: const Icon(Icons.view_agenda_outlined),
+                title: Text(l10n.settingsDailyDigest),
+                subtitle: Text(l10n.settingsDailyDigestSubtitle),
+                value: dailyDigestEnabled,
+                onChanged: (value) => _toggleDailyDigest(value, dailyDigestHour, dailyDigestMinute),
+              ),
+              if (dailyDigestEnabled)
+                ListTile(
+                  contentPadding: const EdgeInsets.only(left: 72, right: 16),
+                  title: Text(l10n.settingsDailyDigestTime),
+                  subtitle: Text(
+                    '${dailyDigestHour.toString().padLeft(2, '0')}:'
+                    '${dailyDigestMinute.toString().padLeft(2, '0')}',
+                  ),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => _pickDailyDigestTime(dailyDigestHour, dailyDigestMinute),
+                ),
               if (_biometricSupported)
                 SwitchListTile(
                   secondary: const Icon(Icons.fingerprint),

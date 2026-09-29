@@ -1032,6 +1032,21 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsReadReceiptsSubtitle => '关闭后，即使您阅读了消息，对方也不会看到已读';
 
   @override
+  String get settingsDailyDigest => '每日日程汇总通知';
+
+  @override
+  String get settingsDailyDigestSubtitle => '在指定时间收到当天日程的汇总通知';
+
+  @override
+  String get settingsDailyDigestTime => '通知时间';
+
+  @override
+  String get dailyDigestNotificationTitle => '今天的日程';
+
+  @override
+  String get dailyDigestNotificationEmpty => '今天没有日程';
+
+  @override
   String get groupChatReport => '举报消息';
 
   @override

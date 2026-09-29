@@ -1043,6 +1043,21 @@ class AppLocalizationsJa extends AppLocalizations {
       'オフにすると、あなたがメッセージを読んでも相手に既読が表示されません';
 
   @override
+  String get settingsDailyDigest => '毎日の予定をまとめて通知';
+
+  @override
+  String get settingsDailyDigestSubtitle => '指定した時刻に、その日の予定をまとめてお知らせします';
+
+  @override
+  String get settingsDailyDigestTime => '通知する時刻';
+
+  @override
+  String get dailyDigestNotificationTitle => '今日の予定';
+
+  @override
+  String get dailyDigestNotificationEmpty => '今日の予定はありません';
+
+  @override
   String get groupChatReport => 'メッセージを報告';
 
   @override

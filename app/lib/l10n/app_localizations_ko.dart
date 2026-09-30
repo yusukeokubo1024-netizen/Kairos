@@ -955,6 +955,9 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
+  String get calendarDayColorLabel => '이 날에 색 표시:';
+
+  @override
   String get calendarAllDay => '종일';
 
   @override

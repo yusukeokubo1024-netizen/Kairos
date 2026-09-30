@@ -325,6 +325,7 @@
   "@calendarWeatherMorning": { "placeholders": { "emoji": {}, "temp": {} } },
   "calendarWeatherAfternoon": "午後 {emoji} {temp}°",
   "@calendarWeatherAfternoon": { "placeholders": { "emoji": {}, "temp": {} } },
+  "calendarDayColorLabel": "この日に色をつける：",
   "calendarAllDay": "終日",
   "calendarBirthdaySuffix": "{name}の誕生日",
   "@calendarBirthdaySuffix": { "placeholders": { "name": {} } },

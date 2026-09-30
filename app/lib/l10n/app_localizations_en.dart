@@ -976,6 +976,9 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get calendarDayColorLabel => 'Mark this day:';
+
+  @override
   String get calendarAllDay => 'All day';
 
   @override

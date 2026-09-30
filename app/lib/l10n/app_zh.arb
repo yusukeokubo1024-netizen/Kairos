@@ -325,6 +325,7 @@
   "@calendarWeatherMorning": { "placeholders": { "emoji": {}, "temp": {} } },
   "calendarWeatherAfternoon": "下午 {emoji} {temp}°",
   "@calendarWeatherAfternoon": { "placeholders": { "emoji": {}, "temp": {} } },
+  "calendarDayColorLabel": "为这天标色：",
   "calendarAllDay": "全天",
   "calendarBirthdaySuffix": "{name}的生日",
   "@calendarBirthdaySuffix": { "placeholders": { "name": {} } },

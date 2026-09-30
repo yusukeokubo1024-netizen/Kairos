@@ -949,6 +949,9 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String get calendarDayColorLabel => 'この日に色をつける：';
+
+  @override
   String get calendarAllDay => '終日';
 
   @override

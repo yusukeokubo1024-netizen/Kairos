@@ -1872,6 +1872,12 @@ abstract class AppLocalizations {
   /// **'午後 {emoji} {temp}°'**
   String calendarWeatherAfternoon(Object emoji, Object temp);
 
+  /// No description provided for @calendarDayColorLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'この日に色をつける：'**
+  String get calendarDayColorLabel;
+
   /// No description provided for @calendarAllDay.
   ///
   /// In ja, this message translates to:

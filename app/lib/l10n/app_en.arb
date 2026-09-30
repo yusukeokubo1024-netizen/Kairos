@@ -325,6 +325,7 @@
   "@calendarWeatherMorning": { "placeholders": { "emoji": {}, "temp": {} } },
   "calendarWeatherAfternoon": "PM {emoji} {temp}°",
   "@calendarWeatherAfternoon": { "placeholders": { "emoji": {}, "temp": {} } },
+  "calendarDayColorLabel": "Mark this day:",
   "calendarAllDay": "All day",
   "calendarBirthdaySuffix": "{name}'s birthday",
   "@calendarBirthdaySuffix": { "placeholders": { "name": {} } },

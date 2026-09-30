@@ -325,6 +325,7 @@
   "@calendarWeatherMorning": { "placeholders": { "emoji": {}, "temp": {} } },
   "calendarWeatherAfternoon": "오후 {emoji} {temp}°",
   "@calendarWeatherAfternoon": { "placeholders": { "emoji": {}, "temp": {} } },
+  "calendarDayColorLabel": "이 날에 색 표시:",
   "calendarAllDay": "종일",
   "calendarBirthdaySuffix": "{name}의 생일",
   "@calendarBirthdaySuffix": { "placeholders": { "name": {} } },

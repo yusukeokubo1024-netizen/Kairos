@@ -938,6 +938,9 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get calendarDayColorLabel => '为这天标色：';
+
+  @override
   String get calendarAllDay => '全天';
 
   @override

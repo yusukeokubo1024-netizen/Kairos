@@ -50,6 +50,47 @@ class _CalendarScreenState extends State<CalendarScreen> {
   List<({String name, int month, int day})> _friendBirthdays = [];
   String? _friendBirthdaysMemberKey;
   List<WeatherDay> _forecast = [];
+  // Personal "color this day" markers keyed by "yyyy-MM-dd" — a private
+  // memo-like flag the user can set on any day without creating a
+  // schedule (see _loadWeather, _setDayColor). Not shared with anyone.
+  Map<String, Color> _dayColors = {};
+  static const _dayColorPalette = <Color>[
+    Color(0xFFEF4444), // red
+    Color(0xFFF59E0B), // amber
+    Color(0xFF10B981), // green
+    Color(0xFF2563EB), // blue
+    Color(0xFFA855F7), // purple
+    Color(0xFFEC4899), // pink
+  ];
+
+  String _dayColorKey(DateTime day) =>
+      '${day.year}-${day.month.toString().padLeft(2, '0')}-${day.day.toString().padLeft(2, '0')}';
+
+  Future<void> _setDayColor(DateTime day, Color? color) async {
+    final key = _dayColorKey(day);
+    setState(() {
+      if (color == null) {
+        _dayColors.remove(key);
+      } else {
+        _dayColors[key] = color;
+      }
+    });
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+    try {
+      // A dotted field path so this only touches this one date's entry —
+      // set(merge: true) with a full replacement map would work for adding
+      // a color, but Firestore's merge is itself recursive for nested
+      // maps, so it can only ever add/overwrite keys, never remove one
+      // that's missing from the payload (which is exactly what clearing a
+      // day's color needs to do).
+      await FirebaseFirestore.instance.collection('users').doc(uid).update({
+        'dayColors.$key': color == null ? FieldValue.delete() : color.toARGB32(),
+      });
+    } catch (_) {
+      // Best-effort — worst case it reverts next time this screen reloads.
+    }
+  }
   String? _tenkiKeyword;
   // Populated at the top of _buildCalendarView so _buildDayCell (called by
   // table_calendar's synchronous builders) can look up each day's events.
@@ -67,6 +108,17 @@ class _CalendarScreenState extends State<CalendarScreen> {
     final lat = userDoc.data()?['weather_lat'] as num?;
     final lon = userDoc.data()?['weather_lon'] as num?;
     _tenkiKeyword = userDoc.data()?['weather_tenki_keyword'] as String?;
+
+    // Reuses this same doc fetch for the personal day-color markers
+    // (users/{uid}.dayColors — a private "no schedule needed" memo mark,
+    // not shared with anyone) so loading them doesn't cost a second read.
+    final rawDayColors = userDoc.data()?['dayColors'] as Map<String, dynamic>? ?? {};
+    if (mounted) {
+      setState(() {
+        _dayColors = rawDayColors.map((key, value) => MapEntry(key, Color(value as int)));
+      });
+    }
+
     if (lat == null || lon == null) return;
 
     try {
@@ -358,9 +410,15 @@ class _CalendarScreenState extends State<CalendarScreen> {
     final weather = _weatherForDay(day);
     final events = _schedulesByDay[DateTime(day.year, day.month, day.day)] ?? const <Schedule>[];
     const maxVisibleEvents = 3;
+    final dayColor = _dayColors[_dayColorKey(day)];
 
     return Container(
-      decoration: BoxDecoration(border: Border.all(color: Colors.grey.shade300, width: 0.5)),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey.shade300, width: 0.5),
+        // The personal "mark this day" color — a light tint behind the
+        // whole cell so it's visible even on a day with no schedules.
+        color: dayColor?.withValues(alpha: 0.18),
+      ),
       padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -757,6 +815,19 @@ class _CalendarScreenState extends State<CalendarScreen> {
               _focusedDay = focused;
               _daySelectedByUser = true;
             });
+            // A day with nothing on it yet has nothing useful to show in
+            // the detail panel below, so jump straight to adding a
+            // schedule instead of making the user notice/reach for the
+            // floating + button. A day that already has something stays
+            // as a plain select, so tapping it doesn't get in the way of
+            // just looking at what's there.
+            final daySchedules =
+                schedulesByDay[DateTime(selected.year, selected.month, selected.day)];
+            if (daySchedules == null || daySchedules.isEmpty) {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => ScheduleFormScreen(initialDate: selected)),
+              );
+            }
           },
           calendarFormat: _calendarFormat,
           onFormatChanged: (format) => setState(() => _calendarFormat = format),
@@ -826,6 +897,36 @@ class _CalendarScreenState extends State<CalendarScreen> {
         // tapped a day — otherwise this section defaults to today and shows
         // a distracting "no schedule" message before they've asked for it.
         if (_daySelectedByUser) ...[
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 6, 12, 0),
+            child: Row(
+              children: [
+                Text(l10n.calendarDayColorLabel,
+                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+                const SizedBox(width: 8),
+                for (final color in _dayColorPalette)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 6),
+                    child: GestureDetector(
+                      onTap: () {
+                        final current = _dayColors[_dayColorKey(_selectedDay)];
+                        _setDayColor(
+                          _selectedDay,
+                          current?.toARGB32() == color.toARGB32() ? null : color,
+                        );
+                      },
+                      child: CircleAvatar(
+                        radius: 10,
+                        backgroundColor: color,
+                        child: _dayColors[_dayColorKey(_selectedDay)]?.toARGB32() == color.toARGB32()
+                            ? const Icon(Icons.check, size: 12, color: Colors.white)
+                            : null,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
           if (_holidayFor(_selectedDay) case final holiday?)
             Container(
               width: double.infinity,

@@ -173,7 +173,7 @@ class _AnniversaryFormScreenState extends State<AnniversaryFormScreen> {
             : null,
       ),
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Form(
             key: _formKey,

@@ -486,6 +486,12 @@ abstract class AppLocalizations {
   /// **'生年月日を登録すると、毎年カレンダーとグループの友人・家族にも誕生日として表示されます'**
   String get settingsBirthdayHint;
 
+  /// No description provided for @settingsBirthdaySaveFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'生年月日の保存に失敗しました。時間をおいて再度お試しください'**
+  String get settingsBirthdaySaveFailed;
+
   /// No description provided for @settingsWeatherLocation.
   ///
   /// In ja, this message translates to:

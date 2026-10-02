@@ -214,6 +214,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Once set, your birthday will show every year on your calendar and on your friends\'/family\'s calendars too';
 
   @override
+  String get settingsBirthdaySaveFailed =>
+      'Failed to save your birthday. Please try again later';
+
+  @override
   String get settingsWeatherLocation => 'Your location (weather forecast)';
 
   @override

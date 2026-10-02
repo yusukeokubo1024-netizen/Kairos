@@ -211,6 +211,9 @@ class AppLocalizationsKo extends AppLocalizations {
       '생년월일을 등록하면 매년 캘린더와 그룹 친구·가족의 캘린더에도 생일로 표시됩니다';
 
   @override
+  String get settingsBirthdaySaveFailed => '생년월일 저장에 실패했습니다. 잠시 후 다시 시도해 주세요';
+
+  @override
   String get settingsWeatherLocation => '거주 지역（날씨 예보）';
 
   @override

@@ -209,6 +209,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsBirthdayHint => '设置生日后，每年都会显示在您的日历以及群组好友、家人的日历上';
 
   @override
+  String get settingsBirthdaySaveFailed => '生日保存失败，请稍后再试';
+
+  @override
   String get settingsWeatherLocation => '所在地区（天气预报）';
 
   @override

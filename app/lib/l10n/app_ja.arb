@@ -74,6 +74,7 @@
   "settingsBirthdayValue": "{month}月{day}日",
   "@settingsBirthdayValue": { "placeholders": { "month": {}, "day": {} } },
   "settingsBirthdayHint": "生年月日を登録すると、毎年カレンダーとグループの友人・家族にも誕生日として表示されます",
+  "settingsBirthdaySaveFailed": "生年月日の保存に失敗しました。時間をおいて再度お試しください",
   "settingsWeatherLocation": "お住まいの地域（天気予報）",
   "settingsWeatherLocationTitle": "お住まいの地域",
   "settingsWeatherLocationCountryTitle": "国・地域を選択",

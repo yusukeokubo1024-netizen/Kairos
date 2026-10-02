@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:home_widget/home_widget.dart';
@@ -338,26 +339,40 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final uid = FirebaseAuth.instance.currentUser!.uid;
     final db = FirebaseFirestore.instance;
 
-    await db.collection('publicProfiles').doc(uid).set({
-      'birthMonth': picked.month,
-      'birthDay': picked.day,
-      'updatedAt': FieldValue.serverTimestamp(),
-    }, SetOptions(merge: true));
+    try {
+      await db.collection('publicProfiles').doc(uid).set({
+        'birthMonth': picked.month,
+        'birthDay': picked.day,
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
 
-    // Also register it as an anniversary so it gets a yearly reminder
-    // notification, same as any other 大切な記念日.
-    final anniversary = Anniversary(
-      id: _birthdayAnniversaryId(uid),
-      ownerId: uid,
-      title: displayName.isNotEmpty ? l10n.calendarBirthdaySuffix(displayName) : l10n.settingsBirthday,
-      month: picked.month,
-      day: picked.day,
-    );
-    await db
-        .collection('anniversaries')
-        .doc(anniversary.id)
-        .set(anniversary.toCreateMap(), SetOptions(merge: true));
-    await NotificationService.instance.scheduleForAnniversary(anniversary);
+      // Also register it as an anniversary so it shows on the calendar and
+      // gets a yearly reminder notification, same as any other 大切な記念日.
+      final anniversary = Anniversary(
+        id: _birthdayAnniversaryId(uid),
+        ownerId: uid,
+        title: displayName.isNotEmpty ? l10n.calendarBirthdaySuffix(displayName) : l10n.settingsBirthday,
+        month: picked.month,
+        day: picked.day,
+      );
+      await db
+          .collection('anniversaries')
+          .doc(anniversary.id)
+          .set(anniversary.toCreateMap(), SetOptions(merge: true));
+      await NotificationService.instance.scheduleForAnniversary(anniversary);
+    } catch (e, st) {
+      // This used to fail silently (fire-and-forget from the ListTile's
+      // onTap, no try/catch) — the publicProfiles write could succeed
+      // while the anniversaries write failed, leaving Settings showing the
+      // saved date correctly while the calendar never got it, with no
+      // visible error anywhere.
+      FirebaseCrashlytics.instance
+          .recordError(e, st, reason: 'failed to save birthday', fatal: false);
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(l10n.settingsBirthdaySaveFailed)));
+      }
+    }
   }
 
   bool _isSettingWeatherLocation = false;

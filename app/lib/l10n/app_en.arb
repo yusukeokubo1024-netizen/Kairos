@@ -74,6 +74,7 @@
   "settingsBirthdayValue": "{month}/{day}",
   "@settingsBirthdayValue": { "placeholders": { "month": {}, "day": {} } },
   "settingsBirthdayHint": "Once set, your birthday will show every year on your calendar and on your friends'/family's calendars too",
+  "settingsBirthdaySaveFailed": "Failed to save your birthday. Please try again later",
   "settingsWeatherLocation": "Your location (weather forecast)",
   "settingsWeatherLocationTitle": "Your location",
   "settingsWeatherLocationCountryTitle": "Select country/region",

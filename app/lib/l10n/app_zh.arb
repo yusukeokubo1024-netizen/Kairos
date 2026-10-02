@@ -74,6 +74,7 @@
   "settingsBirthdayValue": "{month}月{day}日",
   "@settingsBirthdayValue": { "placeholders": { "month": {}, "day": {} } },
   "settingsBirthdayHint": "设置生日后，每年都会显示在您的日历以及群组好友、家人的日历上",
+  "settingsBirthdaySaveFailed": "生日保存失败，请稍后再试",
   "settingsWeatherLocation": "所在地区（天气预报）",
   "settingsWeatherLocationTitle": "所在地区",
   "settingsWeatherLocationCountryTitle": "选择国家/地区",

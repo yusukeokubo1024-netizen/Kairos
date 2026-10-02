@@ -2226,53 +2226,6 @@ abstract class AppLocalizations {
   /// **'オフにすると、あなたがメッセージを読んでも相手に既読が表示されません'**
   String get settingsReadReceiptsSubtitle;
 
-  /// No description provided for @settingsDailyDigest.
-  ///
-  /// In ja, this message translates to:
-  /// **'毎日の予定をまとめて通知'**
-  String get settingsDailyDigest;
-
-  /// No description provided for @settingsDailyDigestSubtitle.
-  ///
-  /// In ja, this message translates to:
-  /// **'指定した時刻に、その日の予定をまとめてお知らせします'**
-  String get settingsDailyDigestSubtitle;
-
-  /// No description provided for @settingsDailyDigestTime.
-  ///
-  /// In ja, this message translates to:
-  /// **'通知する時刻'**
-  String get settingsDailyDigestTime;
-
-  /// No description provided for @dailyDigestNotificationTitle.
-  ///
-  /// In ja, this message translates to:
-  /// **'今日の予定'**
-  String get dailyDigestNotificationTitle;
-
-  /// No description provided for @dailyDigestNotificationEmpty.
-  ///
-  /// In ja, this message translates to:
-  /// **'今日の予定はありません'**
-  String get dailyDigestNotificationEmpty;
-
-  /// No description provided for @settingsDailyDigestConfirm.
-  ///
-  /// In ja, this message translates to:
-  /// **'{month}月{day}日 {hour}:{minute} に通知します'**
-  String settingsDailyDigestConfirm(
-    Object month,
-    Object day,
-    Object hour,
-    Object minute,
-  );
-
-  /// No description provided for @settingsDailyDigestConfirmBlocked.
-  ///
-  /// In ja, this message translates to:
-  /// **'時刻は設定しましたが、「通知」がオフなので届きません。上の通知設定もオンにしてください'**
-  String get settingsDailyDigestConfirmBlocked;
-
   /// No description provided for @groupChatReport.
   ///
   /// In ja, this message translates to:

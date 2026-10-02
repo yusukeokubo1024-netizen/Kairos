@@ -1145,35 +1145,6 @@ class AppLocalizationsKo extends AppLocalizations {
       '끄면 내가 메시지를 읽어도 상대에게 읽음이 표시되지 않습니다';
 
   @override
-  String get settingsDailyDigest => '매일 일정 모아서 알림';
-
-  @override
-  String get settingsDailyDigestSubtitle => '지정한 시간에 그날의 일정을 모아서 알려드립니다';
-
-  @override
-  String get settingsDailyDigestTime => '알림 시각';
-
-  @override
-  String get dailyDigestNotificationTitle => '오늘의 일정';
-
-  @override
-  String get dailyDigestNotificationEmpty => '오늘 일정이 없습니다';
-
-  @override
-  String settingsDailyDigestConfirm(
-    Object month,
-    Object day,
-    Object hour,
-    Object minute,
-  ) {
-    return '$month월 $day일 $hour:$minute에 알려드립니다';
-  }
-
-  @override
-  String get settingsDailyDigestConfirmBlocked =>
-      '시간은 저장했지만 \"알림\"이 꺼져 있어 전달되지 않습니다. 위의 알림 설정도 켜 주세요';
-
-  @override
   String get groupChatReport => '메시지 신고';
 
   @override

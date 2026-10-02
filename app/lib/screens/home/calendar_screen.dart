@@ -15,7 +15,6 @@ import '../../models/schedule_category.dart';
 import '../../models/shared_group.dart';
 import '../../models/task.dart';
 import '../../services/audit_service.dart';
-import '../../services/daily_digest_service.dart';
 import '../../services/home_widget_service.dart';
 import '../../services/notification_service.dart';
 import '../../utils/business_day.dart';
@@ -758,7 +757,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
                         ..sort((a, b) => a.startTime.compareTo(b.startTime)))
                   : <Schedule>[];
               unawaited(_pushTodayToHomeWidget(schedules, l10n));
-              unawaited(DailyDigestService.refreshFromExpandedSchedules(schedules, l10n));
 
               final content = _viewMode == _ViewMode.calendar
                   ? _buildCalendarView(schedules)

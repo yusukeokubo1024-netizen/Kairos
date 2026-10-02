@@ -1171,36 +1171,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'If turned off, others won\'t see that you\'ve read their messages';
 
   @override
-  String get settingsDailyDigest => 'Daily schedule digest';
-
-  @override
-  String get settingsDailyDigestSubtitle =>
-      'Get a notification listing that day\'s schedules at a set time';
-
-  @override
-  String get settingsDailyDigestTime => 'Notify at';
-
-  @override
-  String get dailyDigestNotificationTitle => 'Today\'s schedule';
-
-  @override
-  String get dailyDigestNotificationEmpty => 'No schedules today';
-
-  @override
-  String settingsDailyDigestConfirm(
-    Object month,
-    Object day,
-    Object hour,
-    Object minute,
-  ) {
-    return 'You\'ll be notified on $month/$day at $hour:$minute';
-  }
-
-  @override
-  String get settingsDailyDigestConfirmBlocked =>
-      'Time saved, but \"Notifications\" is off so it won\'t arrive. Please also turn that on above';
-
-  @override
   String get groupChatReport => 'Report message';
 
   @override

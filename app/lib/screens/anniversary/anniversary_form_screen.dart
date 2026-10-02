@@ -10,6 +10,7 @@ import '../../models/anniversary.dart';
 import '../../services/analytics_service.dart';
 import '../../services/audit_service.dart';
 import '../../services/notification_service.dart';
+import '../settings/color_labels_screen.dart' show colorLabelPalette;
 
 class AnniversaryFormScreen extends StatefulWidget {
   final Anniversary? anniversary;
@@ -26,6 +27,7 @@ class _AnniversaryFormScreenState extends State<AnniversaryFormScreen> {
   late DateTime _date;
   String _recurrence = Anniversary.yearly;
   bool _businessDayAdjust = false;
+  Color _color = Anniversary.defaultColor;
   bool _isSaving = false;
 
   bool get _isEditing => widget.anniversary != null;
@@ -40,6 +42,7 @@ class _AnniversaryFormScreenState extends State<AnniversaryFormScreen> {
       _date = DateTime(now.year, anniversary.month ?? now.month, anniversary.day);
       _recurrence = anniversary.recurrence;
       _businessDayAdjust = anniversary.businessDayAdjust;
+      _color = anniversary.color;
     } else {
       _date = now;
     }
@@ -81,6 +84,7 @@ class _AnniversaryFormScreenState extends State<AnniversaryFormScreen> {
           month: _recurrence == Anniversary.monthly ? null : _date.month,
           day: _date.day,
           businessDayAdjust: _businessDayAdjust,
+          color: _color,
         );
         await db.collection('anniversaries').doc(updated.id).update(updated.toUpdateMap());
         unawaited(AuditService.instance.logUpdate(
@@ -99,6 +103,7 @@ class _AnniversaryFormScreenState extends State<AnniversaryFormScreen> {
           month: _recurrence == Anniversary.monthly ? null : _date.month,
           day: _date.day,
           businessDayAdjust: _businessDayAdjust,
+          color: _color,
         );
         final ref = await db.collection('anniversaries').add(newAnniversary.toCreateMap());
         unawaited(AnalyticsService.instance.logAnniversaryCreated());
@@ -112,6 +117,7 @@ class _AnniversaryFormScreenState extends State<AnniversaryFormScreen> {
             month: newAnniversary.month,
             day: newAnniversary.day,
             businessDayAdjust: newAnniversary.businessDayAdjust,
+            color: newAnniversary.color,
           ),
         );
       }
@@ -233,6 +239,26 @@ class _AnniversaryFormScreenState extends State<AnniversaryFormScreen> {
                       ? l10n.anniversaryFormNotifyHintMonthly
                       : l10n.anniversaryFormNotifyHint,
                   style: const TextStyle(fontSize: 12, color: Colors.grey),
+                ),
+                const SizedBox(height: 16),
+                Text(l10n.anniversaryFormColor, style: const TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
+                  children: colorLabelPalette.map((color) {
+                    final selected = color.toARGB32() == _color.toARGB32();
+                    return GestureDetector(
+                      onTap: () => setState(() => _color = color),
+                      child: CircleAvatar(
+                        backgroundColor: color,
+                        radius: selected ? 18 : 15,
+                        child: selected
+                            ? const Icon(Icons.check, color: Colors.white, size: 18)
+                            : null,
+                      ),
+                    );
+                  }).toList(),
                 ),
                 const SizedBox(height: 24),
                 FilledButton(

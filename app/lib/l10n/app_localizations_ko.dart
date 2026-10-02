@@ -52,6 +52,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get commonCancel => '취소';
 
   @override
+  String get commonUnnamedUser => '이름 미설정';
+
+  @override
   String get commonDone => '완료';
 
   @override
@@ -623,6 +626,17 @@ class AppLocalizationsKo extends AppLocalizations {
   String get trashDeleteForever => '영구 삭제';
 
   @override
+  String get trashDeleteAll => '전체 삭제';
+
+  @override
+  String get trashDeleteAllConfirmTitle => '전체를 영구 삭제하시겠습니까?';
+
+  @override
+  String trashDeleteAllConfirmBody(Object count) {
+    return '휴지통의 $count개 항목을 모두 영구 삭제합니다. 되돌릴 수 없습니다.';
+  }
+
+  @override
   String get trashRestored => '복원되었습니다';
 
   @override
@@ -926,6 +940,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get calendarNoScheduleThisDay => '이 날의 일정이 없습니다';
 
   @override
+  String get calendarAddScheduleThisDay => '이 날에 일정 추가';
+
+  @override
   String get calendarTapDayHint => '날짜를 탭하면 그날의 일정과 할 일을 볼 수 있습니다';
 
   @override
@@ -1140,6 +1157,20 @@ class AppLocalizationsKo extends AppLocalizations {
   String get dailyDigestNotificationEmpty => '오늘 일정이 없습니다';
 
   @override
+  String settingsDailyDigestConfirm(
+    Object month,
+    Object day,
+    Object hour,
+    Object minute,
+  ) {
+    return '$month월 $day일 $hour:$minute에 알려드립니다';
+  }
+
+  @override
+  String get settingsDailyDigestConfirmBlocked =>
+      '시간은 저장했지만 \"알림\"이 꺼져 있어 전달되지 않습니다. 위의 알림 설정도 켜 주세요';
+
+  @override
   String get groupChatReport => '메시지 신고';
 
   @override
@@ -1254,6 +1285,9 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get anniversaryFormNotifyHintMonthly => '매월 이 날 오전 9시에 알림을 받습니다';
+
+  @override
+  String get anniversaryFormColor => '색상';
 
   @override
   String get anniversaryDeleted => '기념일을 삭제했습니다';

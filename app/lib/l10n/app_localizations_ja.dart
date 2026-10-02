@@ -52,6 +52,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get commonCancel => 'キャンセル';
 
   @override
+  String get commonUnnamedUser => '名前未設定';
+
+  @override
   String get commonDone => '完了';
 
   @override
@@ -618,6 +621,17 @@ class AppLocalizationsJa extends AppLocalizations {
   String get trashDeleteForever => '完全に削除';
 
   @override
+  String get trashDeleteAll => 'すべて削除';
+
+  @override
+  String get trashDeleteAllConfirmTitle => 'すべて完全に削除しますか？';
+
+  @override
+  String trashDeleteAllConfirmBody(Object count) {
+    return 'ゴミ箱の$count件をすべて完全に削除します。元に戻せません。';
+  }
+
+  @override
   String get trashRestored => '復元しました';
 
   @override
@@ -920,6 +934,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get calendarNoScheduleThisDay => 'この日の予定はありません';
 
   @override
+  String get calendarAddScheduleThisDay => 'この日に予定を追加';
+
+  @override
   String get calendarTapDayHint => '日付をタップすると、その日の予定やタスクが見られます';
 
   @override
@@ -1134,6 +1151,20 @@ class AppLocalizationsJa extends AppLocalizations {
   String get dailyDigestNotificationEmpty => '今日の予定はありません';
 
   @override
+  String settingsDailyDigestConfirm(
+    Object month,
+    Object day,
+    Object hour,
+    Object minute,
+  ) {
+    return '$month月$day日 $hour:$minute に通知します';
+  }
+
+  @override
+  String get settingsDailyDigestConfirmBlocked =>
+      '時刻は設定しましたが、「通知」がオフなので届きません。上の通知設定もオンにしてください';
+
+  @override
   String get groupChatReport => 'メッセージを報告';
 
   @override
@@ -1247,6 +1278,9 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get anniversaryFormNotifyHintMonthly => '毎月この日の朝9時に通知します';
+
+  @override
+  String get anniversaryFormColor => '色';
 
   @override
   String get anniversaryDeleted => '記念日を削除しました';

@@ -52,6 +52,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonCancel => 'Cancel';
 
   @override
+  String get commonUnnamedUser => 'No name set';
+
+  @override
   String get commonDone => 'Done';
 
   @override
@@ -638,6 +641,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get trashDeleteForever => 'Delete forever';
 
   @override
+  String get trashDeleteAll => 'Delete all';
+
+  @override
+  String get trashDeleteAllConfirmTitle => 'Delete everything forever?';
+
+  @override
+  String trashDeleteAllConfirmBody(Object count) {
+    return 'This permanently deletes all $count items in Trash. This can\'t be undone.';
+  }
+
+  @override
   String get trashRestored => 'Restored';
 
   @override
@@ -947,6 +961,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get calendarNoScheduleThisDay => 'No schedules on this day';
 
   @override
+  String get calendarAddScheduleThisDay => 'Add a schedule for this day';
+
+  @override
   String get calendarTapDayHint => 'Tap a date to see its schedules and tasks';
 
   @override
@@ -1166,6 +1183,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dailyDigestNotificationEmpty => 'No schedules today';
 
   @override
+  String settingsDailyDigestConfirm(
+    Object month,
+    Object day,
+    Object hour,
+    Object minute,
+  ) {
+    return 'You\'ll be notified on $month/$day at $hour:$minute';
+  }
+
+  @override
+  String get settingsDailyDigestConfirmBlocked =>
+      'Time saved, but \"Notifications\" is off so it won\'t arrive. Please also turn that on above';
+
+  @override
   String get groupChatReport => 'Report message';
 
   @override
@@ -1285,6 +1316,9 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get anniversaryFormNotifyHintMonthly =>
       'You\'ll get a notification at 9am on this day every month';
+
+  @override
+  String get anniversaryFormColor => 'Color';
 
   @override
   String get anniversaryDeleted => 'Anniversary deleted';

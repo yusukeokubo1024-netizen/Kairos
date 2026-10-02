@@ -186,6 +186,12 @@ abstract class AppLocalizations {
   /// **'キャンセル'**
   String get commonCancel;
 
+  /// No description provided for @commonUnnamedUser.
+  ///
+  /// In ja, this message translates to:
+  /// **'名前未設定'**
+  String get commonUnnamedUser;
+
   /// No description provided for @commonDone.
   ///
   /// In ja, this message translates to:
@@ -1248,6 +1254,24 @@ abstract class AppLocalizations {
   /// **'完全に削除'**
   String get trashDeleteForever;
 
+  /// No description provided for @trashDeleteAll.
+  ///
+  /// In ja, this message translates to:
+  /// **'すべて削除'**
+  String get trashDeleteAll;
+
+  /// No description provided for @trashDeleteAllConfirmTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'すべて完全に削除しますか？'**
+  String get trashDeleteAllConfirmTitle;
+
+  /// No description provided for @trashDeleteAllConfirmBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'ゴミ箱の{count}件をすべて完全に削除します。元に戻せません。'**
+  String trashDeleteAllConfirmBody(Object count);
+
   /// No description provided for @trashRestored.
   ///
   /// In ja, this message translates to:
@@ -1830,6 +1854,12 @@ abstract class AppLocalizations {
   /// **'この日の予定はありません'**
   String get calendarNoScheduleThisDay;
 
+  /// No description provided for @calendarAddScheduleThisDay.
+  ///
+  /// In ja, this message translates to:
+  /// **'この日に予定を追加'**
+  String get calendarAddScheduleThisDay;
+
   /// No description provided for @calendarTapDayHint.
   ///
   /// In ja, this message translates to:
@@ -2220,6 +2250,23 @@ abstract class AppLocalizations {
   /// **'今日の予定はありません'**
   String get dailyDigestNotificationEmpty;
 
+  /// No description provided for @settingsDailyDigestConfirm.
+  ///
+  /// In ja, this message translates to:
+  /// **'{month}月{day}日 {hour}:{minute} に通知します'**
+  String settingsDailyDigestConfirm(
+    Object month,
+    Object day,
+    Object hour,
+    Object minute,
+  );
+
+  /// No description provided for @settingsDailyDigestConfirmBlocked.
+  ///
+  /// In ja, this message translates to:
+  /// **'時刻は設定しましたが、「通知」がオフなので届きません。上の通知設定もオンにしてください'**
+  String get settingsDailyDigestConfirmBlocked;
+
   /// No description provided for @groupChatReport.
   ///
   /// In ja, this message translates to:
@@ -2429,6 +2476,12 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'毎月この日の朝9時に通知します'**
   String get anniversaryFormNotifyHintMonthly;
+
+  /// No description provided for @anniversaryFormColor.
+  ///
+  /// In ja, this message translates to:
+  /// **'色'**
+  String get anniversaryFormColor;
 
   /// No description provided for @anniversaryDeleted.
   ///

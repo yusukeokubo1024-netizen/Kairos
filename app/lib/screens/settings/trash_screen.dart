@@ -82,6 +82,36 @@ class _TrashScreenState extends State<TrashScreen> {
     await doc.reference.delete();
   }
 
+  Future<void> _deleteAll(
+    BuildContext context,
+    List<QueryDocumentSnapshot<Map<String, dynamic>>> docs,
+  ) async {
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.trashDeleteAllConfirmTitle),
+        content: Text(l10n.trashDeleteAllConfirmBody(docs.length)),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(l10n.commonCancel)),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: Text(l10n.commonDelete)),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    // Firestore batches cap at 500 writes, so chunk just in case the trash
+    // has built up more than that.
+    for (var i = 0; i < docs.length; i += 500) {
+      final chunk = docs.skip(i).take(500);
+      final batch = FirebaseFirestore.instance.batch();
+      for (final doc in chunk) {
+        batch.delete(doc.reference);
+      }
+      await batch.commit();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -103,7 +133,30 @@ class _TrashScreenState extends State<TrashScreen> {
           if (docs.isEmpty) {
             return Center(child: Text(l10n.trashEmpty));
           }
-          return ListView.builder(
+          return Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton.icon(
+                    onPressed: () => _deleteAll(context, docs),
+                    icon: const Icon(Icons.delete_sweep_outlined),
+                    label: Text(l10n.trashDeleteAll),
+                  ),
+                ),
+              ),
+              Expanded(child: _buildList(docs)),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildList(List<QueryDocumentSnapshot<Map<String, dynamic>>> docs) {
+    final l10n = AppLocalizations.of(context)!;
+    return ListView.builder(
             itemCount: docs.length,
             itemBuilder: (context, index) {
               final doc = docs[index];
@@ -138,9 +191,6 @@ class _TrashScreenState extends State<TrashScreen> {
               );
             },
           );
-        },
-      ),
-    );
   }
 
   String _formatDate(DateTime date) {

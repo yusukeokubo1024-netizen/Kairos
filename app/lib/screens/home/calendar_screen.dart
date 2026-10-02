@@ -158,6 +158,35 @@ class _CalendarScreenState extends State<CalendarScreen> {
         (12, 31): l10n.calendarNewYearsEve,
       };
 
+  // A themed color per special day, instead of every one sharing the same
+  // amber — Christmas red/green, Mother's/Father's Day pink/blue.
+  static const _christmasRed = Color(0xFFDC2626);
+  static const _christmasGreen = Color(0xFF16A34A);
+  static const _mothersDayPink = Color(0xFFDB2777);
+  static const _fathersDayBlue = Color(0xFF2563EB);
+  static const _defaultSpecialDayColor = Color(0xFFB45309);
+
+  Map<(int, int), Color> _specialDayColors() => {
+        (12, 24): _christmasGreen,
+        (12, 25): _christmasRed,
+      };
+
+  /// The color to label [day] with if [_specialDayName] returns something
+  /// for it — kept as a separate lookup (rather than bundled into the name)
+  /// since the two computed days (母の日/父の日) need the same special-
+  /// casing by weekday-of-month as their name does.
+  Color _specialDayColor(DateTime day) {
+    final fixed = _specialDayColors()[(day.month, day.day)];
+    if (fixed != null) return fixed;
+    if (_isSameDay(day, _nthWeekdayOfMonth(day.year, 5, DateTime.sunday, 2))) {
+      return _mothersDayPink;
+    }
+    if (_isSameDay(day, _nthWeekdayOfMonth(day.year, 6, DateTime.sunday, 3))) {
+      return _fathersDayBlue;
+    }
+    return _defaultSpecialDayColor;
+  }
+
   bool _isSameDay(DateTime a, DateTime b) {
     return a.year == b.year && a.month == b.month && a.day == b.day;
   }
@@ -334,6 +363,24 @@ class _CalendarScreenState extends State<CalendarScreen> {
     return names;
   }
 
+  /// The color of the first of the signed-in user's own anniversaries that
+  /// falls on [day] (each anniversary can now have its own color — see
+  /// AnniversaryFormScreen), or the old fixed pink if none of them match
+  /// (e.g. the day only has a friend's birthday, which has no color of its
+  /// own).
+  Color _anniversaryColorForDay(DateTime day) {
+    final daysInThisMonth = DateTime(day.year, day.month + 1, 0).day;
+    for (final anniversary in _anniversaries) {
+      final isMonthly = anniversary.recurrence == Anniversary.monthly;
+      if (!isMonthly && anniversary.month != day.month) continue;
+      if (anniversary.day > daysInThisMonth) continue;
+      var occurrence = DateTime(day.year, day.month, anniversary.day);
+      if (anniversary.businessDayAdjust) occurrence = adjustToNextBusinessDay(occurrence);
+      if (_isSameDay(occurrence, day)) return anniversary.color;
+    }
+    return Anniversary.defaultColor;
+  }
+
   /// Loads birthMonth/birthDay from the public profiles of everyone in the
   /// user's groups, so their birthdays can show on this user's calendar too.
   /// Re-fetches only when the set of group members actually changes.
@@ -405,7 +452,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
         _specialDayName(day);
     final labelColor = holidayName != null
         ? const Color(0xFFEF4444)
-        : (anniversaryNames.isNotEmpty ? const Color(0xFFEC4899) : const Color(0xFFB45309));
+        : (anniversaryNames.isNotEmpty ? _anniversaryColorForDay(day) : _specialDayColor(day));
 
     final weather = _weatherForDay(day);
     final events = _schedulesByDay[DateTime(day.year, day.month, day.day)] ?? const <Schedule>[];
@@ -414,7 +461,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
     return Container(
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.shade300, width: 0.5),
+        // Theme.dividerColor instead of a fixed light grey — the fixed
+        // color read as a harsh/mismatched line in dark mode, since it
+        // doesn't adapt to the dark surface behind it.
+        border: Border.all(color: Theme.of(context).dividerColor, width: 0.5),
         // The personal "mark this day" color — a light tint behind the
         // whole cell so it's visible even on a day with no schedules.
         color: dayColor?.withValues(alpha: 0.18),
@@ -745,14 +795,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
       );
         },
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (_) => ScheduleFormScreen(initialDate: _selectedDay),
-          ),
-        ),
-        child: const Icon(Icons.add),
-      ),
     );
   }
 
@@ -815,17 +857,22 @@ class _CalendarScreenState extends State<CalendarScreen> {
               _focusedDay = focused;
               _daySelectedByUser = true;
             });
-            // A day with nothing on it yet has nothing useful to show in
-            // the detail panel below, so jump straight to adding a
-            // schedule instead of making the user notice/reach for the
-            // floating + button. A day that already has something stays
-            // as a plain select, so tapping it doesn't get in the way of
-            // just looking at what's there.
+            // There's no floating + button anymore (removed in favor of
+            // tap-to-act), so a day tap has to do the useful thing itself:
+            // nothing on the day yet → straight to adding one; exactly one
+            // → straight to editing it (nothing to disambiguate); two or
+            // more → just select, so the list below can be opened to pick
+            // which one (its own "add" button covers adding another).
             final daySchedules =
-                schedulesByDay[DateTime(selected.year, selected.month, selected.day)];
-            if (daySchedules == null || daySchedules.isEmpty) {
+                schedulesByDay[DateTime(selected.year, selected.month, selected.day)] ??
+                    const <Schedule>[];
+            if (daySchedules.isEmpty) {
               Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => ScheduleFormScreen(initialDate: selected)),
+              );
+            } else if (daySchedules.length == 1) {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => ScheduleFormScreen(schedule: daySchedules.first)),
               );
             }
           },
@@ -887,9 +934,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
             // markers underneath would just be redundant — suppress them.
             markerBuilder: (context, day, events) => const SizedBox.shrink(),
             outsideBuilder: (context, day, focusedDay) => Container(
-              decoration: BoxDecoration(border: Border.all(color: Colors.grey.shade300, width: 0.5)),
+              decoration: BoxDecoration(border: Border.all(color: Theme.of(context).dividerColor, width: 0.5)),
               alignment: Alignment.center,
-              child: Text('${day.day}', style: TextStyle(fontSize: 13, color: Colors.grey.shade400)),
+              child: Text('${day.day}', style: TextStyle(fontSize: 13, color: Colors.grey.shade500)),
             ),
           ),
         ),
@@ -937,18 +984,18 @@ class _CalendarScreenState extends State<CalendarScreen> {
           else if (_specialDayName(_selectedDay) case final name?)
             Container(
               width: double.infinity,
-              color: Colors.amber.shade50,
+              color: _specialDayColor(_selectedDay).withValues(alpha: 0.1),
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              child: Text(name, style: const TextStyle(color: Color(0xFFB45309))),
+              child: Text(name, style: TextStyle(color: _specialDayColor(_selectedDay))),
             ),
           if (_anniversaryNamesForDay(_selectedDay) case final names when names.isNotEmpty)
             Container(
               width: double.infinity,
-              color: const Color(0xFFFCE7F3),
+              color: _anniversaryColorForDay(_selectedDay).withValues(alpha: 0.12),
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               child: Text(
                 names.join(' / '),
-                style: const TextStyle(color: Color(0xFFEC4899)),
+                style: TextStyle(color: _anniversaryColorForDay(_selectedDay)),
               ),
             ),
           if (_weatherForDay(_selectedDay) case final weather?)
@@ -1007,6 +1054,18 @@ class _CalendarScreenState extends State<CalendarScreen> {
               ),
             ),
           const Divider(height: 1),
+          // Replaces the old floating + button (removed — a day tap now
+          // does the obvious thing itself for 0/1 existing schedules), so
+          // adding another schedule to a day that already has one is still
+          // reachable without a second tap on the day itself.
+          ListTile(
+            dense: true,
+            leading: const Icon(Icons.add_circle_outline, size: 20),
+            title: Text(l10n.calendarAddScheduleThisDay),
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => ScheduleFormScreen(initialDate: _selectedDay)),
+            ),
+          ),
           selectedDaySchedules.isEmpty
               ? Padding(
                   padding: const EdgeInsets.all(24),

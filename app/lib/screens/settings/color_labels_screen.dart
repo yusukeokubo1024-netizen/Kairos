@@ -4,15 +4,60 @@ import 'package:flutter/material.dart';
 
 import '../../l10n/app_localizations.dart';
 
+// 3 shades (medium/dark/darker) across 17 hues, trimmed to 50 — picked from
+// medium-to-dark shades only (not pastels), so a white checkmark/text stays
+// legible on top of any of them.
 const colorLabelPalette = <Color>[
-  Color(0xFF2563EB), // blue
-  Color(0xFF0EA5E9), // sky
-  Color(0xFF10B981), // green
-  Color(0xFFF59E0B), // amber
-  Color(0xFFEF4444), // red
-  Color(0xFFA855F7), // purple
-  Color(0xFFEC4899), // pink
-  Color(0xFF64748B), // slate
+  Color(0xFFEF4444), // red 500
+  Color(0xFFDC2626), // red 600
+  Color(0xFFB91C1C), // red 700
+  Color(0xFFF97316), // orange 500
+  Color(0xFFEA580C), // orange 600
+  Color(0xFFC2410C), // orange 700
+  Color(0xFFF59E0B), // amber 500
+  Color(0xFFD97706), // amber 600
+  Color(0xFFB45309), // amber 700
+  Color(0xFFCA8A04), // yellow 600
+  Color(0xFFA16207), // yellow 700
+  Color(0xFF84CC16), // lime 500
+  Color(0xFF65A30D), // lime 600
+  Color(0xFF4D7C0F), // lime 700
+  Color(0xFF22C55E), // green 500
+  Color(0xFF16A34A), // green 600
+  Color(0xFF15803D), // green 700
+  Color(0xFF10B981), // emerald 500
+  Color(0xFF059669), // emerald 600
+  Color(0xFF047857), // emerald 700
+  Color(0xFF14B8A6), // teal 500
+  Color(0xFF0D9488), // teal 600
+  Color(0xFF0F766E), // teal 700
+  Color(0xFF06B6D4), // cyan 500
+  Color(0xFF0891B2), // cyan 600
+  Color(0xFF0E7490), // cyan 700
+  Color(0xFF0EA5E9), // sky 500
+  Color(0xFF0284C7), // sky 600
+  Color(0xFF0369A1), // sky 700
+  Color(0xFF3B82F6), // blue 500
+  Color(0xFF2563EB), // blue 600
+  Color(0xFF1D4ED8), // blue 700
+  Color(0xFF6366F1), // indigo 500
+  Color(0xFF4F46E5), // indigo 600
+  Color(0xFF4338CA), // indigo 700
+  Color(0xFF8B5CF6), // violet 500
+  Color(0xFF7C3AED), // violet 600
+  Color(0xFF6D28D9), // violet 700
+  Color(0xFFA855F7), // purple 500
+  Color(0xFF9333EA), // purple 600
+  Color(0xFF7E22CE), // purple 700
+  Color(0xFFD946EF), // fuchsia 500
+  Color(0xFFC026D3), // fuchsia 600
+  Color(0xFFA21CAF), // fuchsia 700
+  Color(0xFFEC4899), // pink 500
+  Color(0xFFDB2777), // pink 600
+  Color(0xFFBE185D), // pink 700
+  Color(0xFFF43F5E), // rose 500
+  Color(0xFFE11D48), // rose 600
+  Color(0xFFBE123C), // rose 700
 ];
 
 /// A user-defined "person → color" mapping (e.g. "自分" → blue, "妻" → pink),

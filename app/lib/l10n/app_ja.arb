@@ -17,6 +17,7 @@
   "tabSettings": "設定",
 
   "commonCancel": "キャンセル",
+  "commonUnnamedUser": "名前未設定",
   "commonDone": "完了",
   "commonSave": "保存",
   "commonDelete": "削除",
@@ -207,6 +208,10 @@
   "trashEmpty": "ゴミ箱は空です",
   "trashRestore": "復元",
   "trashDeleteForever": "完全に削除",
+  "trashDeleteAll": "すべて削除",
+  "trashDeleteAllConfirmTitle": "すべて完全に削除しますか？",
+  "trashDeleteAllConfirmBody": "ゴミ箱の{count}件をすべて完全に削除します。元に戻せません。",
+  "@trashDeleteAllConfirmBody": { "placeholders": { "count": {} } },
   "trashRestored": "復元しました",
   "trashDeletedOn": "{collection} ・ {date}に削除",
   "@trashDeletedOn": { "placeholders": { "collection": {}, "date": {} } },
@@ -314,6 +319,7 @@
   "calendarFormatMonth": "月",
   "calendarFormatWeek": "週",
   "calendarNoScheduleThisDay": "この日の予定はありません",
+  "calendarAddScheduleThisDay": "この日に予定を追加",
   "calendarTapDayHint": "日付をタップすると、その日の予定やタスクが見られます",
   "calendarNoUpcoming": "今後の予定はありません",
   "calendarLoadError": "予定の読み込みに失敗しました",
@@ -389,6 +395,9 @@
   "settingsDailyDigestTime": "通知する時刻",
   "dailyDigestNotificationTitle": "今日の予定",
   "dailyDigestNotificationEmpty": "今日の予定はありません",
+  "settingsDailyDigestConfirm": "{month}月{day}日 {hour}:{minute} に通知します",
+  "@settingsDailyDigestConfirm": { "placeholders": { "month": {}, "day": {}, "hour": {}, "minute": {} } },
+  "settingsDailyDigestConfirmBlocked": "時刻は設定しましたが、「通知」がオフなので届きません。上の通知設定もオンにしてください",
   "groupChatReport": "メッセージを報告",
   "groupChatReportConfirmTitle": "このメッセージを報告しますか？",
   "groupChatReportConfirmBody": "運営に内容が送信されます。不適切なメッセージの報告にご利用ください。",
@@ -429,5 +438,6 @@
   "anniversaryFormBusinessDayAdjust": "土日祝なら翌営業日にずらす",
   "anniversaryFormBusinessDayAdjustHint": "支払日など、休日を避けたい日付用です。誕生日などの記念日にはおすすめしません",
   "anniversaryFormNotifyHintMonthly": "毎月この日の朝9時に通知します",
+  "anniversaryFormColor": "色",
   "anniversaryDeleted": "記念日を削除しました"
 }

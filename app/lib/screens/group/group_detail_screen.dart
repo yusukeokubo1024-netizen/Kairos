@@ -357,9 +357,16 @@ class _JoinRequestTile extends StatelessWidget {
       builder: (context, snapshot) {
         final l10n = AppLocalizations.of(context)!;
         final name = snapshot.data?.data()?['displayName'] as String?;
+        // snapshot.hasData is the real "finished loading" signal — a name
+        // that's merely an empty string (the person never set one) was
+        // being treated the same as "still loading" and showing a
+        // permanent "読み込み中..." for anyone without a display name set.
+        final label = !snapshot.hasData
+            ? l10n.scheduleFormLoadingName
+            : (name != null && name.isNotEmpty ? name : l10n.commonUnnamedUser);
         return ListTile(
           leading: const CircleAvatar(child: Icon(Icons.person_outline)),
-          title: Text(name?.isNotEmpty == true ? name! : l10n.scheduleFormLoadingName),
+          title: Text(label),
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -394,9 +401,16 @@ class _MemberTile extends StatelessWidget {
       builder: (context, snapshot) {
         final l10n = AppLocalizations.of(context)!;
         final name = snapshot.data?.data()?['displayName'] as String?;
+        // snapshot.hasData is the real "finished loading" signal — a name
+        // that's merely an empty string (the person never set one) was
+        // being treated the same as "still loading" and showing a
+        // permanent "読み込み中..." for anyone without a display name set.
+        final label = !snapshot.hasData
+            ? l10n.scheduleFormLoadingName
+            : (name != null && name.isNotEmpty ? name : l10n.commonUnnamedUser);
         return ListTile(
           leading: const CircleAvatar(child: Icon(Icons.person_outline)),
-          title: Text(name?.isNotEmpty == true ? name! : l10n.scheduleFormLoadingName),
+          title: Text(label),
           trailing: onRemove == null
               ? null
               : IconButton(

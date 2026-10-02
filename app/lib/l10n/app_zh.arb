@@ -17,6 +17,7 @@
   "tabSettings": "设置",
 
   "commonCancel": "取消",
+  "commonUnnamedUser": "未设置姓名",
   "commonDone": "完成",
   "commonSave": "保存",
   "commonDelete": "删除",
@@ -207,6 +208,10 @@
   "trashEmpty": "回收站是空的",
   "trashRestore": "恢复",
   "trashDeleteForever": "永久删除",
+  "trashDeleteAll": "全部删除",
+  "trashDeleteAllConfirmTitle": "要永久删除全部内容吗？",
+  "trashDeleteAllConfirmBody": "将永久删除回收站中的全部 {count} 项。此操作无法撤销。",
+  "@trashDeleteAllConfirmBody": { "placeholders": { "count": {} } },
   "trashRestored": "已恢复",
   "trashDeletedOn": "{collection} ・ {date} 删除",
   "@trashDeletedOn": { "placeholders": { "collection": {}, "date": {} } },
@@ -314,6 +319,7 @@
   "calendarFormatMonth": "月",
   "calendarFormatWeek": "周",
   "calendarNoScheduleThisDay": "这一天没有日程",
+  "calendarAddScheduleThisDay": "为这天添加日程",
   "calendarTapDayHint": "点击日期即可查看当天的日程和任务",
   "calendarNoUpcoming": "没有即将到来的日程",
   "calendarLoadError": "日程加载失败",
@@ -389,6 +395,9 @@
   "settingsDailyDigestTime": "通知时间",
   "dailyDigestNotificationTitle": "今天的日程",
   "dailyDigestNotificationEmpty": "今天没有日程",
+  "settingsDailyDigestConfirm": "将于{month}月{day}日 {hour}:{minute} 通知您",
+  "@settingsDailyDigestConfirm": { "placeholders": { "month": {}, "day": {}, "hour": {}, "minute": {} } },
+  "settingsDailyDigestConfirmBlocked": "时间已保存，但“通知”总开关处于关闭状态，不会收到提醒。请一并打开上方的通知设置",
   "groupChatReport": "举报消息",
   "groupChatReportConfirmTitle": "要举报这条消息吗？",
   "groupChatReportConfirmBody": "消息内容将发送给我们审核。请用于举报不当消息。",
@@ -429,5 +438,6 @@
   "anniversaryFormBusinessDayAdjust": "遇周末/节假日顺延至下一个工作日",
   "anniversaryFormBusinessDayAdjustHint": "适用于付款日等需要避开假日的日期。不建议用于生日等实际日期类纪念日",
   "anniversaryFormNotifyHintMonthly": "每月这一天的上午9点会收到通知",
+  "anniversaryFormColor": "颜色",
   "anniversaryDeleted": "纪念日已删除"
 }

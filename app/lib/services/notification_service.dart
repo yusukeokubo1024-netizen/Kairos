@@ -75,6 +75,11 @@ class NotificationService {
 
   /// Whether the signed-in user has notifications turned on in Settings.
   /// Defaults to true (e.g. for signed-out callers, or if the field is unset).
+  /// Public wrapper so other services (e.g. DailyDigestService) can check
+  /// the master notifications toggle before reporting success — turning on
+  /// a specific notification type does nothing while this is off, silently.
+  Future<bool> notificationsEnabled() => _notificationsEnabled();
+
   Future<bool> _notificationsEnabled() async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) return true;

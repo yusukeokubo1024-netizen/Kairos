@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:home_widget/home_widget.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -107,16 +108,44 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (!mounted) return;
     final l10n = AppLocalizations.of(context)!;
     if (enabled) {
-      await DailyDigestService.refreshFromFirestore(l10n);
+      final result = await DailyDigestService.refreshFromFirestore(l10n);
+      if (mounted) _showDailyDigestConfirmation(result);
     } else {
       await NotificationService.instance.cancelDailyDigest();
     }
   }
 
   Future<void> _pickDailyDigestTime(int hour, int minute) async {
-    final picked = await showTimePicker(
+    var selected = DateTime(2000, 1, 1, hour, minute);
+    final l10n = AppLocalizations.of(context)!;
+    final picked = await showModalBottomSheet<DateTime>(
       context: context,
-      initialTime: TimeOfDay(hour: hour, minute: minute),
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              height: 216,
+              child: CupertinoDatePicker(
+                mode: CupertinoDatePickerMode.time,
+                use24hFormat: true,
+                initialDateTime: selected,
+                onDateTimeChanged: (value) => selected = value,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: FilledButton(
+                  onPressed: () => Navigator.pop(context, selected),
+                  child: Text(l10n.commonSave),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
     if (picked == null) return;
     final uid = FirebaseAuth.instance.currentUser!.uid;
@@ -126,8 +155,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
       'dailyDigestMinute': picked.minute,
     }, SetOptions(merge: true));
     if (mounted) {
-      await DailyDigestService.refreshFromFirestore(AppLocalizations.of(context)!);
+      final result = await DailyDigestService.refreshFromFirestore(AppLocalizations.of(context)!);
+      if (mounted) _showDailyDigestConfirmation(result);
     }
+  }
+
+  // Without this, turning the digest on (or changing its time) looks like
+  // it did nothing — the notification itself doesn't fire until the next
+  // scheduled time, which can be tomorrow morning if today's already
+  // passed. Also flags the one silent-failure mode worth calling out: the
+  // master notifications toggle being off makes this a no-op.
+  void _showDailyDigestConfirmation(DailyDigestRefreshResult result) {
+    final l10n = AppLocalizations.of(context)!;
+    if (!result.enabled || result.scheduledFor == null) return;
+    final time = result.scheduledFor!;
+    final message = result.masterNotificationsOff
+        ? l10n.settingsDailyDigestConfirmBlocked
+        : l10n.settingsDailyDigestConfirm(
+            time.month, time.day, time.hour.toString().padLeft(2, '0'),
+            time.minute.toString().padLeft(2, '0'));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
   }
 
   String _languageLabel(AppLocalizations l10n, Locale locale) {

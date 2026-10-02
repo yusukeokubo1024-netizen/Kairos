@@ -636,6 +636,7 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
                 const SizedBox(height: 8),
                 Wrap(
                   spacing: 12,
+                  runSpacing: 12,
                   children: colorLabelPalette.map((color) {
                     final selected = color.toARGB32() == _color.toARGB32();
                     return GestureDetector(
@@ -914,9 +915,16 @@ class _PersonCheckbox extends StatelessWidget {
       builder: (context, snapshot) {
         final l10n = AppLocalizations.of(context)!;
         final name = snapshot.data?.data()?['displayName'] as String?;
+        // snapshot.hasData is the real "finished loading" signal — a name
+        // that's merely an empty string (the person never set one) was
+        // being treated the same as "still loading" and showing a
+        // permanent "読み込み中..." for anyone without a display name set.
+        final label = !snapshot.hasData
+            ? l10n.scheduleFormLoadingName
+            : (name != null && name.isNotEmpty ? name : l10n.commonUnnamedUser);
         return CheckboxListTile(
           contentPadding: EdgeInsets.zero,
-          title: Text(name?.isNotEmpty == true ? name! : l10n.scheduleFormLoadingName),
+          title: Text(label),
           value: value,
           onChanged: onChanged,
         );

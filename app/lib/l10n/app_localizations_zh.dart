@@ -52,6 +52,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get commonCancel => '取消';
 
   @override
+  String get commonUnnamedUser => '未设置姓名';
+
+  @override
   String get commonDone => '完成';
 
   @override
@@ -607,6 +610,17 @@ class AppLocalizationsZh extends AppLocalizations {
   String get trashDeleteForever => '永久删除';
 
   @override
+  String get trashDeleteAll => '全部删除';
+
+  @override
+  String get trashDeleteAllConfirmTitle => '要永久删除全部内容吗？';
+
+  @override
+  String trashDeleteAllConfirmBody(Object count) {
+    return '将永久删除回收站中的全部 $count 项。此操作无法撤销。';
+  }
+
+  @override
   String get trashRestored => '已恢复';
 
   @override
@@ -909,6 +923,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get calendarNoScheduleThisDay => '这一天没有日程';
 
   @override
+  String get calendarAddScheduleThisDay => '为这天添加日程';
+
+  @override
   String get calendarTapDayHint => '点击日期即可查看当天的日程和任务';
 
   @override
@@ -1122,6 +1139,20 @@ class AppLocalizationsZh extends AppLocalizations {
   String get dailyDigestNotificationEmpty => '今天没有日程';
 
   @override
+  String settingsDailyDigestConfirm(
+    Object month,
+    Object day,
+    Object hour,
+    Object minute,
+  ) {
+    return '将于$month月$day日 $hour:$minute 通知您';
+  }
+
+  @override
+  String get settingsDailyDigestConfirmBlocked =>
+      '时间已保存，但“通知”总开关处于关闭状态，不会收到提醒。请一并打开上方的通知设置';
+
+  @override
   String get groupChatReport => '举报消息';
 
   @override
@@ -1234,6 +1265,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get anniversaryFormNotifyHintMonthly => '每月这一天的上午9点会收到通知';
+
+  @override
+  String get anniversaryFormColor => '颜色';
 
   @override
   String get anniversaryDeleted => '纪念日已删除';

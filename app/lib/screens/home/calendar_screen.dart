@@ -461,10 +461,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
     return Container(
       decoration: BoxDecoration(
-        // Theme.dividerColor instead of a fixed light grey — the fixed
-        // color read as a harsh/mismatched line in dark mode, since it
-        // doesn't adapt to the dark surface behind it.
-        border: Border.all(color: Theme.of(context).dividerColor, width: 0.5),
+        border: Border.all(color: Colors.grey.shade300, width: 0.5),
         // The personal "mark this day" color — a light tint behind the
         // whole cell so it's visible even on a day with no schedules.
         color: dayColor?.withValues(alpha: 0.18),
@@ -934,9 +931,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
             // markers underneath would just be redundant — suppress them.
             markerBuilder: (context, day, events) => const SizedBox.shrink(),
             outsideBuilder: (context, day, focusedDay) => Container(
-              decoration: BoxDecoration(border: Border.all(color: Theme.of(context).dividerColor, width: 0.5)),
+              decoration: BoxDecoration(border: Border.all(color: Colors.grey.shade300, width: 0.5)),
               alignment: Alignment.center,
-              child: Text('${day.day}', style: TextStyle(fontSize: 13, color: Colors.grey.shade500)),
+              child: Text('${day.day}', style: TextStyle(fontSize: 13, color: Colors.grey.shade400)),
             ),
           ),
         ),

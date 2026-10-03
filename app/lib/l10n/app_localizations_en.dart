@@ -1300,4 +1300,132 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get anniversaryDeleted => 'Anniversary deleted';
+
+  @override
+  String get tabClock => 'Clock';
+
+  @override
+  String get clockTabWorld => 'World Clock';
+
+  @override
+  String get clockTabAlarm => 'Alarm';
+
+  @override
+  String get clockTabStopwatch => 'Stopwatch';
+
+  @override
+  String get clockTabTimer => 'Timer';
+
+  @override
+  String get worldClockEmpty => 'No cities added yet. Tap + to add one.';
+
+  @override
+  String get worldClockAddTooltip => 'Add a city';
+
+  @override
+  String get worldClockSearchHint => 'Search city or timezone';
+
+  @override
+  String get worldClockNoResults => 'No matches found';
+
+  @override
+  String get worldClockToday => 'Today';
+
+  @override
+  String get worldClockYesterday => 'Yesterday';
+
+  @override
+  String get worldClockTomorrow => 'Tomorrow';
+
+  @override
+  String get worldClockRemoved => 'City removed';
+
+  @override
+  String get alarmEmpty => 'No alarms yet. Tap + to add one.';
+
+  @override
+  String get alarmAddTooltip => 'Add alarm';
+
+  @override
+  String get alarmAddTitle => 'New Alarm';
+
+  @override
+  String get alarmEditTitle => 'Edit Alarm';
+
+  @override
+  String get alarmLabelField => 'Label';
+
+  @override
+  String get alarmLabelPlaceholder => 'Alarm';
+
+  @override
+  String get alarmRepeat => 'Repeat';
+
+  @override
+  String get alarmRepeatNever => 'Never';
+
+  @override
+  String get alarmDeleteConfirmTitle => 'Delete this alarm?';
+
+  @override
+  String get alarmDeleted => 'Alarm deleted';
+
+  @override
+  String get alarmDefaultLabel => 'Alarm';
+
+  @override
+  String get ringingStop => 'Stop';
+
+  @override
+  String get ringingSnooze => 'Snooze';
+
+  @override
+  String get ringingSnoozedSnackbar => 'Snoozed for 9 minutes';
+
+  @override
+  String get timerDurationHint => 'Set a duration';
+
+  @override
+  String get timerStart => 'Start';
+
+  @override
+  String get timerPauseAction => 'Pause';
+
+  @override
+  String get timerResumeAction => 'Resume';
+
+  @override
+  String get timerResetAction => 'Reset';
+
+  @override
+  String get timerRunningLabel => 'Time remaining';
+
+  @override
+  String get timerUpTitle => 'Time\'s up';
+
+  @override
+  String get timerHoursLabel => 'h';
+
+  @override
+  String get timerMinutesLabel => 'm';
+
+  @override
+  String get timerSecondsLabel => 's';
+
+  @override
+  String get stopwatchStart => 'Start';
+
+  @override
+  String get stopwatchStop => 'Stop';
+
+  @override
+  String get stopwatchLap => 'Lap';
+
+  @override
+  String get stopwatchReset => 'Reset';
+
+  @override
+  String stopwatchLapNumber(Object number) {
+    return 'Lap $number';
+  }
 }

@@ -1268,4 +1268,132 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get anniversaryDeleted => '기념일을 삭제했습니다';
+
+  @override
+  String get tabClock => '시계';
+
+  @override
+  String get clockTabWorld => '세계 시계';
+
+  @override
+  String get clockTabAlarm => '알람';
+
+  @override
+  String get clockTabStopwatch => '스톱워치';
+
+  @override
+  String get clockTabTimer => '타이머';
+
+  @override
+  String get worldClockEmpty => '아직 추가된 도시가 없습니다. +를 눌러 추가하세요';
+
+  @override
+  String get worldClockAddTooltip => '도시 추가';
+
+  @override
+  String get worldClockSearchHint => '도시 또는 시간대 검색';
+
+  @override
+  String get worldClockNoResults => '검색 결과가 없습니다';
+
+  @override
+  String get worldClockToday => '오늘';
+
+  @override
+  String get worldClockYesterday => '전날';
+
+  @override
+  String get worldClockTomorrow => '다음날';
+
+  @override
+  String get worldClockRemoved => '도시를 삭제했습니다';
+
+  @override
+  String get alarmEmpty => '아직 알람이 없습니다. +를 눌러 추가하세요';
+
+  @override
+  String get alarmAddTooltip => '알람 추가';
+
+  @override
+  String get alarmAddTitle => '알람 추가';
+
+  @override
+  String get alarmEditTitle => '알람 수정';
+
+  @override
+  String get alarmLabelField => '라벨';
+
+  @override
+  String get alarmLabelPlaceholder => '알람';
+
+  @override
+  String get alarmRepeat => '반복';
+
+  @override
+  String get alarmRepeatNever => '안 함';
+
+  @override
+  String get alarmDeleteConfirmTitle => '이 알람을 삭제하시겠습니까?';
+
+  @override
+  String get alarmDeleted => '알람을 삭제했습니다';
+
+  @override
+  String get alarmDefaultLabel => '알람';
+
+  @override
+  String get ringingStop => '중지';
+
+  @override
+  String get ringingSnooze => '다시 알림';
+
+  @override
+  String get ringingSnoozedSnackbar => '9분 후 다시 알립니다';
+
+  @override
+  String get timerDurationHint => '시간을 설정하세요';
+
+  @override
+  String get timerStart => '시작';
+
+  @override
+  String get timerPauseAction => '일시정지';
+
+  @override
+  String get timerResumeAction => '재개';
+
+  @override
+  String get timerResetAction => '재설정';
+
+  @override
+  String get timerRunningLabel => '남은 시간';
+
+  @override
+  String get timerUpTitle => '타이머 종료';
+
+  @override
+  String get timerHoursLabel => '시간';
+
+  @override
+  String get timerMinutesLabel => '분';
+
+  @override
+  String get timerSecondsLabel => '초';
+
+  @override
+  String get stopwatchStart => '시작';
+
+  @override
+  String get stopwatchStop => '중지';
+
+  @override
+  String get stopwatchLap => '랩';
+
+  @override
+  String get stopwatchReset => '재설정';
+
+  @override
+  String stopwatchLapNumber(Object number) {
+    return '랩 $number';
+  }
 }

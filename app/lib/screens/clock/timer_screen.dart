@@ -1,0 +1,143 @@
+import 'dart:async';
+
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+
+import '../../l10n/app_localizations.dart';
+import '../../services/notification_service.dart';
+
+const _timerNotificationId = 900000001;
+
+class TimerScreen extends StatefulWidget {
+  const TimerScreen({super.key});
+
+  @override
+  State<TimerScreen> createState() => _TimerScreenState();
+}
+
+class _TimerScreenState extends State<TimerScreen> {
+  Duration _setDuration = const Duration(minutes: 5);
+  Duration _remaining = const Duration(minutes: 5);
+  DateTime? _endTime;
+  bool _running = false;
+  Timer? _ticker;
+
+  bool get _isPaused => !_running && _endTime == null && _remaining != _setDuration;
+
+  Future<void> _start() async {
+    final l10n = AppLocalizations.of(context)!;
+    final endTime = DateTime.now().add(_remaining);
+    setState(() {
+      _endTime = endTime;
+      _running = true;
+    });
+    _ticker = Timer.periodic(const Duration(seconds: 1), (_) => _tick());
+    await NotificationService.instance.scheduleClockAlarm(
+      id: _timerNotificationId,
+      title: l10n.timerUpTitle,
+      body: l10n.timerUpTitle,
+      fireTime: endTime,
+    );
+  }
+
+  void _tick() {
+    final remaining = _endTime!.difference(DateTime.now());
+    if (remaining <= Duration.zero) {
+      _ticker?.cancel();
+      setState(() {
+        // Back to the picker/"Start" state (not "paused"/"Resume") — there's
+        // nothing left to resume once a timer has actually rung out.
+        _remaining = _setDuration;
+        _running = false;
+        _endTime = null;
+      });
+      return;
+    }
+    setState(() => _remaining = remaining);
+  }
+
+  Future<void> _pause() async {
+    _ticker?.cancel();
+    setState(() {
+      _remaining = _endTime!.difference(DateTime.now());
+      _running = false;
+      _endTime = null;
+    });
+    await NotificationService.instance.cancelClockAlarm(_timerNotificationId);
+  }
+
+  Future<void> _reset() async {
+    _ticker?.cancel();
+    setState(() {
+      _remaining = _setDuration;
+      _running = false;
+      _endTime = null;
+    });
+    await NotificationService.instance.cancelClockAlarm(_timerNotificationId);
+  }
+
+  @override
+  void dispose() {
+    _ticker?.cancel();
+    super.dispose();
+  }
+
+  String _format(Duration d) {
+    final h = d.inHours;
+    final m = d.inMinutes.remainder(60);
+    final s = d.inSeconds.remainder(60);
+    final hh = h > 0 ? '${h.toString().padLeft(2, '0')}:' : '';
+    return '$hh${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final idle = !_running && !_isPaused;
+
+    return Scaffold(
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (idle)
+              SizedBox(
+                height: 220,
+                child: CupertinoTimerPicker(
+                  mode: CupertinoTimerPickerMode.hms,
+                  initialTimerDuration: _setDuration,
+                  onTimerDurationChanged: (value) => setState(() {
+                    _setDuration = value;
+                    _remaining = value;
+                  }),
+                ),
+              )
+            else
+              Text(
+                _format(_remaining),
+                style: const TextStyle(fontSize: 56, fontWeight: FontWeight.w300),
+              ),
+            const SizedBox(height: 32),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (_isPaused) ...[
+                  OutlinedButton(onPressed: _reset, child: Text(l10n.timerResetAction)),
+                  const SizedBox(width: 24),
+                ],
+                FilledButton(
+                  onPressed: _setDuration == Duration.zero && idle
+                      ? null
+                      : (_running ? _pause : _start),
+                  child: Text(_running
+                      ? l10n.timerPauseAction
+                      : (_isPaused ? l10n.timerResumeAction : l10n.timerStart)),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

@@ -1248,4 +1248,132 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get anniversaryDeleted => '纪念日已删除';
+
+  @override
+  String get tabClock => '时钟';
+
+  @override
+  String get clockTabWorld => '世界时钟';
+
+  @override
+  String get clockTabAlarm => '闹钟';
+
+  @override
+  String get clockTabStopwatch => '秒表';
+
+  @override
+  String get clockTabTimer => '定时器';
+
+  @override
+  String get worldClockEmpty => '还没有添加城市，点击+添加';
+
+  @override
+  String get worldClockAddTooltip => '添加城市';
+
+  @override
+  String get worldClockSearchHint => '搜索城市或时区';
+
+  @override
+  String get worldClockNoResults => '没有找到匹配项';
+
+  @override
+  String get worldClockToday => '今天';
+
+  @override
+  String get worldClockYesterday => '昨天';
+
+  @override
+  String get worldClockTomorrow => '明天';
+
+  @override
+  String get worldClockRemoved => '已删除城市';
+
+  @override
+  String get alarmEmpty => '还没有闹钟，点击+添加';
+
+  @override
+  String get alarmAddTooltip => '添加闹钟';
+
+  @override
+  String get alarmAddTitle => '添加闹钟';
+
+  @override
+  String get alarmEditTitle => '编辑闹钟';
+
+  @override
+  String get alarmLabelField => '标签';
+
+  @override
+  String get alarmLabelPlaceholder => '闹钟';
+
+  @override
+  String get alarmRepeat => '重复';
+
+  @override
+  String get alarmRepeatNever => '不重复';
+
+  @override
+  String get alarmDeleteConfirmTitle => '删除此闹钟？';
+
+  @override
+  String get alarmDeleted => '闹钟已删除';
+
+  @override
+  String get alarmDefaultLabel => '闹钟';
+
+  @override
+  String get ringingStop => '停止';
+
+  @override
+  String get ringingSnooze => '稍后提醒';
+
+  @override
+  String get ringingSnoozedSnackbar => '将在9分钟后再次提醒';
+
+  @override
+  String get timerDurationHint => '请设置时长';
+
+  @override
+  String get timerStart => '开始';
+
+  @override
+  String get timerPauseAction => '暂停';
+
+  @override
+  String get timerResumeAction => '继续';
+
+  @override
+  String get timerResetAction => '重置';
+
+  @override
+  String get timerRunningLabel => '剩余时间';
+
+  @override
+  String get timerUpTitle => '时间到';
+
+  @override
+  String get timerHoursLabel => '时';
+
+  @override
+  String get timerMinutesLabel => '分';
+
+  @override
+  String get timerSecondsLabel => '秒';
+
+  @override
+  String get stopwatchStart => '开始';
+
+  @override
+  String get stopwatchStop => '停止';
+
+  @override
+  String get stopwatchLap => '计次';
+
+  @override
+  String get stopwatchReset => '重置';
+
+  @override
+  String stopwatchLapNumber(Object number) {
+    return '第$number次';
+  }
 }

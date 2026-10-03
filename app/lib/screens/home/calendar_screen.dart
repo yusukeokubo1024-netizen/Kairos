@@ -20,6 +20,7 @@ import '../../services/notification_service.dart';
 import '../../utils/business_day.dart';
 import '../../services/weather_service.dart';
 import '../schedule/schedule_detail_screen.dart';
+import 'notifications_screen.dart';
 import 'schedule_search_screen.dart';
 import '../schedule/schedule_form_screen.dart';
 import '../task/task_form_screen.dart';
@@ -696,6 +697,13 @@ class _CalendarScreenState extends State<CalendarScreen> {
           ],
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.notifications_outlined),
+            tooltip: l10n.tabNotifications,
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+            ),
+          ),
           IconButton(
             icon: const Icon(Icons.search),
             tooltip: l10n.scheduleSearchTooltip,

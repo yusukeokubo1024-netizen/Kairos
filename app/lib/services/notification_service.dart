@@ -388,6 +388,70 @@ class NotificationService {
     await _plugin.cancel(id: _scheduleNotificationId('anniversary_', anniversaryId));
   }
 
+  /// A loud, full-screen "alarm-style" notification (same mechanism as a
+  /// schedule's alarmStyle reminder) for the Clock tab's Alarm/Timer
+  /// features — not a true looping alarm-clock sound, just the loudest,
+  /// most attention-grabbing thing flutter_local_notifications can do
+  /// without a dedicated native alarm plugin. [matchComponents] makes it
+  /// natively repeat on the OS side (e.g. for a specific weekday) instead
+  /// of firing once.
+  Future<void> scheduleClockAlarm({
+    required int id,
+    required String title,
+    required String body,
+    required DateTime fireTime,
+    DateTimeComponents? matchComponents,
+  }) async {
+    final notificationDetails = NotificationDetails(
+      android: AndroidNotificationDetails(
+        'clock_alarms',
+        _isJa ? '時計のアラーム' : 'Clock alarms',
+        channelDescription: _isJa
+            ? 'アラーム・タイマー機能の通知です'
+            : 'Notifications for the Alarm and Timer features',
+        importance: Importance.max,
+        priority: Priority.max,
+        category: AndroidNotificationCategory.alarm,
+        fullScreenIntent: true,
+        visibility: NotificationVisibility.public,
+        autoCancel: false,
+      ),
+      iOS: const DarwinNotificationDetails(interruptionLevel: InterruptionLevel.timeSensitive),
+    );
+    try {
+      await _plugin.zonedSchedule(
+        id: id,
+        title: title,
+        body: body,
+        scheduledDate: tz.TZDateTime.from(fireTime, tz.local),
+        notificationDetails: notificationDetails,
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        matchDateTimeComponents: matchComponents,
+      );
+    } catch (e, st) {
+      FirebaseCrashlytics.instance
+          .recordError(e, st, reason: 'failed to schedule clock alarm', fatal: false);
+      try {
+        await _plugin.zonedSchedule(
+          id: id,
+          title: title,
+          body: body,
+          scheduledDate: tz.TZDateTime.from(fireTime, tz.local),
+          notificationDetails: notificationDetails,
+          androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+          matchDateTimeComponents: matchComponents,
+        );
+      } catch (e2, st2) {
+        FirebaseCrashlytics.instance
+            .recordError(e2, st2, reason: 'failed to schedule clock alarm', fatal: false);
+      }
+    }
+  }
+
+  Future<void> cancelClockAlarm(int id) async {
+    await _plugin.cancel(id: id);
+  }
+
   /// Cancels every pending local notification (used when the user turns
   /// notifications off entirely in Settings).
   Future<void> cancelAll() async {

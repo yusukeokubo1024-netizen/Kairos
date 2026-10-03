@@ -2453,6 +2453,258 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'記念日を削除しました'**
   String get anniversaryDeleted;
+
+  /// No description provided for @tabClock.
+  ///
+  /// In ja, this message translates to:
+  /// **'時計'**
+  String get tabClock;
+
+  /// No description provided for @clockTabWorld.
+  ///
+  /// In ja, this message translates to:
+  /// **'世界時計'**
+  String get clockTabWorld;
+
+  /// No description provided for @clockTabAlarm.
+  ///
+  /// In ja, this message translates to:
+  /// **'アラーム'**
+  String get clockTabAlarm;
+
+  /// No description provided for @clockTabStopwatch.
+  ///
+  /// In ja, this message translates to:
+  /// **'ストップウォッチ'**
+  String get clockTabStopwatch;
+
+  /// No description provided for @clockTabTimer.
+  ///
+  /// In ja, this message translates to:
+  /// **'タイマー'**
+  String get clockTabTimer;
+
+  /// No description provided for @worldClockEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'まだ都市が追加されていません。+で追加してください'**
+  String get worldClockEmpty;
+
+  /// No description provided for @worldClockAddTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'都市を追加'**
+  String get worldClockAddTooltip;
+
+  /// No description provided for @worldClockSearchHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'都市名やタイムゾーンを検索'**
+  String get worldClockSearchHint;
+
+  /// No description provided for @worldClockNoResults.
+  ///
+  /// In ja, this message translates to:
+  /// **'見つかりませんでした'**
+  String get worldClockNoResults;
+
+  /// No description provided for @worldClockToday.
+  ///
+  /// In ja, this message translates to:
+  /// **'今日'**
+  String get worldClockToday;
+
+  /// No description provided for @worldClockYesterday.
+  ///
+  /// In ja, this message translates to:
+  /// **'前日'**
+  String get worldClockYesterday;
+
+  /// No description provided for @worldClockTomorrow.
+  ///
+  /// In ja, this message translates to:
+  /// **'翌日'**
+  String get worldClockTomorrow;
+
+  /// No description provided for @worldClockRemoved.
+  ///
+  /// In ja, this message translates to:
+  /// **'都市を削除しました'**
+  String get worldClockRemoved;
+
+  /// No description provided for @alarmEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'まだアラームがありません。+で追加してください'**
+  String get alarmEmpty;
+
+  /// No description provided for @alarmAddTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'アラームを追加'**
+  String get alarmAddTooltip;
+
+  /// No description provided for @alarmAddTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'アラームを追加'**
+  String get alarmAddTitle;
+
+  /// No description provided for @alarmEditTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'アラームを編集'**
+  String get alarmEditTitle;
+
+  /// No description provided for @alarmLabelField.
+  ///
+  /// In ja, this message translates to:
+  /// **'ラベル'**
+  String get alarmLabelField;
+
+  /// No description provided for @alarmLabelPlaceholder.
+  ///
+  /// In ja, this message translates to:
+  /// **'アラーム'**
+  String get alarmLabelPlaceholder;
+
+  /// No description provided for @alarmRepeat.
+  ///
+  /// In ja, this message translates to:
+  /// **'繰り返し'**
+  String get alarmRepeat;
+
+  /// No description provided for @alarmRepeatNever.
+  ///
+  /// In ja, this message translates to:
+  /// **'しない'**
+  String get alarmRepeatNever;
+
+  /// No description provided for @alarmDeleteConfirmTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'このアラームを削除しますか？'**
+  String get alarmDeleteConfirmTitle;
+
+  /// No description provided for @alarmDeleted.
+  ///
+  /// In ja, this message translates to:
+  /// **'アラームを削除しました'**
+  String get alarmDeleted;
+
+  /// No description provided for @alarmDefaultLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'アラーム'**
+  String get alarmDefaultLabel;
+
+  /// No description provided for @ringingStop.
+  ///
+  /// In ja, this message translates to:
+  /// **'停止'**
+  String get ringingStop;
+
+  /// No description provided for @ringingSnooze.
+  ///
+  /// In ja, this message translates to:
+  /// **'スヌーズ'**
+  String get ringingSnooze;
+
+  /// No description provided for @ringingSnoozedSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'9分後に再度通知します'**
+  String get ringingSnoozedSnackbar;
+
+  /// No description provided for @timerDurationHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'時間を設定してください'**
+  String get timerDurationHint;
+
+  /// No description provided for @timerStart.
+  ///
+  /// In ja, this message translates to:
+  /// **'開始'**
+  String get timerStart;
+
+  /// No description provided for @timerPauseAction.
+  ///
+  /// In ja, this message translates to:
+  /// **'一時停止'**
+  String get timerPauseAction;
+
+  /// No description provided for @timerResumeAction.
+  ///
+  /// In ja, this message translates to:
+  /// **'再開'**
+  String get timerResumeAction;
+
+  /// No description provided for @timerResetAction.
+  ///
+  /// In ja, this message translates to:
+  /// **'リセット'**
+  String get timerResetAction;
+
+  /// No description provided for @timerRunningLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'残り時間'**
+  String get timerRunningLabel;
+
+  /// No description provided for @timerUpTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'タイマー終了'**
+  String get timerUpTitle;
+
+  /// No description provided for @timerHoursLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'時間'**
+  String get timerHoursLabel;
+
+  /// No description provided for @timerMinutesLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'分'**
+  String get timerMinutesLabel;
+
+  /// No description provided for @timerSecondsLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'秒'**
+  String get timerSecondsLabel;
+
+  /// No description provided for @stopwatchStart.
+  ///
+  /// In ja, this message translates to:
+  /// **'開始'**
+  String get stopwatchStart;
+
+  /// No description provided for @stopwatchStop.
+  ///
+  /// In ja, this message translates to:
+  /// **'停止'**
+  String get stopwatchStop;
+
+  /// No description provided for @stopwatchLap.
+  ///
+  /// In ja, this message translates to:
+  /// **'ラップ'**
+  String get stopwatchLap;
+
+  /// No description provided for @stopwatchReset.
+  ///
+  /// In ja, this message translates to:
+  /// **'リセット'**
+  String get stopwatchReset;
+
+  /// No description provided for @stopwatchLapNumber.
+  ///
+  /// In ja, this message translates to:
+  /// **'ラップ {number}'**
+  String stopwatchLapNumber(Object number);
 }
 
 class _AppLocalizationsDelegate

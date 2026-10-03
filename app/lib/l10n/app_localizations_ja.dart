@@ -1261,4 +1261,132 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get anniversaryDeleted => '記念日を削除しました';
+
+  @override
+  String get tabClock => '時計';
+
+  @override
+  String get clockTabWorld => '世界時計';
+
+  @override
+  String get clockTabAlarm => 'アラーム';
+
+  @override
+  String get clockTabStopwatch => 'ストップウォッチ';
+
+  @override
+  String get clockTabTimer => 'タイマー';
+
+  @override
+  String get worldClockEmpty => 'まだ都市が追加されていません。+で追加してください';
+
+  @override
+  String get worldClockAddTooltip => '都市を追加';
+
+  @override
+  String get worldClockSearchHint => '都市名やタイムゾーンを検索';
+
+  @override
+  String get worldClockNoResults => '見つかりませんでした';
+
+  @override
+  String get worldClockToday => '今日';
+
+  @override
+  String get worldClockYesterday => '前日';
+
+  @override
+  String get worldClockTomorrow => '翌日';
+
+  @override
+  String get worldClockRemoved => '都市を削除しました';
+
+  @override
+  String get alarmEmpty => 'まだアラームがありません。+で追加してください';
+
+  @override
+  String get alarmAddTooltip => 'アラームを追加';
+
+  @override
+  String get alarmAddTitle => 'アラームを追加';
+
+  @override
+  String get alarmEditTitle => 'アラームを編集';
+
+  @override
+  String get alarmLabelField => 'ラベル';
+
+  @override
+  String get alarmLabelPlaceholder => 'アラーム';
+
+  @override
+  String get alarmRepeat => '繰り返し';
+
+  @override
+  String get alarmRepeatNever => 'しない';
+
+  @override
+  String get alarmDeleteConfirmTitle => 'このアラームを削除しますか？';
+
+  @override
+  String get alarmDeleted => 'アラームを削除しました';
+
+  @override
+  String get alarmDefaultLabel => 'アラーム';
+
+  @override
+  String get ringingStop => '停止';
+
+  @override
+  String get ringingSnooze => 'スヌーズ';
+
+  @override
+  String get ringingSnoozedSnackbar => '9分後に再度通知します';
+
+  @override
+  String get timerDurationHint => '時間を設定してください';
+
+  @override
+  String get timerStart => '開始';
+
+  @override
+  String get timerPauseAction => '一時停止';
+
+  @override
+  String get timerResumeAction => '再開';
+
+  @override
+  String get timerResetAction => 'リセット';
+
+  @override
+  String get timerRunningLabel => '残り時間';
+
+  @override
+  String get timerUpTitle => 'タイマー終了';
+
+  @override
+  String get timerHoursLabel => '時間';
+
+  @override
+  String get timerMinutesLabel => '分';
+
+  @override
+  String get timerSecondsLabel => '秒';
+
+  @override
+  String get stopwatchStart => '開始';
+
+  @override
+  String get stopwatchStop => '停止';
+
+  @override
+  String get stopwatchLap => 'ラップ';
+
+  @override
+  String get stopwatchReset => 'リセット';
+
+  @override
+  String stopwatchLapNumber(Object number) {
+    return 'ラップ $number';
+  }
 }

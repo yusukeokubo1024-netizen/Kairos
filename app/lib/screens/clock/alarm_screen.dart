@@ -216,13 +216,14 @@ class _AlarmEditorSheetState extends State<_AlarmEditorSheet> {
                   // 24-hour wheel (23時59分 style) instead of AM/PM — this
                   // app targets a Japanese-first audience where that's the
                   // conventional format for this kind of picker.
-                  child: MediaQuery(
-                    data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
-                    child: CupertinoDatePicker(
-                      mode: CupertinoDatePickerMode.time,
-                      initialDateTime: _time,
-                      onDateTimeChanged: (value) => setState(() => _time = value),
-                    ),
+                  // CupertinoDatePicker has its own use24hFormat flag and
+                  // ignores MediaQuery.alwaysUse24HourFormat entirely, so
+                  // that has to be passed explicitly.
+                  child: CupertinoDatePicker(
+                    mode: CupertinoDatePickerMode.time,
+                    use24hFormat: true,
+                    initialDateTime: _time,
+                    onDateTimeChanged: (value) => setState(() => _time = value),
                   ),
                 ),
                 TextField(

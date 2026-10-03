@@ -83,9 +83,15 @@ class _TimerScreenState extends State<TimerScreen> {
   }
 
   String _format(Duration d) {
-    final h = d.inHours;
-    final m = d.inMinutes.remainder(60);
-    final s = d.inSeconds.remainder(60);
+    // Round up to the nearest whole second rather than truncating: a
+    // Timer.periodic(1s) callback almost never fires at exactly N.000s —
+    // it's typically a few milliseconds late — so flooring a real
+    // remaining duration of e.g. 3.995s straight to 3 made the countdown
+    // visibly skip numbers (5,4,3,2,1 would show as 5,3,1,0).
+    final totalSeconds = (d.inMilliseconds / 1000).ceil();
+    final h = totalSeconds ~/ 3600;
+    final m = (totalSeconds % 3600) ~/ 60;
+    final s = totalSeconds % 60;
     final hh = h > 0 ? '${h.toString().padLeft(2, '0')}:' : '';
     return '$hh${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
   }

@@ -106,7 +106,8 @@ class _AlarmScreenState extends State<AlarmScreen> {
                   itemCount: sorted.length,
                   itemBuilder: (context, index) {
                     final alarm = sorted[index];
-                    final time = TimeOfDay(hour: alarm.hour, minute: alarm.minute);
+                    final time =
+                        '${alarm.hour.toString().padLeft(2, '0')}:${alarm.minute.toString().padLeft(2, '0')}';
                     return Dismissible(
                       key: ValueKey(alarm.id),
                       confirmDismiss: (_) => _confirmDelete(alarm),
@@ -114,7 +115,7 @@ class _AlarmScreenState extends State<AlarmScreen> {
                       child: ListTile(
                         onTap: () => _openEditor(existing: alarm),
                         title: Text(
-                          time.format(context),
+                          time,
                           style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w300),
                         ),
                         subtitle: Text(
@@ -212,10 +213,16 @@ class _AlarmEditorSheetState extends State<_AlarmEditorSheet> {
                 ),
                 SizedBox(
                   height: 180,
-                  child: CupertinoDatePicker(
-                    mode: CupertinoDatePickerMode.time,
-                    initialDateTime: _time,
-                    onDateTimeChanged: (value) => setState(() => _time = value),
+                  // 24-hour wheel (23時59分 style) instead of AM/PM — this
+                  // app targets a Japanese-first audience where that's the
+                  // conventional format for this kind of picker.
+                  child: MediaQuery(
+                    data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
+                    child: CupertinoDatePicker(
+                      mode: CupertinoDatePickerMode.time,
+                      initialDateTime: _time,
+                      onDateTimeChanged: (value) => setState(() => _time = value),
+                    ),
                   ),
                 ),
                 TextField(

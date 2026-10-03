@@ -367,7 +367,21 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
           alarmStyle: _alarmStyle,
           packingItems: _packingItems,
         );
-        await db.collection('schedules').doc(updated.id).update(updated.toUpdateMap());
+        await db.collection('schedules').doc(updated.id).update({
+          ...updated.toUpdateMap(),
+          // Clears the server push reminder's dedupe marker (written by
+          // functions/src/scheduledReminders.ts) on every edit, so a
+          // changed startTime/reminderMinutes/recurrence is picked up
+          // immediately instead of the push continuing to fire on the
+          // pre-edit schedule — safe even when nothing reminder-related
+          // changed, since a reminder time already in the past still won't
+          // re-fire (the function's own time-window check still gates
+          // that). This FieldValue.delete() sentinel is only valid in a
+          // direct update() call, so it can't live in Schedule.toUpdateMap()
+          // itself — that map is also reused as plain snapshot data for
+          // the trash/undo and audit-log paths, where it would throw.
+          'lastReminderFiredAt': FieldValue.delete(),
+        });
         unawaited(AuditService.instance.logUpdate(
           collection: 'schedules',
           targetId: updated.id,

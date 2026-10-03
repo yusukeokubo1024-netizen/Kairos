@@ -138,6 +138,13 @@ async function sendReminder(db, scheduleId, data) {
             title: data.title,
             body: "まもなく予定の時間です",
         },
+        // Without an explicit Android channel/sound, FCM delivers through a
+        // generic default channel on some devices/OEMs that doesn't play a
+        // sound — point it at the same high-importance channel the app's own
+        // local reminders already use (created client-side with
+        // Importance.high, which does have a sound).
+        android: { notification: { channelId: "schedule_reminders", sound: "default" }, priority: "high" },
+        apns: { payload: { aps: { sound: "default" } } },
         data: { type: "scheduleReminder", scheduleId },
     });
     // Clean up tokens the device uninstalled the app for / that are no longer

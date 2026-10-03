@@ -58,6 +58,18 @@ class NotificationService {
           .resolvePlatformSpecificImplementation<
               IOSFlutterLocalNotificationsPlugin>()
           ?.requestPermissions(alert: true, badge: true, sound: true);
+      // Normally this channel is only created lazily, the first time a
+      // local schedule reminder actually fires. But the server push
+      // (functions/src/scheduledReminders.ts, chatNotifications.ts) also
+      // targets it by id directly via FCM — if a push arrives before any
+      // local reminder ever has (e.g. a brand new install), Android has no
+      // channel to use yet and the notification can show with no sound.
+      // Creating it explicitly up front guarantees it always exists.
+      await android?.createNotificationChannel(AndroidNotificationChannel(
+        'schedule_reminders',
+        _scheduleChannelName,
+        importance: Importance.high,
+      ));
     }
 
     _initialized = true;

@@ -82,6 +82,13 @@ exports.sendChatMessageNotification = (0, firestore_1.onDocumentCreated)({ docum
         const response = await admin.messaging().sendEachForMulticast({
             tokens,
             notification: { title: group.name ?? "Kairos", body: "新しいメッセージが届きました" },
+            // Without an explicit Android channel/sound, FCM delivers through
+            // a generic default channel on some devices/OEMs that doesn't
+            // play a sound — point it at the same high-importance channel the
+            // app's own local reminders already use (created client-side with
+            // Importance.high, which does have a sound).
+            android: { notification: { channelId: "schedule_reminders", sound: "default" }, priority: "high" },
+            apns: { payload: { aps: { sound: "default" } } },
             data: { type: "groupChat", groupId },
         });
         const staleTokens = [];

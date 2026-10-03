@@ -521,6 +521,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsAddHomeWidget => 'Add home screen widget';
 
   @override
+  String get settingsNotificationSounds => 'Notification sounds';
+
+  @override
   String get settingsAddHomeWidgetHint =>
       'See today\'s schedules at a glance (Android)';
 

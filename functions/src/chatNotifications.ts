@@ -29,41 +29,44 @@ export const sendChatMessageNotification = onDocumentCreated(
       Promise.all(recipientIds.map((uid) => db.collection("deviceTokens").doc(uid).get())),
     ]);
 
-    const tokens: string[] = [];
+    // Different recipients may have picked different notification sounds
+    // (NotificationSoundService), each living on its own Android channel —
+    // FCM only lets one android.notification.channelId per send, so group
+    // tokens by the recipient's chosen channel and send once per group.
+    const tokensByChannel = new Map<string, string[]>();
     recipientIds.forEach((uid, i) => {
       const notificationsEnabled = userDocs[i].data()?.notifications_enabled ?? true;
       if (!notificationsEnabled) return;
       const mutedGroupIds = (userDocs[i].data()?.mutedGroupIds as string[] | undefined) ?? [];
       if (mutedGroupIds.includes(groupId)) return;
+      const channelId =
+        (userDocs[i].data()?.notificationChannels?.chat as string | undefined) ?? "chat_messages";
       const docTokens = (tokenDocs[i].data()?.tokens as string[] | undefined) ?? [];
-      tokens.push(...docTokens);
+      if (docTokens.length === 0) return;
+      tokensByChannel.set(channelId, [...(tokensByChannel.get(channelId) ?? []), ...docTokens]);
     });
-    if (tokens.length === 0) return;
+    if (tokensByChannel.size === 0) return;
 
     // Deliberately doesn't include the sender name or message text (LINE-
     // style privacy) — the lock screen/notification shade is a more public
     // surface than the chat itself, and a shared family device could have
     // this visible to people who aren't in the conversation.
     try {
-      const response = await admin.messaging().sendEachForMulticast({
-        tokens,
-        notification: { title: group.name ?? "Kairos", body: "新しいメッセージが届きました" },
-        // Without an explicit Android channel/sound, FCM delivers through
-        // a generic default channel on some devices/OEMs that doesn't
-        // play a sound — point it at the same high-importance channel the
-        // app's own local reminders already use (created client-side with
-        // Importance.high, which does have a sound).
-        android: { notification: { channelId: "schedule_reminders", sound: "default" }, priority: "high" },
-        apns: { payload: { aps: { sound: "default" } } },
-        data: { type: "groupChat", groupId },
-      });
-
       const staleTokens: string[] = [];
-      response.responses.forEach((r, i) => {
-        if (!r.success && r.error?.code === "messaging/registration-token-not-registered") {
-          staleTokens.push(tokens[i]);
-        }
-      });
+      for (const [channelId, tokens] of tokensByChannel) {
+        const response = await admin.messaging().sendEachForMulticast({
+          tokens,
+          notification: { title: group.name ?? "Kairos", body: "新しいメッセージが届きました" },
+          android: { notification: { channelId, sound: "default" }, priority: "high" },
+          apns: { payload: { aps: { sound: "default" } } },
+          data: { type: "groupChat", groupId },
+        });
+        response.responses.forEach((r, i) => {
+          if (!r.success && r.error?.code === "messaging/registration-token-not-registered") {
+            staleTokens.push(tokens[i]);
+          }
+        });
+      }
       if (staleTokens.length > 0) {
         await Promise.all(
           recipientIds.map((uid) =>

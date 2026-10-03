@@ -507,6 +507,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get settingsAddHomeWidget => '홈 화면 위젯 추가';
 
   @override
+  String get settingsNotificationSounds => '알림음 설정';
+
+  @override
   String get settingsAddHomeWidgetHint => '오늘의 일정을 한눈에 확인하세요 (Android)';
 
   @override

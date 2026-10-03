@@ -170,6 +170,7 @@
   "settingsThemeDark": "Dark",
   "settingsThemeSystem": "Follow system setting",
   "settingsAddHomeWidget": "Add home screen widget",
+  "settingsNotificationSounds": "Notification sounds",
   "settingsAddHomeWidgetHint": "See today's schedules at a glance (Android)",
   "settingsAddHomeWidgetManual": "Long-press your home screen → Widgets → Kairos to add it",
   "settingsLanguageJapanese": "日本語",

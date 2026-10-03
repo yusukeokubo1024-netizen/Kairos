@@ -3,6 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
+import 'notification_sound_service.dart';
+
 /// Registers this device's FCM token so the sendDueReminders Cloud Function
 /// (functions/src/scheduledReminders.ts) can push schedule reminders even
 /// when the app isn't running. Local notifications (NotificationService)
@@ -20,21 +22,24 @@ class PushNotificationService {
       // A push notification arriving while the app is in the foreground
       // isn't shown by the OS automatically — show it ourselves via the
       // same local-notification channel the on-device reminders use.
-      FirebaseMessaging.onMessage.listen((message) {
+      FirebaseMessaging.onMessage.listen((message) async {
         final notification = message.notification;
         if (notification == null) return;
-        _localPlugin.show(
+        final category =
+            message.data['type'] == 'groupChat' ? SoundCategory.chat : SoundCategory.schedule;
+        final channelId = (await NotificationSoundService.instance.load(category)).channelId;
+        await _localPlugin.show(
           id: message.hashCode & 0x7fffffff,
           title: notification.title,
           body: notification.body,
-          notificationDetails: const NotificationDetails(
+          notificationDetails: NotificationDetails(
             android: AndroidNotificationDetails(
-              'schedule_reminders',
-              '予定のリマインダー',
+              channelId,
+              category.labelJa,
               importance: Importance.high,
               priority: Priority.high,
             ),
-            iOS: DarwinNotificationDetails(),
+            iOS: const DarwinNotificationDetails(),
           ),
         );
       });

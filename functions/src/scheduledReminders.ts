@@ -119,9 +119,14 @@ async function sendReminder(
   ]);
 
   const tokens: string[] = [];
+  // Only ever one recipient (the owner — see above), so there's exactly
+  // one channel choice to look up, not a per-recipient grouping problem.
+  let channelId = "schedule_reminders";
   recipientIds.forEach((uid, i) => {
     const notificationsEnabled = userDocs[i].data()?.notifications_enabled ?? true;
     if (!notificationsEnabled) return;
+    channelId =
+      (userDocs[i].data()?.notificationChannels?.schedule as string | undefined) ?? channelId;
     const docTokens = (tokenDocs[i].data()?.tokens as string[] | undefined) ?? [];
     tokens.push(...docTokens);
   });
@@ -135,10 +140,10 @@ async function sendReminder(
     },
     // Without an explicit Android channel/sound, FCM delivers through a
     // generic default channel on some devices/OEMs that doesn't play a
-    // sound — point it at the same high-importance channel the app's own
-    // local reminders already use (created client-side with
-    // Importance.high, which does have a sound).
-    android: { notification: { channelId: "schedule_reminders", sound: "default" }, priority: "high" },
+    // sound — point it at whichever channel the recipient has configured
+    // client-side (NotificationSoundService), falling back to the base
+    // channel id for anyone who's never customized it.
+    android: { notification: { channelId, sound: "default" }, priority: "high" },
     apns: { payload: { aps: { sound: "default" } } },
     data: { type: "scheduleReminder", scheduleId },
   });

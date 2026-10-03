@@ -10,6 +10,7 @@ import '../models/schedule.dart';
 import '../models/task.dart';
 import '../utils/business_day.dart';
 import 'locale_service.dart';
+import 'notification_sound_service.dart';
 
 /// Wraps flutter_local_notifications for on-device reminders.
 /// No server-side push is used in the free v1 release.
@@ -58,18 +59,16 @@ class NotificationService {
           .resolvePlatformSpecificImplementation<
               IOSFlutterLocalNotificationsPlugin>()
           ?.requestPermissions(alert: true, badge: true, sound: true);
-      // Normally this channel is only created lazily, the first time a
-      // local schedule reminder actually fires. But the server push
+      // Normally a channel is only created lazily, the first time a local
+      // notification actually fires on it. But the server push
       // (functions/src/scheduledReminders.ts, chatNotifications.ts) also
-      // targets it by id directly via FCM — if a push arrives before any
-      // local reminder ever has (e.g. a brand new install), Android has no
-      // channel to use yet and the notification can show with no sound.
-      // Creating it explicitly up front guarantees it always exists.
-      await android?.createNotificationChannel(AndroidNotificationChannel(
-        'schedule_reminders',
-        _scheduleChannelName,
-        importance: Importance.high,
-      ));
+      // targets channels by id directly via FCM — if a push arrives before
+      // any local notification ever has (e.g. a brand new install),
+      // Android has no channel to use yet and the notification can show
+      // with no sound. Creating them explicitly up front guarantees they
+      // always exist, using whichever sound the user has already chosen
+      // (see NotificationSoundService) or the system default otherwise.
+      await NotificationSoundService.instance.ensureChannelsExist();
     }
 
     _initialized = true;
@@ -218,7 +217,7 @@ class NotificationService {
             autoCancel: false,
           )
         : AndroidNotificationDetails(
-            'schedule_reminders',
+            (await NotificationSoundService.instance.load(SoundCategory.schedule)).channelId,
             _scheduleChannelName,
             importance: Importance.high,
             priority: Priority.high,
@@ -416,7 +415,7 @@ class NotificationService {
   }) async {
     final notificationDetails = NotificationDetails(
       android: AndroidNotificationDetails(
-        'clock_alarms',
+        (await NotificationSoundService.instance.load(SoundCategory.alarm)).channelId,
         _isJa ? '時計のアラーム' : 'Clock alarms',
         channelDescription: _isJa
             ? 'アラーム・タイマー機能の通知です'

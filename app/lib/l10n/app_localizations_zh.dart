@@ -498,6 +498,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsAddHomeWidget => '添加主屏幕小组件';
 
   @override
+  String get settingsNotificationSounds => '通知音设置';
+
+  @override
   String get settingsAddHomeWidgetHint => '一目了然查看今天的日程(Android)';
 
   @override

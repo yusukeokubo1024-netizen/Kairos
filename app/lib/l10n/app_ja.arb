@@ -170,6 +170,7 @@
   "settingsThemeDark": "ダーク",
   "settingsThemeSystem": "端末の設定に合わせる",
   "settingsAddHomeWidget": "ホーム画面ウィジェットを追加",
+  "settingsNotificationSounds": "通知音の設定",
   "settingsAddHomeWidgetHint": "今日の予定を一目で確認できます(Android)",
   "settingsAddHomeWidgetManual": "ホーム画面を長押し→ウィジェット→Kairosから追加してください",
   "settingsLanguageJapanese": "日本語",

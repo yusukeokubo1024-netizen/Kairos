@@ -1044,6 +1044,12 @@ abstract class AppLocalizations {
   /// **'ホーム画面ウィジェットを追加'**
   String get settingsAddHomeWidget;
 
+  /// No description provided for @settingsNotificationSounds.
+  ///
+  /// In ja, this message translates to:
+  /// **'通知音の設定'**
+  String get settingsNotificationSounds;
+
   /// No description provided for @settingsAddHomeWidgetHint.
   ///
   /// In ja, this message translates to:

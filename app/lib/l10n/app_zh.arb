@@ -170,6 +170,7 @@
   "settingsThemeDark": "深色",
   "settingsThemeSystem": "跟随系统设置",
   "settingsAddHomeWidget": "添加主屏幕小组件",
+  "settingsNotificationSounds": "通知音设置",
   "settingsAddHomeWidgetHint": "一目了然查看今天的日程(Android)",
   "settingsAddHomeWidgetManual": "请长按主屏幕→小组件→Kairos 进行添加",
   "settingsLanguageJapanese": "日本語",

@@ -504,6 +504,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get settingsAddHomeWidget => 'ホーム画面ウィジェットを追加';
 
   @override
+  String get settingsNotificationSounds => '通知音の設定';
+
+  @override
   String get settingsAddHomeWidgetHint => '今日の予定を一目で確認できます(Android)';
 
   @override

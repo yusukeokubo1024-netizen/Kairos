@@ -424,6 +424,17 @@ class _CalendarScreenState extends State<CalendarScreen> {
     if (mounted) setState(() => _friendBirthdays = birthdays);
   }
 
+  /// The plain, simplified cell for a day outside the focused month — same
+  /// rendering regardless of which CalendarBuilders callback table_calendar
+  /// happens to route it through (see the builders below).
+  Widget _buildOutsideDayCell(DateTime day) {
+    return Container(
+      decoration: BoxDecoration(border: Border.all(color: Colors.grey.shade300, width: 0.5)),
+      alignment: Alignment.center,
+      child: Text('${day.day}', style: TextStyle(fontSize: 13, color: Colors.grey.shade400)),
+    );
+  }
+
   /// Renders a day cell as a small agenda: day number + weather at top,
   /// then the day's schedule titles (colored to match each schedule), so
   /// events are visible at a glance instead of just a dot marker.
@@ -913,14 +924,30 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 child: Text(label, style: const TextStyle(color: Color(0xFFEF4444))),
               );
             },
-            // today/selected take priority over holidayBuilder inside
-            // table_calendar, so the holiday name would otherwise disappear
-            // whenever a holiday is today or the selected day.
-            holidayBuilder: (context, day, focusedDay) => _buildDayCell(context, day: day),
-            todayBuilder: (context, day, focusedDay) =>
-                _buildDayCell(context, day: day, isToday: true),
-            selectedBuilder: (context, day, focusedDay) =>
-                _buildDayCell(context, day: day, isSelected: true),
+            // holidayPredicate (_isHolidayOrSunday) matches every Sunday, not
+            // just actual holidays — and table_calendar picks holidayBuilder
+            // over outsideBuilder whenever a day matches both. Without the
+            // day.month != focusedDay.month check below, that meant: a
+            // trailing/leading day from the next/previous month rendered as
+            // a normal, full "inside" cell (complete with that day's own
+            // schedules) whenever it happened to land on a Sunday or
+            // holiday, while every other adjacent-month day around it stayed
+            // in the plain grey "outside" style — a jarringly inconsistent
+            // calendar grid. todayBuilder/selectedBuilder had the identical
+            // issue whenever "today"/the selected day was itself an
+            // adjacent-month date. Each now defers to the same plain outside
+            // rendering in that case, so an outside day looks outside no
+            // matter which of these four builders table_calendar happens to
+            // pick for it.
+            holidayBuilder: (context, day, focusedDay) => day.month != focusedDay.month
+                ? _buildOutsideDayCell(day)
+                : _buildDayCell(context, day: day),
+            todayBuilder: (context, day, focusedDay) => day.month != focusedDay.month
+                ? _buildOutsideDayCell(day)
+                : _buildDayCell(context, day: day, isToday: true),
+            selectedBuilder: (context, day, focusedDay) => day.month != focusedDay.month
+                ? _buildOutsideDayCell(day)
+                : _buildDayCell(context, day: day, isSelected: true),
             // Also used for plain weekdays/Saturdays, so non-holiday special
             // days (母の日 etc.) still show their label.
             defaultBuilder: (context, day, focusedDay) => _buildDayCell(context, day: day),
@@ -928,11 +955,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
             // title chips), so table_calendar's own default event-count dot
             // markers underneath would just be redundant — suppress them.
             markerBuilder: (context, day, events) => const SizedBox.shrink(),
-            outsideBuilder: (context, day, focusedDay) => Container(
-              decoration: BoxDecoration(border: Border.all(color: Colors.grey.shade300, width: 0.5)),
-              alignment: Alignment.center,
-              child: Text('${day.day}', style: TextStyle(fontSize: 13, color: Colors.grey.shade400)),
-            ),
+            outsideBuilder: (context, day, focusedDay) => _buildOutsideDayCell(day),
           ),
         ),
         // Only show the selected day's details once the user has actually

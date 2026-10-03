@@ -9,6 +9,7 @@
   "tabTasks": "任务",
   "tabNotifications": "通知",
   "notificationsEmpty": "暂无新消息",
+  "notificationsScheduleGone": "该日程已被删除",
   "scheduleActivityCreated": "创建了日程",
   "scheduleActivityUpdatedTime": "更新了日期时间",
   "scheduleActivityUpdatedTitle": "更新了日程名称",

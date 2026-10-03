@@ -31,6 +31,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get notificationsEmpty => '새로운 소식이 없습니다';
 
   @override
+  String get notificationsScheduleGone => '이 일정은 이미 삭제되었습니다';
+
+  @override
   String get scheduleActivityCreated => '일정을 만들었습니다';
 
   @override

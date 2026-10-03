@@ -144,6 +144,12 @@ abstract class AppLocalizations {
   /// **'新着はありません'**
   String get notificationsEmpty;
 
+  /// No description provided for @notificationsScheduleGone.
+  ///
+  /// In ja, this message translates to:
+  /// **'この予定はすでに削除されています'**
+  String get notificationsScheduleGone;
+
   /// No description provided for @scheduleActivityCreated.
   ///
   /// In ja, this message translates to:

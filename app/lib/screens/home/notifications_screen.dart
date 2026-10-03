@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../l10n/app_localizations.dart';
+import '../../models/schedule.dart';
+import '../schedule/schedule_detail_screen.dart';
 
 /// "Who did what, when" activity feed, grouped by schedule — reads the
 /// signed-in user's own `users/{uid}/activityFeed` (see
@@ -40,6 +42,25 @@ class NotificationsScreen extends StatelessWidget {
   String _formatWhen(BuildContext context, DateTime dateTime) {
     final locale = Localizations.localeOf(context).toString();
     return '${DateFormat.MMMd(locale).format(dateTime)} ${DateFormat.Hm(locale).format(dateTime)}';
+  }
+
+  /// Opens the real, current schedule document (not the activity feed's own
+  /// denormalized snapshot of it, which only ever has title/start/end and
+  /// can be stale) — falls back to a snackbar if it's since been deleted.
+  Future<void> _openSchedule(BuildContext context, String scheduleId) async {
+    final l10n = AppLocalizations.of(context)!;
+    final doc = await FirebaseFirestore.instance.collection('schedules').doc(scheduleId).get();
+    if (!context.mounted) return;
+    if (!doc.exists) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(l10n.notificationsScheduleGone)));
+      return;
+    }
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ScheduleDetailScreen(schedule: Schedule.fromFirestore(doc)),
+      ),
+    );
   }
 
   @override
@@ -97,7 +118,8 @@ class NotificationsScreen extends StatelessWidget {
             padding: const EdgeInsets.all(12),
             itemCount: scheduleOrder.length,
             itemBuilder: (context, index) {
-              final entries = bySchedule[scheduleOrder[index]]!;
+              final scheduleId = scheduleOrder[index];
+              final entries = bySchedule[scheduleId]!;
               final latest = entries.first.data();
               final title = latest['scheduleTitle'] as String? ?? '';
               final start = (latest['scheduleStart'] as Timestamp?)?.toDate();
@@ -105,7 +127,9 @@ class NotificationsScreen extends StatelessWidget {
 
               return Card(
                 margin: const EdgeInsets.only(bottom: 12),
-                child: Padding(
+                child: InkWell(
+                  onTap: () => _openSchedule(context, scheduleId),
+                  child: Padding(
                   padding: const EdgeInsets.all(14),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -144,6 +168,7 @@ class NotificationsScreen extends StatelessWidget {
                         );
                       }),
                     ],
+                  ),
                   ),
                 ),
               );

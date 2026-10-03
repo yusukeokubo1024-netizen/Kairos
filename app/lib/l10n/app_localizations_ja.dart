@@ -31,6 +31,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get notificationsEmpty => '新着はありません';
 
   @override
+  String get notificationsScheduleGone => 'この予定はすでに削除されています';
+
+  @override
   String get scheduleActivityCreated => '予定を作成しました';
 
   @override

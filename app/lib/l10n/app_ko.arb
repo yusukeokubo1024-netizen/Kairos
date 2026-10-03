@@ -9,6 +9,7 @@
   "tabTasks": "할 일",
   "tabNotifications": "알림",
   "notificationsEmpty": "새로운 소식이 없습니다",
+  "notificationsScheduleGone": "이 일정은 이미 삭제되었습니다",
   "scheduleActivityCreated": "일정을 만들었습니다",
   "scheduleActivityUpdatedTime": "일시를 변경했습니다",
   "scheduleActivityUpdatedTitle": "일정 이름을 변경했습니다",

@@ -31,6 +31,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notificationsEmpty => 'No notifications yet';
 
   @override
+  String get notificationsScheduleGone =>
+      'This schedule has already been deleted';
+
+  @override
   String get scheduleActivityCreated => 'Created this schedule';
 
   @override

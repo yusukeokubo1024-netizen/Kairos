@@ -43,10 +43,17 @@ class NotificationService {
     await _plugin.initialize(settings: initSettings);
 
     if (!_skipPermissionRequest) {
-      await _plugin
-          .resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin>()
-          ?.requestNotificationsPermission();
+      final android = _plugin.resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>();
+      await android?.requestNotificationsPermission();
+      // Android 12+ requires this *separate* permission for exact-time
+      // alarms (the kind "5分前" reminders rely on) — just declaring
+      // SCHEDULE_EXACT_ALARM in the manifest isn't enough on every
+      // device/OEM. Without it, reminders can silently never fire at all
+      // rather than just arrive late, with no error visible anywhere in the
+      // app (zonedSchedule's own exception was only ever logged to
+      // Crashlytics — see the fallback added below for when it does throw).
+      await android?.requestExactAlarmsPermission();
       await _plugin
           .resolvePlatformSpecificImplementation<
               IOSFlutterLocalNotificationsPlugin>()
@@ -205,25 +212,44 @@ class NotificationService {
             priority: Priority.high,
           );
 
+    final notificationDetails = NotificationDetails(
+      android: android,
+      iOS: const DarwinNotificationDetails(),
+    );
+    final scheduledDate = tz.TZDateTime.from(reminderTime, tz.local);
     try {
       await _plugin.zonedSchedule(
         id: _scheduleNotificationId('schedule_', schedule.id),
         title: schedule.title,
         body: _scheduleReminderBody,
-        scheduledDate: tz.TZDateTime.from(reminderTime, tz.local),
-        notificationDetails: NotificationDetails(
-          android: android,
-          iOS: const DarwinNotificationDetails(),
-        ),
+        scheduledDate: scheduledDate,
+        notificationDetails: notificationDetails,
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
         matchDateTimeComponents: matchComponents,
       );
     } catch (e, st) {
       // Most commonly a missing/revoked Android "exact alarm" permission —
-      // this shouldn't block saving the schedule itself, but silently
-      // swallowing it means the reminder just never fires with no trace.
-      FirebaseCrashlytics.instance
-          .recordError(e, st, reason: 'failed to schedule notification', fatal: false);
+      // some OEMs/Android versions reject exact scheduling outright instead
+      // of just degrading it. Falling back to inexact (OS-batched, can be a
+      // few minutes late but still fires) means the reminder still arrives
+      // instead of silently never firing at all with no trace anywhere but
+      // Crashlytics.
+      FirebaseCrashlytics.instance.recordError(e, st,
+          reason: 'failed to schedule exact notification, retrying inexact', fatal: false);
+      try {
+        await _plugin.zonedSchedule(
+          id: _scheduleNotificationId('schedule_', schedule.id),
+          title: schedule.title,
+          body: _scheduleReminderBody,
+          scheduledDate: scheduledDate,
+          notificationDetails: notificationDetails,
+          androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+          matchDateTimeComponents: matchComponents,
+        );
+      } catch (e2, st2) {
+        FirebaseCrashlytics.instance
+            .recordError(e2, st2, reason: 'failed to schedule notification', fatal: false);
+      }
     }
   }
 

@@ -9,6 +9,7 @@
   "tabTasks": "Tasks",
   "tabNotifications": "Notifications",
   "notificationsEmpty": "No notifications yet",
+  "notificationsScheduleGone": "This schedule has already been deleted",
   "scheduleActivityCreated": "Created this schedule",
   "scheduleActivityUpdatedTime": "Updated the date/time",
   "scheduleActivityUpdatedTitle": "Updated the title",

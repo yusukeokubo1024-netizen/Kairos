@@ -31,6 +31,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get notificationsEmpty => '暂无新消息';
 
   @override
+  String get notificationsScheduleGone => '该日程已被删除';
+
+  @override
   String get scheduleActivityCreated => '创建了日程';
 
   @override

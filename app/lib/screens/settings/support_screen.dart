@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
@@ -240,7 +241,9 @@ $faqText''';
       }
       final isRetryable =
           (response.statusCode == 503 || response.statusCode == 429) && attempt < maxAttempts;
-      if (!isRetryable) throw Exception('status ${response.statusCode}');
+      if (!isRetryable) {
+        throw Exception('Gemini request failed: status ${response.statusCode}, body: ${response.body}');
+      }
       setState(() => _status = l10n.supportAiRetrying(attempt, maxAttempts));
       await Future.delayed(Duration(milliseconds: 1200 * attempt));
     }
@@ -299,7 +302,13 @@ $faqText''';
           _status = null;
         });
       }
-    } catch (_) {
+    } catch (e, st) {
+      // The real reason (status code + response body) was only ever
+      // visible in this exception's message — with no logging here, every
+      // failure was indistinguishable from any other and impossible to
+      // diagnose from a user's bug report alone.
+      FirebaseCrashlytics.instance
+          .recordError(e, st, reason: 'support AI chat request failed', fatal: false);
       if (mounted) {
         setState(() {
           _messages.add(_ChatEntry(isUser: false, text: l10n.supportAiError, time: DateTime.now()));

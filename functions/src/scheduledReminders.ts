@@ -1,0 +1,233 @@
+import { onSchedule } from "firebase-functions/v2/scheduler";
+import * as logger from "firebase-functions/logger";
+import * as admin from "firebase-admin";
+
+// Mirrors NotificationService.scheduleForSchedule in the Flutter app
+// (lib/services/notification_service.dart), but as a server-side push so
+// reminders still arrive when the app isn't running. Schedules are always
+// entered/displayed in Asia/Tokyo (the app hardcodes this timezone), so all
+// wall-clock math here assumes JST rather than the server's UTC clock.
+
+const WINDOW_MINUTES = 5;
+const JST_OFFSET_MS = 9 * 60 * 60 * 1000;
+
+interface WallTime {
+  year: number;
+  month: number;
+  day: number;
+  hour: number;
+  minute: number;
+}
+
+function toJstWall(instant: Date): WallTime {
+  const t = new Date(instant.getTime() + JST_OFFSET_MS);
+  return {
+    year: t.getUTCFullYear(),
+    month: t.getUTCMonth() + 1,
+    day: t.getUTCDate(),
+    hour: t.getUTCHours(),
+    minute: t.getUTCMinutes(),
+  };
+}
+
+function fromJstWall(w: WallTime): Date {
+  return new Date(Date.UTC(w.year, w.month - 1, w.day, w.hour, w.minute, 0) - JST_OFFSET_MS);
+}
+
+// The next (year, month) after (year, month) that actually has [day] as a
+// valid date, skipping any that don't (e.g. day 31 skips April, June,
+// September, November, February) — matches
+// NotificationService._nextMonthWithDay on the Dart side.
+function nextMonthWithDay(year: number, month: number, day: number): { year: number; month: number } {
+  let y = year;
+  let m = month;
+  for (let i = 0; i < 24; i++) {
+    m++;
+    if (m > 12) {
+      m = 1;
+      y++;
+    }
+    const daysInMonth = new Date(Date.UTC(y, m, 0)).getUTCDate();
+    if (day <= daysInMonth) return { year: y, month: m };
+  }
+  return { year, month: month + 1 };
+}
+
+// One step forward along a recurrence pattern, in JST wall-clock space —
+// matches NotificationService._stepForward on the Dart side.
+function stepWallForward(recurrence: string, w: WallTime): WallTime {
+  switch (recurrence) {
+    case "daily": {
+      const ms = Date.UTC(w.year, w.month - 1, w.day, w.hour, w.minute, 0) + 24 * 60 * 60 * 1000;
+      const d = new Date(ms);
+      return { year: d.getUTCFullYear(), month: d.getUTCMonth() + 1, day: d.getUTCDate(), hour: w.hour, minute: w.minute };
+    }
+    case "weekly": {
+      const ms = Date.UTC(w.year, w.month - 1, w.day, w.hour, w.minute, 0) + 7 * 24 * 60 * 60 * 1000;
+      const d = new Date(ms);
+      return { year: d.getUTCFullYear(), month: d.getUTCMonth() + 1, day: d.getUTCDate(), hour: w.hour, minute: w.minute };
+    }
+    case "monthly": {
+      const { year, month } = nextMonthWithDay(w.year, w.month, w.day);
+      return { year, month, day: w.day, hour: w.hour, minute: w.minute };
+    }
+    case "yearly":
+      return { year: w.year + 1, month: w.month, day: w.day, hour: w.hour, minute: w.minute };
+    default:
+      return w;
+  }
+}
+
+interface ScheduleDoc {
+  ownerId: string;
+  title: string;
+  startTime: admin.firestore.Timestamp;
+  isAllDay?: boolean;
+  reminderMinutes?: number | null;
+  recurrence?: string;
+  recurrenceEndDate?: admin.firestore.Timestamp | null;
+  lastReminderFiredAt?: admin.firestore.Timestamp | null;
+}
+
+/** The reminder's first-ever fire time (event start minus reminderMinutes),
+ * in JST wall-clock terms consistent with the Dart implementation. */
+function initialReminderInstant(data: ScheduleDoc): Date {
+  const start = data.startTime.toDate();
+  const base = data.isAllDay ? fromJstWall({ ...toJstWall(start), hour: 9, minute: 0 }) : start;
+  return new Date(base.getTime() - (data.reminderMinutes ?? 0) * 60 * 1000);
+}
+
+async function sendReminder(
+  db: admin.firestore.Firestore,
+  scheduleId: string,
+  data: ScheduleDoc
+): Promise<void> {
+  // Deliberately NOT including data.participantIds: a schedule's owner can
+  // add any uid they can resolve (e.g. via emailIndex) to participantIds
+  // with no consent step from that person (firestore.rules has no
+  // acceptance gate on this field, unlike sharedGroups' join-request flow).
+  // That was a low-impact gap while it only granted silent read access;
+  // pushing a recurring, owner-controlled-title notification to that uid's
+  // device would turn it into a harassment vector. Restrict pushes to the
+  // owner — the person who actually created and controls the reminder —
+  // until participantIds has a real consent/acceptance step.
+  const recipientIds = [data.ownerId];
+
+  const [userDocs, tokenDocs] = await Promise.all([
+    Promise.all(recipientIds.map((uid) => db.collection("users").doc(uid).get())),
+    Promise.all(recipientIds.map((uid) => db.collection("deviceTokens").doc(uid).get())),
+  ]);
+
+  const tokens: string[] = [];
+  recipientIds.forEach((uid, i) => {
+    const notificationsEnabled = userDocs[i].data()?.notifications_enabled ?? true;
+    if (!notificationsEnabled) return;
+    const docTokens = (tokenDocs[i].data()?.tokens as string[] | undefined) ?? [];
+    tokens.push(...docTokens);
+  });
+  if (tokens.length === 0) return;
+
+  const response = await admin.messaging().sendEachForMulticast({
+    tokens,
+    notification: {
+      title: data.title,
+      body: "まもなく予定の時間です",
+    },
+    data: { type: "scheduleReminder", scheduleId },
+  });
+
+  // Clean up tokens the device uninstalled the app for / that are no longer
+  // valid, so they stop being billed against send quota and retried forever.
+  const staleTokens: string[] = [];
+  response.responses.forEach((r, i) => {
+    if (!r.success && r.error?.code === "messaging/registration-token-not-registered") {
+      staleTokens.push(tokens[i]);
+    }
+  });
+  if (staleTokens.length > 0) {
+    await Promise.all(
+      recipientIds.map((uid) =>
+        db.collection("deviceTokens").doc(uid).update({
+          tokens: admin.firestore.FieldValue.arrayRemove(...staleTokens),
+        }).catch(() => undefined)
+      )
+    );
+  }
+}
+
+export const sendDueReminders = onSchedule(
+  { schedule: `every ${WINDOW_MINUTES} minutes`, timeZone: "Asia/Tokyo", region: "asia-northeast1" },
+  async () => {
+    const db = admin.firestore();
+    const now = new Date();
+    const windowEnd = new Date(now.getTime() + WINDOW_MINUTES * 60 * 1000);
+
+    // Scale is tiny (a few dozen users) — scanning the whole collection each
+    // run is far cheaper than the index/complexity of a range query here.
+    const snapshot = await db.collection("schedules").get();
+
+    const updates: Promise<unknown>[] = [];
+    for (const doc of snapshot.docs) {
+      const data = doc.data() as ScheduleDoc;
+      if (!data.reminderMinutes || data.reminderMinutes <= 0) continue;
+
+      const recurrence = data.recurrence ?? "none";
+      const isRecurring = recurrence !== "none";
+
+      // Non-recurring: fires once, ever.
+      if (!isRecurring) {
+        if (data.lastReminderFiredAt) continue;
+        const reminderAt = initialReminderInstant(data);
+        if (reminderAt >= now && reminderAt < windowEnd) {
+          updates.push(
+            sendReminder(db, doc.id, data)
+              .then(() => doc.ref.update({ lastReminderFiredAt: admin.firestore.Timestamp.fromDate(reminderAt) }))
+              .catch((err) => logger.error(`sendDueReminders: failed for schedule ${doc.id}`, err))
+          );
+        }
+        continue;
+      }
+
+      // Recurring: resume stepping from the last occurrence we already
+      // notified (if any) rather than from the original anchor every run,
+      // so this stays cheap no matter how old the schedule is.
+      let candidate = data.lastReminderFiredAt
+        ? stepWallForward(recurrence, toJstWall(data.lastReminderFiredAt.toDate()))
+        : toJstWall(initialReminderInstant(data));
+      let candidateInstant = fromJstWall(candidate);
+
+      const endDate = data.recurrenceEndDate?.toDate();
+      let guard = 0;
+      while (candidateInstant < now && guard < 1000) {
+        candidate = stepWallForward(recurrence, candidate);
+        candidateInstant = fromJstWall(candidate);
+        guard++;
+      }
+
+      if (endDate) {
+        // recurrenceEndDate is stored as midnight JST of the end day and is
+        // inclusive (see Schedule.recurrenceEndDate's doc comment on the
+        // Dart side) — compare JST calendar dates, not raw instants, or the
+        // end day's own occurrence (almost never exactly midnight) would
+        // always be wrongly excluded.
+        const eventInstant = new Date(candidateInstant.getTime() + (data.reminderMinutes ?? 0) * 60 * 1000);
+        const eventDay = toJstWall(eventInstant);
+        const endDay = toJstWall(endDate);
+        const eventDayMs = Date.UTC(eventDay.year, eventDay.month - 1, eventDay.day);
+        const endDayMs = Date.UTC(endDay.year, endDay.month - 1, endDay.day);
+        if (eventDayMs > endDayMs) continue;
+      }
+
+      if (candidateInstant >= now && candidateInstant < windowEnd) {
+        updates.push(
+          sendReminder(db, doc.id, data)
+            .then(() => doc.ref.update({ lastReminderFiredAt: admin.firestore.Timestamp.fromDate(candidateInstant) }))
+            .catch((err) => logger.error(`sendDueReminders: failed for schedule ${doc.id}`, err))
+        );
+      }
+    }
+
+    await Promise.all(updates);
+    logger.info(`sendDueReminders: checked ${snapshot.size} schedules, sent ${updates.length} reminders`);
+  }
+);

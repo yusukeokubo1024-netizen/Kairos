@@ -8,6 +8,14 @@ import { GroupService } from "./services/groupService";
 import { LocationService } from "./services/locationService";
 import { NotificationService } from "./services/notificationService";
 import { SubscriptionService } from "./services/subscriptionService";
+// sendDueReminders is the only function in this file actually deployed
+// (via `firebase deploy --only functions:sendDueReminders`) — everything
+// below is an older, untested, never-deployed scaffold kept out of
+// production deliberately. Deploy discovery still loads this whole module
+// graph to enumerate exports, so a future throw-at-load-time change
+// anywhere below (e.g. an eager functions.config() call) would break
+// sendDueReminders' deploy too, even though it's unrelated.
+export { sendDueReminders } from "./scheduledReminders";
 
 // For auth triggers, we need to use v1 SDK
 const v1Functions = require("firebase-functions/v1");

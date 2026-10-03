@@ -18,6 +18,7 @@ import 'services/analytics_service.dart';
 import 'services/biometric_service.dart';
 import 'services/locale_service.dart';
 import 'services/notification_service.dart';
+import 'services/push_notification_service.dart';
 import 'services/theme_service.dart';
 
 /// App-wide messenger key so screens can show a SnackBar (e.g. an "undo"
@@ -150,6 +151,10 @@ class _BiometricGateState extends State<BiometricGate> {
   void initState() {
     super.initState();
     _checkLock();
+    // Registers/refreshes this device's push token — independent of the
+    // biometric lock below, since it's a background sync, not something
+    // that needs to wait on the user unlocking the screen.
+    PushNotificationService.instance.init();
   }
 
   Future<void> _checkLock() async {

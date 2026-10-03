@@ -172,6 +172,14 @@ class Schedule {
 
   Map<String, dynamic> toUpdateMap() {
     return {
+      // Clears the server push reminder's dedupe marker (written by
+      // functions/src/scheduledReminders.ts) on every edit, so a changed
+      // startTime/reminderMinutes/recurrence is picked up immediately
+      // instead of the push continuing to fire on the pre-edit schedule —
+      // safe even when nothing reminder-related changed, since a reminder
+      // time already in the past still won't re-fire (the function's own
+      // time-window check still gates that).
+      'lastReminderFiredAt': FieldValue.delete(),
       'ownerId': ownerId,
       'title': title,
       'startTime': Timestamp.fromDate(startTime),

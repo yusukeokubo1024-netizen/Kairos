@@ -340,6 +340,15 @@ service cloud.firestore {
       allow update: if false;
     }
 
+    // ============================================
+    // deviceTokens コレクション（プッシュ通知用のFCMトークン。
+    // 本人のみ読み書き可能 — サーバー側のリマインダー送信関数は
+    // Admin SDK経由でこのルールをバイパスして読み取る）
+    // ============================================
+    match /deviceTokens/{uid} {
+      allow read, write: if isOwner(uid);
+    }
+
     // デフォルト: アクセス拒否
     match /{document=**} {
       allow read, write: if false;

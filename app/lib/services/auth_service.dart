@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 import '../models/app_user.dart';
+import 'push_notification_service.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -106,6 +107,12 @@ class AuthService {
   }
 
   Future<void> signOut() async {
+    // Must happen before signOut() — the deviceTokens write needs the
+    // still-live auth session to pass the isOwner(uid) security rule.
+    final uid = _auth.currentUser?.uid;
+    if (uid != null) {
+      await PushNotificationService.instance.unregisterCurrentToken(uid);
+    }
     await _auth.signOut();
   }
 

@@ -47,6 +47,13 @@
 			</array>
 		</dict>
 	</array>
+	<key>UIBackgroundModes</key>
+	<array>
+		<!-- Lets a push notification be delivered to the app while it's
+		     backgrounded/not running, for the schedule-reminder push
+		     (functions/src/scheduledReminders.ts). -->
+		<string>remote-notification</string>
+	</array>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

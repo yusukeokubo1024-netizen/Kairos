@@ -311,7 +311,11 @@ $faqText''';
           .recordError(e, st, reason: 'support AI chat request failed', fatal: false);
       if (mounted) {
         setState(() {
-          _messages.add(_ChatEntry(isUser: false, text: l10n.supportAiError, time: DateTime.now()));
+          // TEMPORARY: showing the raw error inline (instead of the
+          // friendly l10n.supportAiError message) to debug a persistent
+          // failure without needing Firebase Console access — revert once
+          // the real cause (seen directly on-screen) is fixed.
+          _messages.add(_ChatEntry(isUser: false, text: '[DEBUG] $e', time: DateTime.now()));
           _status = null;
         });
       }

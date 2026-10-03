@@ -1036,6 +1036,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get groupFormCreateButton => '만들기';
 
   @override
+  String get groupFormCreateFailed => '그룹을 만들지 못했습니다. 다시 시도해 주세요.';
+
+  @override
   String get groupJoinTitle => '그룹 참여';
 
   @override
@@ -1075,6 +1078,9 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get groupDetailInviteCode => '초대 코드';
+
+  @override
+  String get groupDetailMuteNotifications => '이 그룹의 알림 끄기';
 
   @override
   String get groupDetailInviteCodeCopied => '초대 코드를 복사했습니다';

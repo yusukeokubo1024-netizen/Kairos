@@ -295,6 +295,29 @@ class GroupDetailScreen extends StatelessWidget {
                 ),
               ),
             ),
+            const SizedBox(height: 8),
+            Card(
+              child: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+                stream: FirebaseFirestore.instance.collection('users').doc(uid).snapshots(),
+                builder: (context, snapshot) {
+                  final mutedGroupIds =
+                      List<String>.from(snapshot.data?.data()?['mutedGroupIds'] as List? ?? []);
+                  final muted = mutedGroupIds.contains(group.id);
+                  return SwitchListTile(
+                    title: Text(l10n.groupDetailMuteNotifications),
+                    value: muted,
+                    onChanged: (value) {
+                      FirebaseFirestore.instance.collection('users').doc(uid).set({
+                        'uid': uid,
+                        'mutedGroupIds': value
+                            ? FieldValue.arrayUnion([group.id])
+                            : FieldValue.arrayRemove([group.id]),
+                      }, SetOptions(merge: true));
+                    },
+                  );
+                },
+              ),
+            ),
             if (isOwner) ...[
               const SizedBox(height: 16),
               StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(

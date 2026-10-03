@@ -1019,6 +1019,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get groupFormCreateButton => '创建';
 
   @override
+  String get groupFormCreateFailed => '无法创建群组，请重试。';
+
+  @override
   String get groupJoinTitle => '加入群组';
 
   @override
@@ -1058,6 +1061,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get groupDetailInviteCode => '邀请码';
+
+  @override
+  String get groupDetailMuteNotifications => '关闭此群组的通知';
 
   @override
   String get groupDetailInviteCodeCopied => '邀请码已复制';

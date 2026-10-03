@@ -1059,6 +1059,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get groupFormCreateButton => 'Create';
 
   @override
+  String get groupFormCreateFailed =>
+      'Couldn\'t create the group. Please try again.';
+
+  @override
   String get groupJoinTitle => 'Join a group';
 
   @override
@@ -1101,6 +1105,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get groupDetailInviteCode => 'Invite code';
+
+  @override
+  String get groupDetailMuteNotifications =>
+      'Mute notifications for this group';
 
   @override
   String get groupDetailInviteCodeCopied => 'Invite code copied';

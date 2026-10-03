@@ -106,7 +106,7 @@ class WeatherService {
     List<Map<String, dynamic>> requirePrefecture(List<Map<String, dynamic>> candidates) {
       if (normalizedHint == null) return candidates;
       return candidates
-          .where((r) => r['admin1'] is String && _stripAdminSuffix(r['admin1'] as String) == normalizedHint)
+          .where((r) => r['admin1'] is String && _admin1Matches(normalizedHint, r['admin1'] as String))
           .toList();
     }
 
@@ -194,6 +194,23 @@ class WeatherService {
       }
     }
     return name;
+  }
+
+  /// Open-Meteo's underlying GeoNames data hasn't caught up with some
+  /// recent Korean province renames, so it still reports the pre-rename
+  /// admin1 name for every place in that province. Without this, our
+  /// current official name would never equal its (differently-abbreviated)
+  /// predecessor after suffix-stripping alone, and EVERY search scoped to
+  /// that province would come back empty — e.g. 전북특별자치도 (Jeollabuk-do's
+  /// 2024 rename) strips to "전북", but Open-Meteo still reports every place
+  /// there under the old "전라북도", which strips to "전라북" — a different
+  /// string, since the new name's abbreviation drops "라" entirely.
+  static const _admin1RenameAliases = {'전북': '전라북'};
+
+  bool _admin1Matches(String normalizedHint, String candidateAdmin1) {
+    final normalizedCandidate = _stripAdminSuffix(candidateAdmin1);
+    if (normalizedCandidate == normalizedHint) return true;
+    return _admin1RenameAliases[normalizedHint] == normalizedCandidate;
   }
 
   Future<List<Map<String, dynamic>>> _searchPlaces(

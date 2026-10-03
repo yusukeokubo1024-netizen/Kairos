@@ -1030,6 +1030,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get groupFormCreateButton => '作成する';
 
   @override
+  String get groupFormCreateFailed => 'グループを作成できませんでした。もう一度お試しください。';
+
+  @override
   String get groupJoinTitle => 'グループに参加';
 
   @override
@@ -1069,6 +1072,9 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get groupDetailInviteCode => '招待コード';
+
+  @override
+  String get groupDetailMuteNotifications => 'このグループの通知をミュート';
 
   @override
   String get groupDetailInviteCodeCopied => '招待コードをコピーしました';

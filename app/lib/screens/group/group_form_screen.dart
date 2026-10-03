@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 
 import '../../l10n/app_localizations.dart';
@@ -52,6 +53,13 @@ class _GroupFormScreenState extends State<GroupFormScreen> {
       unawaited(AnalyticsService.instance.logGroupCreated());
       unawaited(AuditService.instance.logCreate(collection: 'sharedGroups', targetId: ref.id));
       if (mounted) Navigator.of(context).pop();
+    } catch (e, st) {
+      FirebaseCrashlytics.instance.recordError(e, st, reason: 'failed to create group', fatal: false);
+      if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(l10n.groupFormCreateFailed)));
+      }
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }

@@ -2022,6 +2022,12 @@ abstract class AppLocalizations {
   /// **'作成する'**
   String get groupFormCreateButton;
 
+  /// No description provided for @groupFormCreateFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'グループを作成できませんでした。もう一度お試しください。'**
+  String get groupFormCreateFailed;
+
   /// No description provided for @groupJoinTitle.
   ///
   /// In ja, this message translates to:
@@ -2099,6 +2105,12 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'招待コード'**
   String get groupDetailInviteCode;
+
+  /// No description provided for @groupDetailMuteNotifications.
+  ///
+  /// In ja, this message translates to:
+  /// **'このグループの通知をミュート'**
+  String get groupDetailMuteNotifications;
 
   /// No description provided for @groupDetailInviteCodeCopied.
   ///

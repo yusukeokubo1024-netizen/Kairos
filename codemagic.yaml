@@ -129,6 +129,11 @@ workflows:
       cocoapods: default
       groups:
         - ios_signing
+        # GEMINI_API_KEY lives in android_signing (Codemagic enforces
+        # unique variable names per app, so it can't also exist as a
+        # separate copy under ios_signing) — include this group too just
+        # to pick that one variable up for the --dart-define below.
+        - android_signing
       vars:
         GEMINI_API_KEY: $GEMINI_API_KEY
     scripts:

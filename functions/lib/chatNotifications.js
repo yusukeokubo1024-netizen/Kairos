@@ -79,8 +79,11 @@ exports.sendChatMessageNotification = (0, firestore_1.onDocumentCreated)({ docum
             return;
         tokensByChannel.set(channelId, [...(tokensByChannel.get(channelId) ?? []), ...docTokens]);
     });
-    if (tokensByChannel.size === 0)
+    if (tokensByChannel.size === 0) {
+        logger.info(`sendChatMessageNotification: group ${groupId} — no recipient to notify ` +
+            `(${recipientIds.length} other member(s); all muted, disabled or without a token)`);
         return;
+    }
     // Deliberately doesn't include the sender name or message text (LINE-
     // style privacy) — the lock screen/notification shade is a more public
     // surface than the chat itself, and a shared family device could have
@@ -95,8 +98,14 @@ exports.sendChatMessageNotification = (0, firestore_1.onDocumentCreated)({ docum
                 apns: { payload: { aps: { sound: "default" } } },
                 data: { type: "groupChat", groupId },
             });
+            logger.info(`sendChatMessageNotification: group ${groupId} channel ${channelId} — ` +
+                `${response.successCount} sent, ${response.failureCount} failed`);
             response.responses.forEach((r, i) => {
-                if (!r.success && r.error?.code === "messaging/registration-token-not-registered") {
+                if (r.success)
+                    return;
+                logger.warn(`sendChatMessageNotification: token …${tokens[i].slice(-8)} failed: ` +
+                    `${r.error?.code} ${r.error?.message}`);
+                if (r.error?.code === "messaging/registration-token-not-registered") {
                     staleTokens.push(tokens[i]);
                 }
             });

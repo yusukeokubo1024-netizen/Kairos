@@ -19,6 +19,9 @@ const _supportEmail = 'kairos19900927@gmail.com';
 // low-stakes free-tier usage rather than anything billed or sensitive.
 const _geminiApiKey = String.fromEnvironment('GEMINI_API_KEY');
 const _geminiModel = 'gemini-flash-latest';
+// Used once the main model keeps answering 503 "high demand" — the lite
+// model is usually still available when flash is overloaded.
+const _geminiFallbackModel = 'gemini-flash-lite-latest';
 
 class SupportScreen extends StatefulWidget {
   const SupportScreen({super.key});
@@ -250,11 +253,14 @@ $faqText''';
   /// one-word message like "やっほー" is just as likely to hit this as any
   /// other message, so this isn't about message content — it's purely about
   /// giving transient overload enough retries to clear before giving up.
+  /// Retrying the same overloaded model often wasn't enough, though, so
+  /// from the third attempt on it switches to [_geminiFallbackModel].
   Future<Map<String, dynamic>> _callGemini(AppLocalizations l10n) async {
     const maxAttempts = 5;
     for (var attempt = 1; attempt <= maxAttempts; attempt++) {
+      final model = attempt <= 2 ? _geminiModel : _geminiFallbackModel;
       final response = await http.post(
-        Uri.parse('https://generativelanguage.googleapis.com/v1beta/models/$_geminiModel:generateContent'),
+        Uri.parse('https://generativelanguage.googleapis.com/v1beta/models/$model:generateContent'),
         headers: {
           'Content-Type': 'application/json',
           'X-goog-api-key': _geminiApiKey,

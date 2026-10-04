@@ -70,3 +70,5 @@ node_modules/
 
 # Local secrets — never commit these
 secrets/
+# Apple keys (APNs / App Store Connect API)
+*.p8

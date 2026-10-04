@@ -11,7 +11,12 @@ class StopwatchScreen extends StatefulWidget {
   State<StopwatchScreen> createState() => _StopwatchScreenState();
 }
 
-class _StopwatchScreenState extends State<StopwatchScreen> {
+class _StopwatchScreenState extends State<StopwatchScreen> with AutomaticKeepAliveClientMixin {
+  // Keeps running when swiping to another Clock sub-tab — TabBarView
+  // otherwise disposes off-screen pages, resetting the running stopwatch.
+  @override
+  bool get wantKeepAlive => true;
+
   DateTime? _startTime;
   Duration _accumulated = Duration.zero;
   bool _running = false;
@@ -71,6 +76,7 @@ class _StopwatchScreenState extends State<StopwatchScreen> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final l10n = AppLocalizations.of(context)!;
     final hasTime = _startTime != null;
 
@@ -80,9 +86,11 @@ class _StopwatchScreenState extends State<StopwatchScreen> {
           const SizedBox(height: 48),
           Text(
             _format(_elapsed),
-            style: const TextStyle(fontSize: 56, fontWeight: FontWeight.w300, fontFeatures: [
-              FontFeature.tabularFigures(),
-            ]),
+            style: const TextStyle(
+              fontSize: 56,
+              fontWeight: FontWeight.w300,
+              fontFeatures: [FontFeature.tabularFigures()],
+            ),
           ),
           const SizedBox(height: 32),
           Row(
@@ -106,9 +114,10 @@ class _StopwatchScreenState extends State<StopwatchScreen> {
               itemBuilder: (context, index) => ListTile(
                 dense: true,
                 leading: Text(l10n.stopwatchLapNumber(_laps.length - index)),
-                trailing: Text(_format(_laps[index]), style: const TextStyle(fontFeatures: [
-                  FontFeature.tabularFigures(),
-                ])),
+                trailing: Text(
+                  _format(_laps[index]),
+                  style: const TextStyle(fontFeatures: [FontFeature.tabularFigures()]),
+                ),
               ),
             ),
           ),

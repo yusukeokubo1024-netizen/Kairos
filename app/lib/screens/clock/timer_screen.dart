@@ -16,7 +16,12 @@ class TimerScreen extends StatefulWidget {
   State<TimerScreen> createState() => _TimerScreenState();
 }
 
-class _TimerScreenState extends State<TimerScreen> {
+class _TimerScreenState extends State<TimerScreen> with AutomaticKeepAliveClientMixin {
+  // Keeps running when swiping to another Clock sub-tab — TabBarView
+  // otherwise disposes off-screen pages, silently dropping the countdown.
+  @override
+  bool get wantKeepAlive => true;
+
   Duration _setDuration = const Duration(minutes: 5);
   Duration _remaining = const Duration(minutes: 5);
   DateTime? _endTime;
@@ -74,10 +79,7 @@ class _TimerScreenState extends State<TimerScreen> {
         icon: const Icon(Icons.timer_outlined, size: 40),
         title: Text(l10n.timerUpTitle),
         actions: [
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(l10n.ringingStop),
-          ),
+          FilledButton(onPressed: () => Navigator.of(context).pop(), child: Text(l10n.ringingStop)),
         ],
       ),
     );
@@ -129,6 +131,7 @@ class _TimerScreenState extends State<TimerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final l10n = AppLocalizations.of(context)!;
     final idle = !_running && !_isPaused;
 
@@ -166,9 +169,11 @@ class _TimerScreenState extends State<TimerScreen> {
                   onPressed: _setDuration == Duration.zero && idle
                       ? null
                       : (_running ? _pause : _start),
-                  child: Text(_running
-                      ? l10n.timerPauseAction
-                      : (_isPaused ? l10n.timerResumeAction : l10n.timerStart)),
+                  child: Text(
+                    _running
+                        ? l10n.timerPauseAction
+                        : (_isPaused ? l10n.timerResumeAction : l10n.timerStart),
+                  ),
                 ),
               ],
             ),

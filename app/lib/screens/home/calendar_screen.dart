@@ -58,8 +58,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
   // Populated from a StreamBuilder in build() before the calendar grid is
   // built, since calendarBuilders callbacks are synchronous.
   List<Anniversary> _anniversaries = [];
-  List<({String name, int month, int day})> _friendBirthdays = [];
-  String? _friendBirthdaysMemberKey;
   List<WeatherDay> _forecast = [];
   // Personal "color this day" markers keyed by "yyyy-MM-dd" — a private
   // memo-like flag the user can set on any day without creating a
@@ -365,10 +363,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
     return null;
   }
 
-  /// Names of the signed-in user's own anniversaries, plus friends'/family's
-  /// birthdays (shared via groups), that fall on [day] this year.
+  /// Names of the signed-in user's own anniversaries that fall on [day] this
+  /// year. (Group members' birthdays used to be added here too, read from
+  /// their public profiles — removed so a birthday is never shared.)
   List<String> _anniversaryNamesForDay(DateTime day) {
-    final l10n = AppLocalizations.of(context)!;
     final names = <String>[];
     final daysInThisMonth = DateTime(day.year, day.month + 1, 0).day;
     for (final anniversary in _anniversaries) {
@@ -380,19 +378,12 @@ class _CalendarScreenState extends State<CalendarScreen> {
       if (anniversary.businessDayAdjust) occurrence = adjustToNextBusinessDay(occurrence);
       if (_isSameDay(occurrence, day)) names.add(anniversary.title);
     }
-    for (final birthday in _friendBirthdays) {
-      if (birthday.month == day.month && birthday.day == day.day) {
-        names.add(l10n.calendarBirthdaySuffix(birthday.name));
-      }
-    }
     return names;
   }
 
   /// The color of the first of the signed-in user's own anniversaries that
   /// falls on [day] (each anniversary can now have its own color — see
-  /// AnniversaryFormScreen), or the old fixed pink if none of them match
-  /// (e.g. the day only has a friend's birthday, which has no color of its
-  /// own).
+  /// AnniversaryFormScreen), or the old fixed pink if none of them match.
   Color _anniversaryColorForDay(DateTime day) {
     final daysInThisMonth = DateTime(day.year, day.month + 1, 0).day;
     for (final anniversary in _anniversaries) {
@@ -404,50 +395,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
       if (_isSameDay(occurrence, day)) return anniversary.color;
     }
     return Anniversary.defaultColor;
-  }
-
-  /// Loads birthMonth/birthDay from the public profiles of everyone in the
-  /// user's groups, so their birthdays can show on this user's calendar too.
-  /// Re-fetches only when the set of group members actually changes.
-  Future<void> _loadFriendBirthdays(String uid, List<SharedGroup> groups) async {
-    final memberIds = <String>{};
-    for (final group in groups) {
-      memberIds.addAll(group.memberIds);
-    }
-    memberIds.remove(uid);
-
-    final key = (memberIds.toList()..sort()).join(',');
-    if (key == _friendBirthdaysMemberKey) return;
-    _friendBirthdaysMemberKey = key;
-
-    if (memberIds.isEmpty) {
-      if (mounted) setState(() => _friendBirthdays = []);
-      return;
-    }
-
-    // publicProfiles' security rules allow fetching a single doc (get) by
-    // any authenticated user, but deliberately disallow querying/listing
-    // the collection (to block enumerating all users) — a whereIn query,
-    // even one scoped to document IDs, counts as a list operation and
-    // would be rejected. Fetch each member's doc individually instead.
-    final collection = FirebaseFirestore.instance.collection('publicProfiles');
-    final docs = await Future.wait(
-      memberIds.take(50).map((id) => collection.doc(id).get()),
-    );
-
-    final birthdays = <({String name, int month, int day})>[];
-    for (final doc in docs) {
-      final data = doc.data();
-      if (data == null) continue;
-      final month = data['birthMonth'] as int?;
-      final day = data['birthDay'] as int?;
-      final name = data['displayName'] as String? ?? '';
-      if (month != null && day != null && name.isNotEmpty) {
-        birthdays.add((name: name, month: month, day: day));
-      }
-    }
-
-    if (mounted) setState(() => _friendBirthdays = birthdays);
   }
 
   /// The plain, simplified cell for a day outside the focused month — same
@@ -782,14 +729,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
         ],
       ),
       body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-        stream: groupsQuery.snapshots(),
-        builder: (context, groupSnapshot) {
-          final groups = groupSnapshot.hasData
-              ? groupSnapshot.data!.docs.map((doc) => SharedGroup.fromFirestore(doc)).toList()
-              : const <SharedGroup>[];
-          WidgetsBinding.instance.addPostFrameCallback((_) => _loadFriendBirthdays(uid, groups));
-
-          return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
         stream: FirebaseFirestore.instance
             .collection('anniversaries')
             .where('ownerId', isEqualTo: uid)
@@ -848,8 +787,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
               return content;
             },
           );
-        },
-      );
         },
       ),
     );

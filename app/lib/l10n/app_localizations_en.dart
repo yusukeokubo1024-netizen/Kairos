@@ -215,7 +215,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsBirthdayHint =>
-      'Once set, your birthday will show every year on your calendar and on your friends\'/family\'s calendars too';
+      'Once set, your birthday shows every year on your own calendar. It isn\'t shared with group members.';
 
   @override
   String get settingsBirthdaySaveFailed =>
@@ -873,6 +873,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Invite by email (this schedule only)';
 
   @override
+  String get scheduleFormEmailEmpty =>
+      'Enter the email address of the person to add';
+
+  @override
   String get scheduleFormEmailNotFound =>
       'No user was found with that email address';
 
@@ -1051,6 +1055,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get groupFormTitle => 'Create a group';
+
+  @override
+  String get groupRenameTitle => 'Rename group';
+
+  @override
+  String get groupRenameFailed =>
+      'Couldn\'t rename the group. Please try again.';
 
   @override
   String get groupFormNameLabel => 'Group name';

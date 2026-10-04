@@ -11,6 +11,7 @@ import '../../main.dart';
 import '../../models/shared_group.dart';
 import '../../services/audit_service.dart';
 import 'group_chat_screen.dart';
+import 'live_group_name.dart';
 
 // Characters chosen to avoid look-alikes when read or typed by hand
 // (no 0/O, 1/I/L).
@@ -129,6 +130,73 @@ class GroupDetailScreen extends StatelessWidget {
       ),
     );
     Future.delayed(const Duration(seconds: 5), () => snackBarController?.close());
+  }
+
+  Future<void> _rename(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
+    final db = FirebaseFirestore.instance;
+    final currentName =
+        (await db.collection('sharedGroups').doc(group.id).get()).data()?['name'] as String? ??
+            group.name;
+    if (!context.mounted) return;
+
+    final controller = TextEditingController(text: currentName);
+    final formKey = GlobalKey<FormState>();
+    final newName = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.groupRenameTitle),
+        content: Form(
+          key: formKey,
+          child: TextFormField(
+            controller: controller,
+            autofocus: true,
+            decoration: InputDecoration(labelText: l10n.groupFormNameLabel),
+            validator: (value) =>
+                (value == null || value.trim().isEmpty) ? l10n.groupFormNameRequired : null,
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: Text(l10n.commonCancel)),
+          TextButton(
+            onPressed: () {
+              if (formKey.currentState!.validate()) {
+                Navigator.pop(context, controller.text.trim());
+              }
+            },
+            child: Text(l10n.commonSave),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+    if (newName == null || newName == currentName) return;
+
+    try {
+      await db
+          .collection('sharedGroups')
+          .doc(group.id)
+          .update({'name': newName, 'updatedAt': FieldValue.serverTimestamp()});
+      unawaited(AuditService.instance.logUpdate(
+        collection: 'sharedGroups',
+        targetId: group.id,
+        oldData: {'name': currentName},
+        newData: {'name': newName},
+      ));
+    } catch (_) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(l10n.groupRenameFailed)));
+      }
+      return;
+    }
+    try {
+      // Keeps the name non-members see from the invite code in sync.
+      await db.collection('groupInvitePreviews').doc(group.id).update({'name': newName});
+    } catch (_) {
+      // Best-effort — only shown before joining (and older groups may not
+      // have a preview doc at all).
+    }
   }
 
   Future<void> _decrementPreviewCount() async {
@@ -264,8 +332,14 @@ class GroupDetailScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(group.name),
+        title: LiveGroupName(groupId: group.id, initialName: group.name),
         actions: [
+          if (isOwner)
+            IconButton(
+              icon: const Icon(Icons.edit_outlined),
+              tooltip: l10n.groupRenameTitle,
+              onPressed: () => _rename(context),
+            ),
           if (isOwner)
             IconButton(icon: const Icon(Icons.delete_outline), onPressed: () => _delete(context))
           else

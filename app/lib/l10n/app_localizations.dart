@@ -489,7 +489,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsBirthdayHint.
   ///
   /// In ja, this message translates to:
-  /// **'生年月日を登録すると、毎年カレンダーとグループの友人・家族にも誕生日として表示されます'**
+  /// **'生年月日を登録すると、毎年あなたのカレンダーに誕生日として表示されます。グループのメンバーには共有されません'**
   String get settingsBirthdayHint;
 
   /// No description provided for @settingsBirthdaySaveFailed.
@@ -1686,6 +1686,12 @@ abstract class AppLocalizations {
   /// **'メールアドレスで招待（この予定だけ）'**
   String get scheduleFormInviteByEmail;
 
+  /// No description provided for @scheduleFormEmailEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'追加したい相手のメールアドレスを入力してください'**
+  String get scheduleFormEmailEmpty;
+
   /// No description provided for @scheduleFormEmailNotFound.
   ///
   /// In ja, this message translates to:
@@ -2009,6 +2015,18 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'グループを作成'**
   String get groupFormTitle;
+
+  /// No description provided for @groupRenameTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'グループ名を変更'**
+  String get groupRenameTitle;
+
+  /// No description provided for @groupRenameFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'グループ名を変更できませんでした。もう一度お試しください。'**
+  String get groupRenameFailed;
 
   /// No description provided for @groupFormNameLabel.
   ///

@@ -211,7 +211,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get settingsBirthdayHint =>
-      '생년월일을 등록하면 매년 캘린더와 그룹 친구·가족의 캘린더에도 생일로 표시됩니다';
+      '생년월일을 등록하면 매년 내 캘린더에 생일로 표시됩니다. 그룹 멤버에게는 공유되지 않습니다';
 
   @override
   String get settingsBirthdaySaveFailed => '생년월일 저장에 실패했습니다. 잠시 후 다시 시도해 주세요';
@@ -851,6 +851,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get scheduleFormInviteByEmail => '이메일로 초대 (이 일정만)';
 
   @override
+  String get scheduleFormEmailEmpty => '추가할 상대의 이메일 주소를 입력하세요';
+
+  @override
   String get scheduleFormEmailNotFound => '해당 이메일 주소의 사용자를 찾을 수 없습니다';
 
   @override
@@ -1028,6 +1031,12 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get groupFormTitle => '그룹 만들기';
+
+  @override
+  String get groupRenameTitle => '그룹 이름 변경';
+
+  @override
+  String get groupRenameFailed => '그룹 이름을 변경하지 못했습니다. 다시 시도해 주세요.';
 
   @override
   String get groupFormNameLabel => '그룹 이름';

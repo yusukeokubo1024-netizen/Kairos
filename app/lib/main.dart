@@ -16,6 +16,7 @@ import 'screens/auth/login_screen.dart';
 import 'screens/home/home_shell.dart';
 import 'services/analytics_service.dart';
 import 'services/biometric_service.dart';
+import 'services/birthday_service.dart';
 import 'services/locale_service.dart';
 import 'services/notification_service.dart';
 import 'services/push_notification_service.dart';
@@ -155,6 +156,8 @@ class _BiometricGateState extends State<BiometricGate> {
     // biometric lock below, since it's a background sync, not something
     // that needs to wait on the user unlocking the screen.
     PushNotificationService.instance.init();
+    // Moves a birthday saved by an older version off the public profile.
+    BirthdayService.instance.migrateFromPublicProfile();
   }
 
   Future<void> _checkLock() async {

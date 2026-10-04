@@ -209,7 +209,7 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get settingsBirthdayHint => '设置生日后，每年都会显示在您的日历以及群组好友、家人的日历上';
+  String get settingsBirthdayHint => '设置生日后，每年都会显示在您自己的日历上。不会与群组成员共享';
 
   @override
   String get settingsBirthdaySaveFailed => '生日保存失败，请稍后再试';
@@ -835,6 +835,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get scheduleFormInviteByEmail => '通过邮箱邀请（仅此日程）';
 
   @override
+  String get scheduleFormEmailEmpty => '请输入要添加的对象的邮箱地址';
+
+  @override
   String get scheduleFormEmailNotFound => '未找到使用该邮箱地址的用户';
 
   @override
@@ -1011,6 +1014,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get groupFormTitle => '创建群组';
+
+  @override
+  String get groupRenameTitle => '更改群组名称';
+
+  @override
+  String get groupRenameFailed => '无法更改群组名称，请重试。';
 
   @override
   String get groupFormNameLabel => '群组名称';

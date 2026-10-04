@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/chat_message.dart';
 import '../../models/shared_group.dart';
+import 'live_group_name.dart';
 
 class GroupChatScreen extends StatefulWidget {
   final SharedGroup group;
@@ -280,7 +281,13 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
         .orderBy('createdAt', descending: true);
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.groupChatTitle(widget.group.name))),
+      appBar: AppBar(
+        title: LiveGroupName(
+          groupId: widget.group.id,
+          initialName: widget.group.name,
+          builder: (name) => Text(l10n.groupChatTitle(name)),
+        ),
+      ),
       body: SafeArea(
         child: Column(
           children: [

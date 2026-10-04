@@ -14,6 +14,7 @@ import '../../l10n/app_localizations.dart';
 import '../../models/anniversary.dart';
 import '../../services/auth_service.dart';
 import '../../services/biometric_service.dart';
+import '../../services/birthday_service.dart';
 import '../../services/locale_service.dart';
 import '../../services/notification_service.dart';
 import '../../services/theme_service.dart';
@@ -258,11 +259,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final db = FirebaseFirestore.instance;
 
     try {
-      await db.collection('publicProfiles').doc(uid).set({
-        'birthMonth': picked.month,
-        'birthDay': picked.day,
-        'updatedAt': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
+      // Private (users/{uid}) — no longer published to group members.
+      await BirthdayService.instance.save(uid, picked.month, picked.day);
 
       // Also register it as an anniversary so it shows on the calendar and
       // gets a yearly reminder notification, same as any other 大切な記念日.
@@ -280,7 +278,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       await NotificationService.instance.scheduleForAnniversary(anniversary);
     } catch (e, st) {
       // This used to fail silently (fire-and-forget from the ListTile's
-      // onTap, no try/catch) — the publicProfiles write could succeed
+      // onTap, no try/catch) — the birthday write could succeed
       // while the anniversaries write failed, leaving Settings showing the
       // saved date correctly while the calendar never got it, with no
       // visible error anywhere.
@@ -710,12 +708,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     child: Text(l10n.settingsResendVerification),
                   ),
                 ),
-              StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-                stream: FirebaseFirestore.instance.collection('publicProfiles').doc(uid).snapshots(),
-                builder: (context, profileSnapshot) {
-                  final profileData = profileSnapshot.data?.data();
-                  final birthMonth = profileData?['birthMonth'] as int?;
-                  final birthDay = profileData?['birthDay'] as int?;
+              Builder(
+                builder: (context) {
+                  final birthMonth = data?['birthMonth'] as int?;
+                  final birthDay = data?['birthDay'] as int?;
                   final current = (birthMonth != null && birthDay != null)
                       ? DateTime(2000, birthMonth, birthDay)
                       : null;

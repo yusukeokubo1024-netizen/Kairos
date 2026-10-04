@@ -212,7 +212,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get settingsBirthdayHint =>
-      '生年月日を登録すると、毎年カレンダーとグループの友人・家族にも誕生日として表示されます';
+      '生年月日を登録すると、毎年あなたのカレンダーに誕生日として表示されます。グループのメンバーには共有されません';
 
   @override
   String get settingsBirthdaySaveFailed => '生年月日の保存に失敗しました。時間をおいて再度お試しください';
@@ -846,6 +846,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get scheduleFormInviteByEmail => 'メールアドレスで招待（この予定だけ）';
 
   @override
+  String get scheduleFormEmailEmpty => '追加したい相手のメールアドレスを入力してください';
+
+  @override
   String get scheduleFormEmailNotFound => 'そのメールアドレスのユーザーが見つかりませんでした';
 
   @override
@@ -1022,6 +1025,12 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get groupFormTitle => 'グループを作成';
+
+  @override
+  String get groupRenameTitle => 'グループ名を変更';
+
+  @override
+  String get groupRenameFailed => 'グループ名を変更できませんでした。もう一度お試しください。';
 
   @override
   String get groupFormNameLabel => 'グループ名';

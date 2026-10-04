@@ -38,6 +38,7 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
   final _locationController = TextEditingController();
   final _notesController = TextEditingController();
   final _emailSearchController = TextEditingController();
+  final _emailSearchFocus = FocusNode();
 
   late DateTime _start;
   late DateTime _end;
@@ -141,7 +142,13 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
   Future<void> _searchByEmail() async {
     final l10n = AppLocalizations.of(context)!;
     final email = _emailSearchController.text.trim().toLowerCase();
-    if (email.isEmpty) return;
+    if (email.isEmpty) {
+      // Used to just return silently, so tapping the add button with an
+      // empty field looked like it did nothing at all.
+      setState(() => _emailSearchError = l10n.scheduleFormEmailEmpty);
+      _emailSearchFocus.requestFocus();
+      return;
+    }
     final uid = FirebaseAuth.instance.currentUser!.uid;
 
     setState(() {
@@ -241,6 +248,7 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
     _locationController.dispose();
     _notesController.dispose();
     _emailSearchController.dispose();
+    _emailSearchFocus.dispose();
     super.dispose();
   }
 
@@ -801,6 +809,7 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
                     Expanded(
                       child: TextField(
                         controller: _emailSearchController,
+                        focusNode: _emailSearchFocus,
                         keyboardType: TextInputType.emailAddress,
                         decoration: InputDecoration(
                           labelText: l10n.scheduleFormInviteByEmail,

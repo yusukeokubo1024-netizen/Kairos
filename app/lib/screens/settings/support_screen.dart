@@ -18,6 +18,9 @@ const _supportEmail = 'kairos19900927@gmail.com';
 // this ships inside the compiled app bundle, so it's restricted to
 // low-stakes free-tier usage rather than anything billed or sensitive.
 const _geminiApiKey = String.fromEnvironment('GEMINI_API_KEY');
+// A stray space/newline pasted into the CI variable would otherwise make
+// the request header itself invalid.
+final _geminiApiKeyTrimmed = _geminiApiKey.trim();
 const _geminiModel = 'gemini-flash-latest';
 // Used once the main model keeps answering 503 "high demand" — the lite
 // model is usually still available when flash is overloaded.
@@ -263,7 +266,7 @@ $faqText''';
         Uri.parse('https://generativelanguage.googleapis.com/v1beta/models/$model:generateContent'),
         headers: {
           'Content-Type': 'application/json',
-          'X-goog-api-key': _geminiApiKey,
+          'X-goog-api-key': _geminiApiKeyTrimmed,
         },
         body: jsonEncode({
           'system_instruction': {
@@ -280,7 +283,7 @@ $faqText''';
       final isRetryable =
           (response.statusCode == 503 || response.statusCode == 429) && attempt < maxAttempts;
       if (!isRetryable) {
-        throw Exception('Gemini request failed: status ${response.statusCode}, body: ${response.body}');
+        throw _GeminiRequestError(response.statusCode, response.body);
       }
       setState(() => _status = l10n.supportAiRetrying(attempt, maxAttempts));
       await Future.delayed(Duration(milliseconds: 1200 * attempt));
@@ -306,7 +309,7 @@ $faqText''';
     final question = _textController.text.trim();
     if (question.isEmpty) return;
 
-    if (_geminiApiKey.isEmpty) {
+    if (_geminiApiKeyTrimmed.isEmpty) {
       setState(() => _status = l10n.supportAiNotConfigured);
       return;
     }
@@ -349,7 +352,14 @@ $faqText''';
           .recordError(e, st, reason: 'support AI chat request failed', fatal: false);
       if (mounted) {
         setState(() {
-          _messages.add(_ChatEntry(isUser: false, text: l10n.supportAiError, time: DateTime.now()));
+          // A short code (HTTP status, or the kind of failure) so a user's
+          // screenshot/report says what actually went wrong.
+          final code = e is _GeminiRequestError ? '${e.statusCode}' : e.runtimeType.toString();
+          _messages.add(_ChatEntry(
+            isUser: false,
+            text: '${l10n.supportAiError} ($code)',
+            time: DateTime.now(),
+          ));
           _status = null;
         });
       }
@@ -468,4 +478,14 @@ $faqText''';
       ),
     );
   }
+}
+
+class _GeminiRequestError implements Exception {
+  final int statusCode;
+  final String body;
+
+  _GeminiRequestError(this.statusCode, this.body);
+
+  @override
+  String toString() => 'Gemini request failed: status $statusCode, body: $body';
 }

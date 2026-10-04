@@ -427,15 +427,7 @@ class NotificationService {
         visibility: NotificationVisibility.public,
         autoCancel: false,
       ),
-      // alarm_clock.caf: "時計 アラーム05" by OtoLogic (otologic.jp), CC BY
-      // 4.0 — iOS has no system-wide sound picker for third-party apps
-      // (unlike Android's NotificationSoundService), so this one bundled
-      // sound replaces the plain default notification chime for a more
-      // alarm-like feel. Credit shown in Settings per the license terms.
-      iOS: const DarwinNotificationDetails(
-        sound: 'alarm_clock.caf',
-        interruptionLevel: InterruptionLevel.timeSensitive,
-      ),
+      iOS: const DarwinNotificationDetails(interruptionLevel: InterruptionLevel.timeSensitive),
     );
     try {
       await _plugin.zonedSchedule(

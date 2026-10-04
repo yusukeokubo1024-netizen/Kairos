@@ -684,12 +684,6 @@ abstract class AppLocalizations {
   /// **'利用規約'**
   String get settingsTermsOfService;
 
-  /// No description provided for @settingsSoundCredit.
-  ///
-  /// In ja, this message translates to:
-  /// **'音源クレジット'**
-  String get settingsSoundCredit;
-
   /// No description provided for @settingsSupport.
   ///
   /// In ja, this message translates to:

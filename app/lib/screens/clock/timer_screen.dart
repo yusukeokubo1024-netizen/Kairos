@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../../l10n/app_localizations.dart';
+import '../../services/alarm_sound_service.dart';
 import '../../services/notification_service.dart';
 
 const _timerNotificationId = 900000001;
@@ -51,9 +52,38 @@ class _TimerScreenState extends State<TimerScreen> {
         _running = false;
         _endTime = null;
       });
+      _ringTimeUp();
       return;
     }
     setState(() => _remaining = remaining);
+  }
+
+  /// Rings in-app until dismissed — the scheduled notification alone made
+  /// no sound at all while the app was open on iOS.
+  Future<void> _ringTimeUp() async {
+    final l10n = AppLocalizations.of(context)!;
+    await AlarmSoundService.instance.start();
+    if (!mounted) {
+      await AlarmSoundService.instance.stop();
+      return;
+    }
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        icon: const Icon(Icons.timer_outlined, size: 40),
+        title: Text(l10n.timerUpTitle),
+        actions: [
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(l10n.ringingStop),
+          ),
+        ],
+      ),
+    );
+    await AlarmSoundService.instance.stop();
+    // Also clears the already-delivered notification from Notification Center.
+    await NotificationService.instance.cancelClockAlarm(_timerNotificationId);
   }
 
   Future<void> _pause() async {
@@ -79,6 +109,7 @@ class _TimerScreenState extends State<TimerScreen> {
   @override
   void dispose() {
     _ticker?.cancel();
+    AlarmSoundService.instance.stop();
     super.dispose();
   }
 

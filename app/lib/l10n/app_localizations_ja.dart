@@ -317,6 +317,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get settingsTermsOfService => '利用規約';
 
   @override
+  String get settingsSoundCredit => '音源クレジット';
+
+  @override
   String get settingsSupport => 'サポート';
 
   @override

@@ -848,6 +848,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 title: Text(l10n.settingsTermsOfService),
                 onTap: () => _openUrl('https://kairos-3d873.web.app/terms-of-service.html'),
               ),
+              // Attribution required by the CC BY 4.0 license the
+              // iOS alarm/timer sound (alarm_clock.caf) is used under.
+              ListTile(
+                leading: const Icon(Icons.music_note_outlined),
+                title: Text(l10n.settingsSoundCredit),
+                subtitle: const Text('OtoLogic (otologic.jp) — CC BY 4.0'),
+                onTap: () => _openUrl('https://otologic.jp/'),
+              ),
               ListTile(
                 leading: const Icon(Icons.support_agent_outlined),
                 title: Text(l10n.settingsSupport),

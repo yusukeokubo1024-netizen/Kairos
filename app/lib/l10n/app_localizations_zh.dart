@@ -315,6 +315,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsTermsOfService => '服务条款';
 
   @override
+  String get settingsSoundCredit => '音效版权信息';
+
+  @override
   String get settingsSupport => '支持';
 
   @override

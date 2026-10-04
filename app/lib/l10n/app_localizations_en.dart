@@ -329,6 +329,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsTermsOfService => 'Terms of Service';
 
   @override
+  String get settingsSoundCredit => 'Sound credit';
+
+  @override
   String get settingsSupport => 'Support';
 
   @override

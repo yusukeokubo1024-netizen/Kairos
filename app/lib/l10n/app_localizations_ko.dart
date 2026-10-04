@@ -319,6 +319,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get settingsTermsOfService => '이용약관';
 
   @override
+  String get settingsSoundCredit => '사운드 크레딧';
+
+  @override
   String get settingsSupport => '고객지원';
 
   @override

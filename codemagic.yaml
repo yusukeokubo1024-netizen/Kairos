@@ -134,8 +134,6 @@ workflows:
         # separate copy under ios_signing) — include this group too just
         # to pick that one variable up for the --dart-define below.
         - android_signing
-      vars:
-        GEMINI_API_KEY: $GEMINI_API_KEY
     scripts:
       - name: Get Flutter packages
         script: |
@@ -166,6 +164,17 @@ workflows:
         script: |
           cd app/ios
           pod install
+      - name: Check GEMINI_API_KEY
+        # The AI support chat failed with "API key not valid" for many builds
+        # while a workflow-level vars: GEMINI_API_KEY: $GEMINI_API_KEY
+        # self-reference shadowed the group's real key. Prints only the length
+        # and first characters, and stops the build if the key looks wrong.
+        script: |
+          echo "GEMINI_API_KEY length: ${#GEMINI_API_KEY}, starts with: ${GEMINI_API_KEY:0:4}"
+          if [ ${#GEMINI_API_KEY} -lt 30 ] || [ "${GEMINI_API_KEY:0:1}" = "$" ]; then
+            echo "GEMINI_API_KEY is missing or malformed" >&2
+            exit 1
+          fi
       - name: Build signed IPA
         script: |
           cd app
@@ -197,8 +206,6 @@ workflows:
       # exposes them to this workflow.
       groups:
         - android_signing
-      vars:
-        GEMINI_API_KEY: $GEMINI_API_KEY
     scripts:
       - name: Get Flutter packages
         script: |
@@ -219,6 +226,17 @@ workflows:
           keyAlias=$CM_KEY_ALIAS
           storeFile=/tmp/kairos-release.keystore
           EOF
+      - name: Check GEMINI_API_KEY
+        # The AI support chat failed with "API key not valid" for many builds
+        # while a workflow-level vars: GEMINI_API_KEY: $GEMINI_API_KEY
+        # self-reference shadowed the group's real key. Prints only the length
+        # and first characters, and stops the build if the key looks wrong.
+        script: |
+          echo "GEMINI_API_KEY length: ${#GEMINI_API_KEY}, starts with: ${GEMINI_API_KEY:0:4}"
+          if [ ${#GEMINI_API_KEY} -lt 30 ] || [ "${GEMINI_API_KEY:0:1}" = "$" ]; then
+            echo "GEMINI_API_KEY is missing or malformed" >&2
+            exit 1
+          fi
       - name: Build Android App Bundle
         script: |
           cd app

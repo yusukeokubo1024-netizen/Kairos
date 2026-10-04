@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -19,10 +21,26 @@ class PushNotificationService {
 
   Future<void> init() async {
     if (!_listenersAttached) {
-      // A push notification arriving while the app is in the foreground
-      // isn't shown by the OS automatically — show it ourselves via the
-      // same local-notification channel the on-device reminders use.
+      // iOS asks each plugin in turn how to present a notification that
+      // arrives while the app is in the foreground, and only the first
+      // answer counts. firebase_messaging is registered first and answers
+      // "nothing" unless told otherwise — which silenced every foreground
+      // notification, local ones (Timer/Alarm) included. Letting it answer
+      // banner + sound fixes both, and iOS then shows FCM pushes natively.
+      if (Platform.isIOS) {
+        await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
+          alert: true,
+          badge: true,
+          sound: true,
+        );
+      }
+      // On Android, a push notification arriving while the app is in the
+      // foreground isn't shown by the OS automatically — show it ourselves
+      // via the same local-notification channel the on-device reminders use.
       FirebaseMessaging.onMessage.listen((message) async {
+        // iOS already presents it natively (see above); showing it here
+        // too would notify twice.
+        if (Platform.isIOS) return;
         final notification = message.notification;
         if (notification == null) return;
         final category =

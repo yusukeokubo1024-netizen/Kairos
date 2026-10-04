@@ -824,6 +824,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get scheduleFormAlarmStyle => 'アラームのように鳴らす';
 
   @override
+  String get scheduleFormAlarmStyleHintIos =>
+      '止めるまで目覚ましのように鳴ります。マナーモード中やアプリを閉じているときでも鳴ります（iOS 26以降）';
+
+  @override
   String get scheduleFormAlarmStyleHint =>
       '画面ロック中でも全画面表示（Android限定）。機種やAndroidのバージョンによっては、設定アプリ側で「アラームとリマインダー」の許可が別途必要な場合があります';
 

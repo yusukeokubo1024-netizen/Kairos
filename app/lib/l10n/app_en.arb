@@ -280,6 +280,7 @@
   "scheduleFormReminder60": "1 hour before",
   "scheduleFormReminder1440": "1 day before",
   "scheduleFormAlarmStyle": "Ring like an alarm",
+  "scheduleFormAlarmStyleHintIos": "Rings like an alarm clock until you stop it — even on silent or with the app closed (iOS 26 or later).",
   "scheduleFormAlarmStyleHint": "Full-screen, even over the lock screen (Android only). Some devices/Android versions require separately allowing \"Alarms & reminders\" in system settings",
   "scheduleFormCalendar": "Calendar",
   "scheduleFormCalendarHint": "This category is used to show/hide it via the filter on the home screen",

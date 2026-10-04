@@ -684,12 +684,15 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
                       .toList(),
                   onChanged: (value) => setState(() => _reminderMinutes = value),
                 ),
-                if (_reminderMinutes != null && Platform.isAndroid)
+                // iOS: an AlarmKit alarm on iOS 26+ (see NotificationService).
+                if (_reminderMinutes != null)
                   SwitchListTile(
                     contentPadding: EdgeInsets.zero,
                     title: Text(l10n.scheduleFormAlarmStyle),
                     subtitle: Text(
-                      l10n.scheduleFormAlarmStyleHint,
+                      Platform.isIOS
+                          ? l10n.scheduleFormAlarmStyleHintIos
+                          : l10n.scheduleFormAlarmStyleHint,
                       style: const TextStyle(fontSize: 12),
                     ),
                     value: _alarmStyle,

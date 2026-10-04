@@ -848,6 +848,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get scheduleFormAlarmStyle => 'Ring like an alarm';
 
   @override
+  String get scheduleFormAlarmStyleHintIos =>
+      'Rings like an alarm clock until you stop it — even on silent or with the app closed (iOS 26 or later).';
+
+  @override
   String get scheduleFormAlarmStyleHint =>
       'Full-screen, even over the lock screen (Android only). Some devices/Android versions require separately allowing \"Alarms & reminders\" in system settings';
 

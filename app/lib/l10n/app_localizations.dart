@@ -1644,6 +1644,12 @@ abstract class AppLocalizations {
   /// **'アラームのように鳴らす'**
   String get scheduleFormAlarmStyle;
 
+  /// No description provided for @scheduleFormAlarmStyleHintIos.
+  ///
+  /// In ja, this message translates to:
+  /// **'止めるまで目覚ましのように鳴ります。マナーモード中やアプリを閉じているときでも鳴ります（iOS 26以降）'**
+  String get scheduleFormAlarmStyleHintIos;
+
   /// No description provided for @scheduleFormAlarmStyleHint.
   ///
   /// In ja, this message translates to:

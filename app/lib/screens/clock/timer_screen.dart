@@ -27,6 +27,8 @@ class _TimerScreenState extends State<TimerScreen> with AutomaticKeepAliveClient
   DateTime? _endTime;
   bool _running = false;
   Timer? _ticker;
+  // True when the system (AlarmKit, iOS 26+) rings this timer itself.
+  bool _systemAlarm = false;
 
   bool get _isPaused => !_running && _endTime == null && _remaining != _setDuration;
 
@@ -38,7 +40,7 @@ class _TimerScreenState extends State<TimerScreen> with AutomaticKeepAliveClient
       _running = true;
     });
     _ticker = Timer.periodic(const Duration(seconds: 1), (_) => _tick());
-    await NotificationService.instance.scheduleClockAlarm(
+    _systemAlarm = await NotificationService.instance.scheduleClockAlarm(
       id: _timerNotificationId,
       title: l10n.timerUpTitle,
       body: l10n.timerUpTitle,
@@ -57,7 +59,11 @@ class _TimerScreenState extends State<TimerScreen> with AutomaticKeepAliveClient
         _running = false;
         _endTime = null;
       });
-      _ringTimeUp();
+      // Ring in-app only if the timer ran out just now with the app open:
+      // not when the system alarm already rang, and not hours later just
+      // because the app was reopened after the timer ended in the
+      // background.
+      if (!_systemAlarm && remaining > const Duration(seconds: -5)) _ringTimeUp();
       return;
     }
     setState(() => _remaining = remaining);

@@ -813,6 +813,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get scheduleFormAlarmStyle => '像闹钟一样响铃';
 
   @override
+  String get scheduleFormAlarmStyleHintIos =>
+      '像闹钟一样一直响到您停止为止。即使在静音模式或关闭应用时也会响（iOS 26 或更高版本）';
+
+  @override
   String get scheduleFormAlarmStyleHint =>
       '锁屏时也会全屏显示（仅限Android）。部分机型/Android版本需要在系统设置中单独允许“闹钟和提醒”权限';
 

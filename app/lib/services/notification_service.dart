@@ -9,6 +9,7 @@ import '../models/anniversary.dart';
 import '../models/schedule.dart';
 import '../models/task.dart';
 import '../utils/business_day.dart';
+import 'alarm_kit_service.dart';
 import 'alarm_sound_service.dart';
 import 'locale_service.dart';
 import 'notification_sound_service.dart';
@@ -198,6 +199,32 @@ class NotificationService {
       if (reminderTime.isBefore(DateTime.now())) return;
     }
 
+    // "Alarm-style" on iOS 26+: a real AlarmKit alarm, which rings even on
+    // silent and with the app closed. AlarmKit only repeats weekly, so a
+    // monthly/yearly schedule gets just its next occurrence (re-scheduled
+    // whenever the schedule is saved again).
+    final alarmKitKey = _scheduleAlarmKitKey(schedule.id);
+    if (schedule.alarmStyle) {
+      final usedAlarmKit = await AlarmKitService.instance.schedule(
+        key: alarmKitKey,
+        title: schedule.title,
+        stopText: _alarmStopText,
+        fireTime: reminderTime,
+        weekdays: switch (schedule.recurrence) {
+          'daily' => const [1, 2, 3, 4, 5, 6, 7],
+          'weekly' => [reminderTime.weekday],
+          _ => null,
+        },
+        soundFile: (await AlarmSoundService.instance.selected()).fileName,
+      );
+      if (usedAlarmKit) {
+        await _plugin.cancel(id: _scheduleNotificationId('schedule_', schedule.id));
+        return;
+      }
+    } else {
+      await AlarmKitService.instance.cancel(alarmKitKey);
+    }
+
     // "Alarm-style" (Android only): full-screen, shows over the lock
     // screen, on its own channel so the user can pick a louder sound for it
     // in system settings than the regular reminder channel. Not a true
@@ -267,7 +294,10 @@ class NotificationService {
 
   Future<void> cancelForSchedule(String scheduleId) async {
     await _plugin.cancel(id: _scheduleNotificationId('schedule_', scheduleId));
+    await AlarmKitService.instance.cancel(_scheduleAlarmKitKey(scheduleId));
   }
+
+  String _scheduleAlarmKitKey(String scheduleId) => 'schedule_$scheduleId';
 
   /// Reminds the user the morning of a task's due date, if it has one.
   Future<void> scheduleForTask(Task task) async {
@@ -407,13 +437,33 @@ class NotificationService {
   /// without a dedicated native alarm plugin. [matchComponents] makes it
   /// natively repeat on the OS side (e.g. for a specific weekday) instead
   /// of firing once.
-  Future<void> scheduleClockAlarm({
+  ///
+  /// On iOS 26+ this schedules a real AlarmKit alarm instead (rings on
+  /// silent and with the app closed) and returns true; otherwise falls back
+  /// to the notification and returns false.
+  Future<bool> scheduleClockAlarm({
     required int id,
     required String title,
     required String body,
     required DateTime fireTime,
     DateTimeComponents? matchComponents,
   }) async {
+    final soundFile = (await AlarmSoundService.instance.selected()).fileName;
+    final usedAlarmKit = await AlarmKitService.instance.schedule(
+      key: _clockAlarmKitKey(id),
+      title: title,
+      stopText: _alarmStopText,
+      fireTime: fireTime,
+      weekdays:
+          matchComponents == DateTimeComponents.dayOfWeekAndTime ? [fireTime.weekday] : null,
+      soundFile: soundFile,
+    );
+    if (usedAlarmKit) {
+      // Don't also ring a second time via a notification.
+      await _plugin.cancel(id: id);
+      return true;
+    }
+
     final notificationDetails = NotificationDetails(
       android: AndroidNotificationDetails(
         (await NotificationSoundService.instance.load(SoundCategory.alarm)).channelId,
@@ -431,7 +481,7 @@ class NotificationService {
       iOS: DarwinNotificationDetails(
         // The bundled alarm_*.caf the user picked (AlarmSoundService); null
         // = the plain default chime.
-        sound: (await AlarmSoundService.instance.selected()).fileName,
+        sound: soundFile,
         interruptionLevel: InterruptionLevel.timeSensitive,
       ),
     );
@@ -463,15 +513,22 @@ class NotificationService {
             .recordError(e2, st2, reason: 'failed to schedule clock alarm', fatal: false);
       }
     }
+    return false;
   }
 
   Future<void> cancelClockAlarm(int id) async {
     await _plugin.cancel(id: id);
+    await AlarmKitService.instance.cancel(_clockAlarmKitKey(id));
   }
 
-  /// Cancels every pending local notification (used when the user turns
-  /// notifications off entirely in Settings).
+  String _clockAlarmKitKey(int id) => 'clock_$id';
+
+  String get _alarmStopText => _isJa ? '停止' : 'Stop';
+
+  /// Cancels every pending local notification and system alarm (used when
+  /// the user turns notifications off entirely in Settings).
   Future<void> cancelAll() async {
     await _plugin.cancelAll();
+    await AlarmKitService.instance.cancelAll();
   }
 }

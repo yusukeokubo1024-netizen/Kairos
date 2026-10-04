@@ -1439,4 +1439,32 @@ class AppLocalizationsEn extends AppLocalizations {
   String stopwatchLapNumber(Object number) {
     return 'Lap $number';
   }
+
+  @override
+  String get alarmSoundTitle => 'Alarm sound';
+
+  @override
+  String get alarmSoundSystem => 'Default';
+
+  @override
+  String get alarmSoundBell => 'Classic phone';
+
+  @override
+  String get alarmSoundAlarmClock => 'Alarm clock';
+
+  @override
+  String get alarmSoundBirds => 'Birdsong';
+
+  @override
+  String get alarmSoundDigital => 'Digital';
+
+  @override
+  String get alarmSoundMarimba => 'Marimba';
+
+  @override
+  String get alarmSoundWave => 'Wave';
+
+  @override
+  String get alarmSoundHint =>
+      'Tap a sound to preview it. Used for alarms and the timer.';
 }

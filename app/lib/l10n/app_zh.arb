@@ -485,5 +485,14 @@
   "stopwatchLap": "计次",
   "stopwatchReset": "重置",
   "stopwatchLapNumber": "第{number}次",
-  "@stopwatchLapNumber": { "placeholders": { "number": {} } }
+  "@stopwatchLapNumber": { "placeholders": { "number": {} } },
+  "alarmSoundTitle": "闹钟铃声",
+  "alarmSoundSystem": "默认",
+  "alarmSoundBell": "老式电话",
+  "alarmSoundAlarmClock": "闹钟",
+  "alarmSoundBirds": "鸟鸣",
+  "alarmSoundDigital": "数字",
+  "alarmSoundMarimba": "马林巴",
+  "alarmSoundWave": "波浪",
+  "alarmSoundHint": "点按即可试听。用于闹钟和计时器。"
 }

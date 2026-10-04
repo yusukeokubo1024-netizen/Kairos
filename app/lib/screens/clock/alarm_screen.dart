@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -5,7 +7,9 @@ import 'package:intl/intl.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/alarm.dart';
 import '../../services/alarm_service.dart';
+import '../../services/alarm_sound_service.dart';
 import '../../services/locale_service.dart';
+import 'alarm_sound_screen.dart';
 
 class AlarmScreen extends StatefulWidget {
   const AlarmScreen({super.key});
@@ -17,6 +21,7 @@ class AlarmScreen extends StatefulWidget {
 class _AlarmScreenState extends State<AlarmScreen> {
   List<Alarm> _alarms = [];
   bool _loaded = false;
+  AlarmSound? _sound;
 
   @override
   void initState() {
@@ -26,9 +31,11 @@ class _AlarmScreenState extends State<AlarmScreen> {
 
   Future<void> _load() async {
     final alarms = await AlarmService.instance.load();
+    final sound = await AlarmSoundService.instance.selected();
     if (!mounted) return;
     setState(() {
       _alarms = alarms;
+      _sound = sound;
       _loaded = true;
     });
   }
@@ -44,8 +51,7 @@ class _AlarmScreenState extends State<AlarmScreen> {
 
     final updated = existing == null
         ? await AlarmService.instance.add(_alarms, result, defaultLabel: l10n.alarmDefaultLabel)
-        : await AlarmService.instance
-            .update(_alarms, result, defaultLabel: l10n.alarmDefaultLabel);
+        : await AlarmService.instance.update(_alarms, result, defaultLabel: l10n.alarmDefaultLabel);
     if (!mounted) return;
     setState(() => _alarms = updated);
   }
@@ -68,7 +74,10 @@ class _AlarmScreenState extends State<AlarmScreen> {
       builder: (context) => AlertDialog(
         title: Text(l10n.alarmDeleteConfirmTitle),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(l10n.commonCancel)),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(l10n.commonCancel),
+          ),
           TextButton(onPressed: () => Navigator.pop(context, true), child: Text(l10n.commonDelete)),
         ],
       ),
@@ -89,49 +98,77 @@ class _AlarmScreenState extends State<AlarmScreen> {
     // DateTime.weekday is 1=Monday..7=Sunday; pick any week's matching date
     // to get a locale-correct short weekday name via intl.
     final monday = DateTime(2024, 1, 1); // a Monday
-    return sorted.map((w) => DateFormat.E(locale).format(monday.add(Duration(days: w - 1)))).join(', ');
+    return sorted
+        .map((w) => DateFormat.E(locale).format(monday.add(Duration(days: w - 1))))
+        .join(', ');
+  }
+
+  Future<void> _openSoundPicker() async {
+    await Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AlarmSoundScreen()));
+    // The picker may also have re-scheduled (and so updated) the alarms.
+    await _load();
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final sorted = [..._alarms]..sort((a, b) => (a.hour * 60 + a.minute).compareTo(b.hour * 60 + b.minute));
+    final sorted = [..._alarms]
+      ..sort((a, b) => (a.hour * 60 + a.minute).compareTo(b.hour * 60 + b.minute));
 
     return Scaffold(
       body: !_loaded
           ? const Center(child: CircularProgressIndicator())
-          : sorted.isEmpty
-              ? Center(child: Text(l10n.alarmEmpty))
-              : ListView.builder(
-                  itemCount: sorted.length,
-                  itemBuilder: (context, index) {
-                    final alarm = sorted[index];
-                    final time =
-                        '${alarm.hour.toString().padLeft(2, '0')}:${alarm.minute.toString().padLeft(2, '0')}';
-                    return Dismissible(
-                      key: ValueKey(alarm.id),
-                      confirmDismiss: (_) => _confirmDelete(alarm),
-                      background: Container(color: Theme.of(context).colorScheme.errorContainer),
-                      child: ListTile(
-                        onTap: () => _openEditor(existing: alarm),
-                        title: Text(
-                          time,
-                          style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w300),
+          : Column(
+              children: [
+                // iOS only: Android picks its sound per notification
+                // channel in Settings (NotificationSoundScreen).
+                if (Platform.isIOS)
+                  ListTile(
+                    leading: const Icon(Icons.music_note_outlined),
+                    title: Text(l10n.alarmSoundTitle),
+                    subtitle: _sound == null ? null : Text(_sound!.label(l10n)),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: _openSoundPicker,
+                  ),
+                if (Platform.isIOS) const Divider(height: 1),
+                Expanded(
+                  child: sorted.isEmpty
+                      ? Center(child: Text(l10n.alarmEmpty))
+                      : ListView.builder(
+                          itemCount: sorted.length,
+                          itemBuilder: (context, index) {
+                            final alarm = sorted[index];
+                            final time =
+                                '${alarm.hour.toString().padLeft(2, '0')}:${alarm.minute.toString().padLeft(2, '0')}';
+                            return Dismissible(
+                              key: ValueKey(alarm.id),
+                              confirmDismiss: (_) => _confirmDelete(alarm),
+                              background: Container(
+                                color: Theme.of(context).colorScheme.errorContainer,
+                              ),
+                              child: ListTile(
+                                onTap: () => _openEditor(existing: alarm),
+                                title: Text(
+                                  time,
+                                  style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w300),
+                                ),
+                                subtitle: Text(
+                                  [
+                                    if (alarm.label.isNotEmpty) alarm.label,
+                                    _repeatSummary(alarm, l10n),
+                                  ].join(' · '),
+                                ),
+                                trailing: Switch(
+                                  value: alarm.enabled,
+                                  onChanged: (value) => _toggle(alarm, value),
+                                ),
+                              ),
+                            );
+                          },
                         ),
-                        subtitle: Text(
-                          [
-                            if (alarm.label.isNotEmpty) alarm.label,
-                            _repeatSummary(alarm, l10n),
-                          ].join(' · '),
-                        ),
-                        trailing: Switch(
-                          value: alarm.enabled,
-                          onChanged: (value) => _toggle(alarm, value),
-                        ),
-                      ),
-                    );
-                  },
                 ),
+              ],
+            ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _openEditor(),
         tooltip: l10n.alarmAddTooltip,

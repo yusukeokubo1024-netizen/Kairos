@@ -485,5 +485,14 @@
   "stopwatchLap": "Lap",
   "stopwatchReset": "Reset",
   "stopwatchLapNumber": "Lap {number}",
-  "@stopwatchLapNumber": { "placeholders": { "number": {} } }
+  "@stopwatchLapNumber": { "placeholders": { "number": {} } },
+  "alarmSoundTitle": "Alarm sound",
+  "alarmSoundSystem": "Default",
+  "alarmSoundBell": "Classic phone",
+  "alarmSoundAlarmClock": "Alarm clock",
+  "alarmSoundBirds": "Birdsong",
+  "alarmSoundDigital": "Digital",
+  "alarmSoundMarimba": "Marimba",
+  "alarmSoundWave": "Wave",
+  "alarmSoundHint": "Tap a sound to preview it. Used for alarms and the timer."
 }

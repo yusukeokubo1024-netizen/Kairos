@@ -118,6 +118,23 @@ class AlarmService {
     return updated;
   }
 
+  /// Re-schedules every enabled alarm — an already-scheduled iOS
+  /// notification keeps the sound it was created with, so this is needed
+  /// after the user picks a different alarm sound.
+  Future<void> rescheduleAll({String? defaultLabel}) async {
+    final alarms = await load();
+    final updated = <Alarm>[];
+    for (final alarm in alarms) {
+      if (!alarm.enabled) {
+        updated.add(alarm);
+        continue;
+      }
+      final firesAt = await _reschedule(alarm, defaultLabel: defaultLabel);
+      updated.add(alarm.repeatDays.isEmpty ? alarm.copyWith(firesAt: firesAt) : alarm);
+    }
+    await _save(updated);
+  }
+
   Future<List<Alarm>> remove(List<Alarm> current, String alarmId) async {
     final updated = current.where((a) => a.id != alarmId).toList();
     await _save(updated);

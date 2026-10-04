@@ -2723,6 +2723,60 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'ラップ {number}'**
   String stopwatchLapNumber(Object number);
+
+  /// No description provided for @alarmSoundTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'アラーム音'**
+  String get alarmSoundTitle;
+
+  /// No description provided for @alarmSoundSystem.
+  ///
+  /// In ja, this message translates to:
+  /// **'デフォルト'**
+  String get alarmSoundSystem;
+
+  /// No description provided for @alarmSoundBell.
+  ///
+  /// In ja, this message translates to:
+  /// **'黒電話'**
+  String get alarmSoundBell;
+
+  /// No description provided for @alarmSoundAlarmClock.
+  ///
+  /// In ja, this message translates to:
+  /// **'目覚まし時計'**
+  String get alarmSoundAlarmClock;
+
+  /// No description provided for @alarmSoundBirds.
+  ///
+  /// In ja, this message translates to:
+  /// **'さえずり'**
+  String get alarmSoundBirds;
+
+  /// No description provided for @alarmSoundDigital.
+  ///
+  /// In ja, this message translates to:
+  /// **'デジタル'**
+  String get alarmSoundDigital;
+
+  /// No description provided for @alarmSoundMarimba.
+  ///
+  /// In ja, this message translates to:
+  /// **'マリンバ'**
+  String get alarmSoundMarimba;
+
+  /// No description provided for @alarmSoundWave.
+  ///
+  /// In ja, this message translates to:
+  /// **'ウェーブ'**
+  String get alarmSoundWave;
+
+  /// No description provided for @alarmSoundHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'タップすると試聴できます。アラームとタイマーで鳴ります。'**
+  String get alarmSoundHint;
 }
 
 class _AppLocalizationsDelegate

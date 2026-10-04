@@ -17,6 +17,12 @@
 		97C146FC1CF9000F007C117D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FA1CF9000F007C117D /* Main.storyboard */; };
 		97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FD1CF9000F007C117D /* Assets.xcassets */; };
 		97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */; };
+		CA1A5E0D0000000000000002 /* alarm_bell.caf in Resources */ = {isa = PBXBuildFile; fileRef = CA1A5E0D0000000000000003 /* alarm_bell.caf */; };
+		CA1A5E0D0000000000000004 /* alarm_alarmclock.caf in Resources */ = {isa = PBXBuildFile; fileRef = CA1A5E0D0000000000000005 /* alarm_alarmclock.caf */; };
+		CA1A5E0D0000000000000006 /* alarm_birds.caf in Resources */ = {isa = PBXBuildFile; fileRef = CA1A5E0D0000000000000007 /* alarm_birds.caf */; };
+		CA1A5E0D0000000000000008 /* alarm_digital.caf in Resources */ = {isa = PBXBuildFile; fileRef = CA1A5E0D0000000000000009 /* alarm_digital.caf */; };
+		CA1A5E0D000000000000000A /* alarm_marimba.caf in Resources */ = {isa = PBXBuildFile; fileRef = CA1A5E0D000000000000000B /* alarm_marimba.caf */; };
+		CA1A5E0D000000000000000C /* alarm_wave.caf in Resources */ = {isa = PBXBuildFile; fileRef = CA1A5E0D000000000000000D /* alarm_wave.caf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -62,6 +68,12 @@
 		97C147021CF9000F007C117D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		54F1ECE3D695CFD6F84C857A /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		F1A2B3C4D5E6F7A8B9C0D1E2 /* Runner.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Runner.entitlements; sourceTree = "<group>"; };
+		CA1A5E0D0000000000000003 /* alarm_bell.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = alarm_bell.caf; sourceTree = "<group>"; };
+		CA1A5E0D0000000000000005 /* alarm_alarmclock.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = alarm_alarmclock.caf; sourceTree = "<group>"; };
+		CA1A5E0D0000000000000007 /* alarm_birds.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = alarm_birds.caf; sourceTree = "<group>"; };
+		CA1A5E0D0000000000000009 /* alarm_digital.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = alarm_digital.caf; sourceTree = "<group>"; };
+		CA1A5E0D000000000000000B /* alarm_marimba.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = alarm_marimba.caf; sourceTree = "<group>"; };
+		CA1A5E0D000000000000000D /* alarm_wave.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = alarm_wave.caf; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -124,6 +136,12 @@
 				97C147021CF9000F007C117D /* Info.plist */,
 				54F1ECE3D695CFD6F84C857A /* GoogleService-Info.plist */,
 				F1A2B3C4D5E6F7A8B9C0D1E2 /* Runner.entitlements */,
+				CA1A5E0D000000000000000D /* alarm_wave.caf */,
+				CA1A5E0D000000000000000B /* alarm_marimba.caf */,
+				CA1A5E0D0000000000000009 /* alarm_digital.caf */,
+				CA1A5E0D0000000000000007 /* alarm_birds.caf */,
+				CA1A5E0D0000000000000005 /* alarm_alarmclock.caf */,
+				CA1A5E0D0000000000000003 /* alarm_bell.caf */,
 				1498D2321E8E86230040F4C2 /* GeneratedPluginRegistrant.h */,
 				1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */,
 				74858FAE1ED2DC5600515810 /* AppDelegate.swift */,
@@ -235,6 +253,12 @@
 				97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */,
 				97C146FC1CF9000F007C117D /* Main.storyboard in Resources */,
 				513ACB4DA5E437D1E14E612B /* GoogleService-Info.plist in Resources */,
+				CA1A5E0D000000000000000C /* alarm_wave.caf in Resources */,
+				CA1A5E0D000000000000000A /* alarm_marimba.caf in Resources */,
+				CA1A5E0D0000000000000008 /* alarm_digital.caf in Resources */,
+				CA1A5E0D0000000000000006 /* alarm_birds.caf in Resources */,
+				CA1A5E0D0000000000000004 /* alarm_alarmclock.caf in Resources */,
+				CA1A5E0D0000000000000002 /* alarm_bell.caf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

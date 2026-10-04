@@ -1385,4 +1385,31 @@ class AppLocalizationsZh extends AppLocalizations {
   String stopwatchLapNumber(Object number) {
     return '第$number次';
   }
+
+  @override
+  String get alarmSoundTitle => '闹钟铃声';
+
+  @override
+  String get alarmSoundSystem => '默认';
+
+  @override
+  String get alarmSoundBell => '老式电话';
+
+  @override
+  String get alarmSoundAlarmClock => '闹钟';
+
+  @override
+  String get alarmSoundBirds => '鸟鸣';
+
+  @override
+  String get alarmSoundDigital => '数字';
+
+  @override
+  String get alarmSoundMarimba => '马林巴';
+
+  @override
+  String get alarmSoundWave => '波浪';
+
+  @override
+  String get alarmSoundHint => '点按即可试听。用于闹钟和计时器。';
 }

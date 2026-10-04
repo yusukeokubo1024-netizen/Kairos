@@ -1405,4 +1405,31 @@ class AppLocalizationsKo extends AppLocalizations {
   String stopwatchLapNumber(Object number) {
     return '랩 $number';
   }
+
+  @override
+  String get alarmSoundTitle => '알람음';
+
+  @override
+  String get alarmSoundSystem => '기본';
+
+  @override
+  String get alarmSoundBell => '다이얼 전화';
+
+  @override
+  String get alarmSoundAlarmClock => '자명종';
+
+  @override
+  String get alarmSoundBirds => '새소리';
+
+  @override
+  String get alarmSoundDigital => '디지털';
+
+  @override
+  String get alarmSoundMarimba => '마림바';
+
+  @override
+  String get alarmSoundWave => '웨이브';
+
+  @override
+  String get alarmSoundHint => '탭하면 미리 들을 수 있습니다. 알람과 타이머에서 울립니다.';
 }

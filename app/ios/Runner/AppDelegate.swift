@@ -1,12 +1,15 @@
+import AVFoundation
 import AudioToolbox
 import Flutter
 import UIKit
 
 @main
 @objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
-  // Repeats the system alarm sound while the in-app Timer "time's up"
-  // dialog is showing (see lib/services/alarm_sound_service.dart).
+  // Loops the chosen alarm sound while the in-app Timer "time's up" dialog
+  // or a sound-picker preview is playing (see
+  // lib/services/alarm_sound_service.dart).
   private var alarmSoundTimer: Timer?
+  private var alarmPlayer: AVAudioPlayer?
 
   override func application(
     _ application: UIApplication,
@@ -31,7 +34,8 @@ import UIKit
     channel.setMethodCallHandler { [weak self] call, result in
       switch call.method {
       case "start":
-        self?.startAlarmSound()
+        let args = call.arguments as? [String: Any]
+        self?.startAlarmSound(file: args?["file"] as? String)
         result(nil)
       case "stop":
         self?.stopAlarmSound()
@@ -42,10 +46,25 @@ import UIKit
     }
   }
 
-  private func startAlarmSound() {
+  private func startAlarmSound(file: String?) {
     stopAlarmSound()
-    // 1005 = the built-in alarm.caf. AlertSound (vs. SystemSound) also
-    // vibrates, and only vibrates when the ringer switch is on silent.
+    // One of the bundled alarm_*.caf sounds the user picked, looped.
+    if let file = file,
+      let url = Bundle.main.url(forResource: file, withExtension: nil),
+      let player = try? AVAudioPlayer(contentsOf: url)
+    {
+      // .playback rings even with the ringer switch on silent, like the
+      // built-in Clock app's alarms.
+      try? AVAudioSession.sharedInstance().setCategory(.playback)
+      try? AVAudioSession.sharedInstance().setActive(true)
+      player.numberOfLoops = -1
+      player.play()
+      alarmPlayer = player
+      return
+    }
+    // "Default": 1005 = the built-in alarm.caf. AlertSound (vs.
+    // SystemSound) also vibrates, and only vibrates when the ringer switch
+    // is on silent.
     let play = { AudioServicesPlayAlertSound(SystemSoundID(1005)) }
     play()
     alarmSoundTimer = Timer.scheduledTimer(withTimeInterval: 2.5, repeats: true) { _ in play() }
@@ -54,5 +73,11 @@ import UIKit
   private func stopAlarmSound() {
     alarmSoundTimer?.invalidate()
     alarmSoundTimer = nil
+    if alarmPlayer != nil {
+      alarmPlayer?.stop()
+      alarmPlayer = nil
+      try? AVAudioSession.sharedInstance().setActive(
+        false, options: .notifyOthersOnDeactivation)
+    }
   }
 }

@@ -19,6 +19,7 @@ import '../../services/notification_service.dart';
 import '../../services/theme_service.dart';
 import '../../services/weather_service.dart';
 import '../anniversary/anniversary_list_screen.dart';
+import '../clock/alarm_sound_screen.dart';
 import 'color_labels_screen.dart';
 import 'notification_sound_screen.dart';
 import 'packing_templates_screen.dart';
@@ -783,6 +784,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => Navigator.of(context).push(
                     MaterialPageRoute(builder: (_) => const NotificationSoundScreen()),
+                  ),
+                ),
+              // iOS can't use device sounds (see AlarmSound), so it gets a
+              // picker of the app's own bundled alarm sounds instead.
+              if (Platform.isIOS)
+                ListTile(
+                  leading: const Icon(Icons.music_note_outlined),
+                  title: Text(l10n.alarmSoundTitle),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const AlarmSoundScreen()),
                   ),
                 ),
               const Divider(),

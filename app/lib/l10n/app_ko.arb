@@ -485,5 +485,14 @@
   "stopwatchLap": "랩",
   "stopwatchReset": "재설정",
   "stopwatchLapNumber": "랩 {number}",
-  "@stopwatchLapNumber": { "placeholders": { "number": {} } }
+  "@stopwatchLapNumber": { "placeholders": { "number": {} } },
+  "alarmSoundTitle": "알람음",
+  "alarmSoundSystem": "기본",
+  "alarmSoundBell": "다이얼 전화",
+  "alarmSoundAlarmClock": "자명종",
+  "alarmSoundBirds": "새소리",
+  "alarmSoundDigital": "디지털",
+  "alarmSoundMarimba": "마림바",
+  "alarmSoundWave": "웨이브",
+  "alarmSoundHint": "탭하면 미리 들을 수 있습니다. 알람과 타이머에서 울립니다."
 }

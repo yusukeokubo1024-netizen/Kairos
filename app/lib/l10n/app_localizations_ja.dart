@@ -1398,4 +1398,31 @@ class AppLocalizationsJa extends AppLocalizations {
   String stopwatchLapNumber(Object number) {
     return 'ラップ $number';
   }
+
+  @override
+  String get alarmSoundTitle => 'アラーム音';
+
+  @override
+  String get alarmSoundSystem => 'デフォルト';
+
+  @override
+  String get alarmSoundBell => '黒電話';
+
+  @override
+  String get alarmSoundAlarmClock => '目覚まし時計';
+
+  @override
+  String get alarmSoundBirds => 'さえずり';
+
+  @override
+  String get alarmSoundDigital => 'デジタル';
+
+  @override
+  String get alarmSoundMarimba => 'マリンバ';
+
+  @override
+  String get alarmSoundWave => 'ウェーブ';
+
+  @override
+  String get alarmSoundHint => 'タップすると試聴できます。アラームとタイマーで鳴ります。';
 }

@@ -485,5 +485,14 @@
   "stopwatchLap": "ラップ",
   "stopwatchReset": "リセット",
   "stopwatchLapNumber": "ラップ {number}",
-  "@stopwatchLapNumber": { "placeholders": { "number": {} } }
+  "@stopwatchLapNumber": { "placeholders": { "number": {} } },
+  "alarmSoundTitle": "アラーム音",
+  "alarmSoundSystem": "デフォルト",
+  "alarmSoundBell": "黒電話",
+  "alarmSoundAlarmClock": "目覚まし時計",
+  "alarmSoundBirds": "さえずり",
+  "alarmSoundDigital": "デジタル",
+  "alarmSoundMarimba": "マリンバ",
+  "alarmSoundWave": "ウェーブ",
+  "alarmSoundHint": "タップすると試聴できます。アラームとタイマーで鳴ります。"
 }

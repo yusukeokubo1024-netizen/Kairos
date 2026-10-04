@@ -9,6 +9,7 @@ import '../models/anniversary.dart';
 import '../models/schedule.dart';
 import '../models/task.dart';
 import '../utils/business_day.dart';
+import 'alarm_sound_service.dart';
 import 'locale_service.dart';
 import 'notification_sound_service.dart';
 
@@ -427,7 +428,12 @@ class NotificationService {
         visibility: NotificationVisibility.public,
         autoCancel: false,
       ),
-      iOS: const DarwinNotificationDetails(interruptionLevel: InterruptionLevel.timeSensitive),
+      iOS: DarwinNotificationDetails(
+        // The bundled alarm_*.caf the user picked (AlarmSoundService); null
+        // = the plain default chime.
+        sound: (await AlarmSoundService.instance.selected()).fileName,
+        interruptionLevel: InterruptionLevel.timeSensitive,
+      ),
     );
     try {
       await _plugin.zonedSchedule(

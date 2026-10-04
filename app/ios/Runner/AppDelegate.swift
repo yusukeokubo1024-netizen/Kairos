@@ -7,6 +7,7 @@ import UIKit
 #if canImport(AlarmKit)
   import ActivityKit
   import AlarmKit
+  import AppIntents
   import SwiftUI
 #endif
 
@@ -179,18 +180,41 @@ import UIKit
 
       let title = args["title"] as? String ?? ""
       let stopText = args["stopText"] as? String ?? "Stop"
-      let alert = AlarmPresentation.Alert(
-        title: LocalizedStringResource(stringLiteral: title),
-        stopButton: AlarmButton(
-          text: LocalizedStringResource(stringLiteral: stopText),
-          textColor: .white,
-          systemImageName: "stop.circle"))
+      let soundFile = args["sound"] as? String
+      let snoozeMinutes = args["snoozeMinutes"] as? Int ?? 0
+      let snoozeText = args["snoozeText"] as? String ?? "Snooze"
+      let stopButton = AlarmButton(
+        text: LocalizedStringResource(stringLiteral: stopText),
+        textColor: .white,
+        systemImageName: "stop.circle")
+
+      let alert: AlarmPresentation.Alert
+      var snoozeIntent: KairosSnoozeIntent?
+      if snoozeMinutes > 0 {
+        // A plain "custom" button that schedules a fresh one-off alarm
+        // rather than AlarmKit's built-in countdown snooze, which needs a
+        // Live Activity widget extension this app doesn't have.
+        alert = AlarmPresentation.Alert(
+          title: LocalizedStringResource(stringLiteral: title),
+          stopButton: stopButton,
+          secondaryButton: AlarmButton(
+            text: LocalizedStringResource(stringLiteral: snoozeText),
+            textColor: .white,
+            systemImageName: "zzz"),
+          secondaryButtonBehavior: .custom)
+        snoozeIntent = KairosSnoozeIntent(
+          key: key, alarmTitle: title, stopText: stopText, snoozeText: snoozeText,
+          sound: soundFile ?? "", minutes: snoozeMinutes)
+      } else {
+        alert = AlarmPresentation.Alert(
+          title: LocalizedStringResource(stringLiteral: title), stopButton: stopButton)
+      }
       let attributes = AlarmAttributes<KairosAlarmMetadata>(
         presentation: AlarmPresentation(alert: alert), tintColor: .orange)
-      let sound: AlertConfiguration.AlertSound =
-        (args["sound"] as? String).map { .named($0) } ?? .default
+      let sound: AlertConfiguration.AlertSound = soundFile.map { .named($0) } ?? .default
       let configuration = AlarmManager.AlarmConfiguration<KairosAlarmMetadata>(
-        schedule: schedule, attributes: attributes, sound: sound)
+        schedule: schedule, attributes: attributes, secondaryIntent: snoozeIntent,
+        sound: sound)
 
       let id = uuid(for: key)
       try? AlarmManager.shared.cancel(id: id)
@@ -204,12 +228,62 @@ import UIKit
 
     static func cancel(key: String) {
       try? AlarmManager.shared.cancel(id: uuid(for: key))
+      try? AlarmManager.shared.cancel(id: uuid(for: snoozeKey(for: key)))
+    }
+
+    static func snoozeKey(for key: String) -> String {
+      key.hasSuffix("_snooze") ? key : "\(key)_snooze"
     }
 
     static func cancelAll() {
       for alarm in (try? AlarmManager.shared.alarms) ?? [] {
         try? AlarmManager.shared.cancel(id: alarm.id)
       }
+    }
+  }
+
+  /// The ringing alarm's "Snooze" button: stops it and rings again
+  /// [minutes] from now (itself snoozable again).
+  @available(iOS 26.0, *)
+  struct KairosSnoozeIntent: LiveActivityIntent {
+    static let title: LocalizedStringResource = "Snooze"
+    static let openAppWhenRun: Bool = false
+
+    @Parameter(title: "Key") var key: String
+    @Parameter(title: "Title") var alarmTitle: String
+    @Parameter(title: "Stop") var stopText: String
+    @Parameter(title: "Snooze") var snoozeText: String
+    // "" = the default alarm sound.
+    @Parameter(title: "Sound") var sound: String
+    @Parameter(title: "Minutes") var minutes: Int
+
+    init() {}
+
+    init(
+      key: String, alarmTitle: String, stopText: String, snoozeText: String, sound: String,
+      minutes: Int
+    ) {
+      self.key = key
+      self.alarmTitle = alarmTitle
+      self.stopText = stopText
+      self.snoozeText = snoozeText
+      self.sound = sound
+      self.minutes = minutes
+    }
+
+    func perform() async throws -> some IntentResult {
+      try? AlarmManager.shared.stop(id: KairosAlarmKit.uuid(for: key))
+      var args: [String: Any] = [
+        "key": KairosAlarmKit.snoozeKey(for: key),
+        "title": alarmTitle,
+        "stopText": stopText,
+        "snoozeText": snoozeText,
+        "snoozeMinutes": minutes,
+        "fireAtMs": Int((Date().timeIntervalSince1970 + Double(minutes * 60)) * 1000),
+      ]
+      if !sound.isEmpty { args["sound"] = sound }
+      _ = await KairosAlarmKit.schedule(args)
+      return .result()
     }
   }
 #endif

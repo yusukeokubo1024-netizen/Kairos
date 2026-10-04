@@ -1400,6 +1400,22 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get alarmSnooze => '稍后提醒';
+
+  @override
+  String get alarmSnoozeOff => '关闭';
+
+  @override
+  String alarmSnoozeMinutes(int minutes) {
+    return '$minutes分钟';
+  }
+
+  @override
+  String alarmSnoozeSummary(int minutes) {
+    return '稍后提醒 $minutes分钟';
+  }
+
+  @override
   String get alarmSoundTitle => '闹钟铃声';
 
   @override

@@ -17,6 +17,9 @@ class Alarm {
   // toggle can be flipped back off (see AlarmService._reconcileFired) —
   // the single OS notification is already consumed by then regardless.
   final DateTime? firesAt;
+  // Minutes until a snoozed alarm rings again; 0 = no snooze button.
+  // Only honoured by AlarmKit alarms (iOS 26+).
+  final int snoozeMinutes;
 
   const Alarm({
     required this.id,
@@ -26,6 +29,7 @@ class Alarm {
     this.repeatDays = const {},
     this.enabled = true,
     this.firesAt,
+    this.snoozeMinutes = 0,
   });
 
   bool get isRepeating => repeatDays.isNotEmpty;
@@ -37,6 +41,7 @@ class Alarm {
     Set<int>? repeatDays,
     bool? enabled,
     DateTime? firesAt,
+    int? snoozeMinutes,
   }) {
     return Alarm(
       id: id,
@@ -46,6 +51,7 @@ class Alarm {
       repeatDays: repeatDays ?? this.repeatDays,
       enabled: enabled ?? this.enabled,
       firesAt: firesAt ?? this.firesAt,
+      snoozeMinutes: snoozeMinutes ?? this.snoozeMinutes,
     );
   }
 
@@ -58,6 +64,7 @@ class Alarm {
       repeatDays: Set<int>.from((json['repeatDays'] as List? ?? []).map((e) => e as int)),
       enabled: json['enabled'] as bool? ?? true,
       firesAt: json['firesAt'] != null ? DateTime.parse(json['firesAt'] as String) : null,
+      snoozeMinutes: json['snoozeMinutes'] as int? ?? 0,
     );
   }
 
@@ -69,5 +76,6 @@ class Alarm {
         'repeatDays': repeatDays.toList(),
         'enabled': enabled,
         'firesAt': firesAt?.toIso8601String(),
+        'snoozeMinutes': snoozeMinutes,
       };
 }

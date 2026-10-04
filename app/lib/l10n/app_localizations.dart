@@ -2748,6 +2748,30 @@ abstract class AppLocalizations {
   /// **'ラップ {number}'**
   String stopwatchLapNumber(Object number);
 
+  /// No description provided for @alarmSnooze.
+  ///
+  /// In ja, this message translates to:
+  /// **'スヌーズ'**
+  String get alarmSnooze;
+
+  /// No description provided for @alarmSnoozeOff.
+  ///
+  /// In ja, this message translates to:
+  /// **'オフ'**
+  String get alarmSnoozeOff;
+
+  /// No description provided for @alarmSnoozeMinutes.
+  ///
+  /// In ja, this message translates to:
+  /// **'{minutes}分'**
+  String alarmSnoozeMinutes(int minutes);
+
+  /// No description provided for @alarmSnoozeSummary.
+  ///
+  /// In ja, this message translates to:
+  /// **'スヌーズ{minutes}分'**
+  String alarmSnoozeSummary(int minutes);
+
   /// No description provided for @alarmSoundTitle.
   ///
   /// In ja, this message translates to:

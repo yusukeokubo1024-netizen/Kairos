@@ -447,6 +447,7 @@ class NotificationService {
     required String body,
     required DateTime fireTime,
     DateTimeComponents? matchComponents,
+    int snoozeMinutes = 0,
   }) async {
     final soundFile = (await AlarmSoundService.instance.selected()).fileName;
     final usedAlarmKit = await AlarmKitService.instance.schedule(
@@ -457,6 +458,8 @@ class NotificationService {
       weekdays:
           matchComponents == DateTimeComponents.dayOfWeekAndTime ? [fireTime.weekday] : null,
       soundFile: soundFile,
+      snoozeMinutes: snoozeMinutes,
+      snoozeText: _isJa ? 'スヌーズ' : 'Snooze',
     );
     if (usedAlarmKit) {
       // Don't also ring a second time via a notification.

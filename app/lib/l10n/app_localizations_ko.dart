@@ -1420,6 +1420,22 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
+  String get alarmSnooze => '다시 알림';
+
+  @override
+  String get alarmSnoozeOff => '끔';
+
+  @override
+  String alarmSnoozeMinutes(int minutes) {
+    return '$minutes분';
+  }
+
+  @override
+  String alarmSnoozeSummary(int minutes) {
+    return '다시 알림 $minutes분';
+  }
+
+  @override
   String get alarmSoundTitle => '알람음';
 
   @override

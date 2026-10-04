@@ -18,7 +18,8 @@ class AlarmKitService {
   /// One-off at [fireTime], or — with [weekdays] (DateTime.weekday values,
   /// 1 = Monday … 7 = Sunday) — repeating weekly at [fireTime]'s time of
   /// day. [soundFile] is a bundled alarm_*.caf, or null for the default
-  /// alarm sound.
+  /// alarm sound. [snoozeMinutes] > 0 adds a snooze button that rings
+  /// again that many minutes later.
   Future<bool> schedule({
     required String key,
     required String title,
@@ -26,6 +27,8 @@ class AlarmKitService {
     required DateTime fireTime,
     List<int>? weekdays,
     String? soundFile,
+    int snoozeMinutes = 0,
+    String snoozeText = 'Snooze',
   }) async {
     if (!Platform.isIOS) return false;
     try {
@@ -34,6 +37,8 @@ class AlarmKitService {
         'title': title,
         'stopText': stopText,
         'sound': soundFile,
+        'snoozeMinutes': snoozeMinutes,
+        'snoozeText': snoozeText,
         if (weekdays != null && weekdays.isNotEmpty) ...{
           'weekdays': weekdays,
           'hour': fireTime.hour,

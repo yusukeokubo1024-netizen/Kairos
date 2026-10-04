@@ -1456,6 +1456,22 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get alarmSnooze => 'Snooze';
+
+  @override
+  String get alarmSnoozeOff => 'Off';
+
+  @override
+  String alarmSnoozeMinutes(int minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String alarmSnoozeSummary(int minutes) {
+    return 'Snooze $minutes min';
+  }
+
+  @override
   String get alarmSoundTitle => 'Alarm sound';
 
   @override

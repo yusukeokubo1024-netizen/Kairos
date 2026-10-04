@@ -1413,6 +1413,22 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String get alarmSnooze => 'スヌーズ';
+
+  @override
+  String get alarmSnoozeOff => 'オフ';
+
+  @override
+  String alarmSnoozeMinutes(int minutes) {
+    return '$minutes分';
+  }
+
+  @override
+  String alarmSnoozeSummary(int minutes) {
+    return 'スヌーズ$minutes分';
+  }
+
+  @override
   String get alarmSoundTitle => 'アラーム音';
 
   @override

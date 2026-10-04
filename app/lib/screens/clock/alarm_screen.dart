@@ -156,6 +156,8 @@ class _AlarmScreenState extends State<AlarmScreen> {
                                   [
                                     if (alarm.label.isNotEmpty) alarm.label,
                                     _repeatSummary(alarm, l10n),
+                                    if (Platform.isIOS && alarm.snoozeMinutes > 0)
+                                      l10n.alarmSnoozeSummary(alarm.snoozeMinutes),
                                   ].join(' · '),
                                 ),
                                 trailing: Switch(
@@ -191,6 +193,7 @@ class _AlarmEditorSheetState extends State<_AlarmEditorSheet> {
   late DateTime _time;
   late final TextEditingController _labelController;
   late Set<int> _repeatDays;
+  late int _snoozeMinutes;
 
   @override
   void initState() {
@@ -202,6 +205,8 @@ class _AlarmEditorSheetState extends State<_AlarmEditorSheet> {
         : DateTime(now.year, now.month, now.day, now.hour, now.minute);
     _labelController = TextEditingController(text: existing?.label ?? '');
     _repeatDays = {...(existing?.repeatDays ?? const {})};
+    // New alarms snooze by default, like the built-in Clock app.
+    _snoozeMinutes = existing?.snoozeMinutes ?? 5;
   }
 
   @override
@@ -218,6 +223,7 @@ class _AlarmEditorSheetState extends State<_AlarmEditorSheet> {
       label: _labelController.text.trim(),
       repeatDays: _repeatDays,
       enabled: widget.existing?.enabled ?? true,
+      snoozeMinutes: _snoozeMinutes,
     );
     Navigator.of(context).pop(alarm);
   }
@@ -292,6 +298,25 @@ class _AlarmEditorSheetState extends State<_AlarmEditorSheet> {
                     );
                   }),
                 ),
+                // iOS 26+ only: the AlarmKit alarm's snooze button.
+                if (Platform.isIOS) ...[
+                  const SizedBox(height: 12),
+                  Text(l10n.alarmSnooze, style: Theme.of(context).textTheme.labelLarge),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    children: [
+                      for (final minutes in const [0, 5, 10, 15, 30])
+                        ChoiceChip(
+                          label: Text(
+                            minutes == 0 ? l10n.alarmSnoozeOff : l10n.alarmSnoozeMinutes(minutes),
+                          ),
+                          selected: _snoozeMinutes == minutes,
+                          onSelected: (_) => setState(() => _snoozeMinutes = minutes),
+                        ),
+                    ],
+                  ),
+                ],
                 const SizedBox(height: 16),
               ],
             ),

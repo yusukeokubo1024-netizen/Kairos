@@ -81,6 +81,7 @@ class AlarmService {
         title: title,
         body: title,
         fireTime: fireTime,
+        snoozeMinutes: alarm.snoozeMinutes,
       );
       return fireTime;
     }
@@ -96,6 +97,7 @@ class AlarmService {
         title: title,
         body: title,
         fireTime: fireTime,
+        snoozeMinutes: alarm.snoozeMinutes,
         matchComponents: DateTimeComponents.dayOfWeekAndTime,
       );
     }

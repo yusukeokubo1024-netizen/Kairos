@@ -343,8 +343,7 @@ $faqText''';
           .recordError(e, st, reason: 'support AI chat request failed', fatal: false);
       if (mounted) {
         setState(() {
-          // TEMPORARY debug display — see earlier commit for context.
-          _messages.add(_ChatEntry(isUser: false, text: '[DEBUG] $e', time: DateTime.now()));
+          _messages.add(_ChatEntry(isUser: false, text: l10n.supportAiError, time: DateTime.now()));
           _status = null;
         });
       }

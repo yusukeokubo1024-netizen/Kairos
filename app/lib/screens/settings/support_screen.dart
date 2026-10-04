@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -155,6 +156,27 @@ class _AiChatState extends State<_AiChat> {
   bool _isSending = false;
   String? _status;
   bool _greeted = false;
+  String? _displayName;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDisplayName();
+  }
+
+  Future<void> _loadDisplayName() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+    try {
+      final doc = await FirebaseFirestore.instance.collection('publicProfiles').doc(uid).get();
+      final name = doc.data()?['displayName'] as String?;
+      if (name != null && name.isNotEmpty && mounted) {
+        setState(() => _displayName = name);
+      }
+    } catch (_) {
+      // Personalization is a nice-to-have — just skip it on failure.
+    }
+  }
 
   @override
   void dispose() {
@@ -190,16 +212,26 @@ class _AiChatState extends State<_AiChat> {
 
   String _systemInstruction(AppLocalizations l10n) {
     final faqText = widget.faqs.map((f) => 'Q: ${f.$1}\nA: ${f.$2}').join('\n');
-    return '''You are a helpful, friendly conversational assistant embedded in the
+    final nameLine = _displayName != null
+        ? 'The user you are talking to is named "$_displayName" — address them by that name '
+            'sometimes (not every message), the way a friend would, instead of staying generic.\n\n'
+        : '';
+    return '''You are a warm, frank, personable conversational assistant embedded in the
 calendar-sharing app "Kairos", speaking in ${_languageName(l10n)}. For questions about
 Kairos itself, answer concisely and accurately using the information below. If you don't
 know the answer to a Kairos-specific question, honestly say you can't help and suggest
 contacting $_supportEmail.
 
-For anything else — small talk, greetings, general questions unrelated to Kairos — respond
-like a normal, engaged conversational assistant (the way ChatGPT would): give a real,
-substantive, natural-sounding reply, not a one-word or mirrored/echoed response. Never just
-repeat the user's own message back to them.
+${nameLine}Talk like a close, upbeat friend texting back — casual tone, contractions, the
+occasional fitting emoji — not like a formal support bot. For greetings ("おはよう"/"hi"/etc.),
+reply with real warmth and a bit of energy, the way the example below does, then naturally ask
+what's on their mind or offer to help, instead of a flat acknowledgement:
+"ユウスケ、おはよう！☀️😁 今日もいい一日にしような！今日は何する？"
+
+For anything else — small talk, general questions unrelated to Kairos — respond like a real,
+engaged friend (the way ChatGPT would with a casual persona): give a substantive,
+natural-sounding reply, not a one-word or mirrored/echoed response. Never just repeat the
+user's own message back to them.
 
 Kairos features: shared calendars/schedules, group schedule sharing (join via invite code),
 task management with auto-added prep tasks from schedules, anniversary/birthday tracking with
@@ -311,7 +343,8 @@ $faqText''';
           .recordError(e, st, reason: 'support AI chat request failed', fatal: false);
       if (mounted) {
         setState(() {
-          _messages.add(_ChatEntry(isUser: false, text: l10n.supportAiError, time: DateTime.now()));
+          // TEMPORARY debug display — see earlier commit for context.
+          _messages.add(_ChatEntry(isUser: false, text: '[DEBUG] $e', time: DateTime.now()));
           _status = null;
         });
       }

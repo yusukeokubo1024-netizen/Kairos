@@ -171,8 +171,8 @@ workflows:
         # and first characters, and stops the build if the key looks wrong.
         script: |
           echo "GEMINI_API_KEY length: ${#GEMINI_API_KEY}, starts with: ${GEMINI_API_KEY:0:4}"
-          if [ ${#GEMINI_API_KEY} -lt 30 ] || [ "${GEMINI_API_KEY:0:1}" = "$" ]; then
-            echo "GEMINI_API_KEY is missing or malformed" >&2
+          if [ ${#GEMINI_API_KEY} -lt 30 ] || { [ "${GEMINI_API_KEY:0:3}" != "AQ." ] && [ "${GEMINI_API_KEY:0:4}" != "AIza" ]; }; then
+            echo "GEMINI_API_KEY is missing or not a Gemini key (expected AQ.… or AIza…)" >&2
             exit 1
           fi
       - name: Build signed IPA
@@ -233,8 +233,8 @@ workflows:
         # and first characters, and stops the build if the key looks wrong.
         script: |
           echo "GEMINI_API_KEY length: ${#GEMINI_API_KEY}, starts with: ${GEMINI_API_KEY:0:4}"
-          if [ ${#GEMINI_API_KEY} -lt 30 ] || [ "${GEMINI_API_KEY:0:1}" = "$" ]; then
-            echo "GEMINI_API_KEY is missing or malformed" >&2
+          if [ ${#GEMINI_API_KEY} -lt 30 ] || { [ "${GEMINI_API_KEY:0:3}" != "AQ." ] && [ "${GEMINI_API_KEY:0:4}" != "AIza" ]; }; then
+            echo "GEMINI_API_KEY is missing or not a Gemini key (expected AQ.… or AIza…)" >&2
             exit 1
           fi
       - name: Build Android App Bundle

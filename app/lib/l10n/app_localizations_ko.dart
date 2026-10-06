@@ -988,6 +988,16 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
+  String get calendarPaintMode => '날짜 색칠';
+
+  @override
+  String get calendarPaintDone => '완료';
+
+  @override
+  String get calendarPaintHint =>
+      '색을 고른 뒤 날짜를 탭하면 색이 칠해집니다. 같은 색의 날짜를 다시 탭하면 지워집니다';
+
+  @override
   String get calendarDayColorLabel => '이 날에 색 표시:';
 
   @override

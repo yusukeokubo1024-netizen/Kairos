@@ -982,6 +982,15 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String get calendarPaintMode => 'まとめて色付け';
+
+  @override
+  String get calendarPaintDone => '完了';
+
+  @override
+  String get calendarPaintHint => '色を選んで日付をタップすると色が付きます。同じ色の日をもう一度タップすると消えます';
+
+  @override
   String get calendarDayColorLabel => 'この日に色をつける：';
 
   @override

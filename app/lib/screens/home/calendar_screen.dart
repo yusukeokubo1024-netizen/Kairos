@@ -38,6 +38,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
   DateTime _focusedDay = DateTime.now();
   DateTime _selectedDay = DateTime.now();
   bool _daySelectedByUser = false;
+  // "Bulk color" mode: day taps paint [_paintColor] (null = eraser) onto
+  // each tapped day instead of opening the schedule form, so e.g. a
+  // month's shift days off can be marked in one pass.
+  bool _paintMode = false;
+  Color? _paintColor = _dayColorPalette.first;
   _ViewMode _viewMode = _ViewMode.calendar;
   CalendarFormat _calendarFormat = CalendarFormat.month;
   // Calendars (null = 個人の予定, otherwise a groupId or personal-category
@@ -819,9 +824,19 @@ class _CalendarScreenState extends State<CalendarScreen> {
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(12, 2, 12, 0),
-          child: Align(
-            alignment: Alignment.centerRight,
-            child: SegmentedButton<CalendarFormat>(
+          child: Row(
+            children: [
+              TextButton.icon(
+                style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
+                icon: Icon(_paintMode ? Icons.check : Icons.brush_outlined, size: 18),
+                label: Text(
+                  _paintMode ? l10n.calendarPaintDone : l10n.calendarPaintMode,
+                  style: const TextStyle(fontSize: 12),
+                ),
+                onPressed: () => setState(() => _paintMode = !_paintMode),
+              ),
+              const Spacer(),
+              SegmentedButton<CalendarFormat>(
               style: SegmentedButton.styleFrom(
                 visualDensity: VisualDensity.compact,
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
@@ -835,8 +850,54 @@ class _CalendarScreenState extends State<CalendarScreen> {
               onSelectionChanged: (selection) =>
                   setState(() => _calendarFormat = selection.first),
             ),
+            ],
           ),
         ),
+        if (_paintMode)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 4, 12, 4),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(l10n.calendarPaintHint,
+                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    for (final color in _dayColorPalette)
+                      Padding(
+                        padding: const EdgeInsets.only(right: 10),
+                        child: GestureDetector(
+                          onTap: () => setState(() => _paintColor = color),
+                          child: CircleAvatar(
+                            radius: 15,
+                            backgroundColor: color,
+                            child: _paintColor?.toARGB32() == color.toARGB32()
+                                ? const Icon(Icons.check, size: 18, color: Colors.white)
+                                : null,
+                          ),
+                        ),
+                      ),
+                    // Eraser: clears a tapped day's color.
+                    GestureDetector(
+                      onTap: () => setState(() => _paintColor = null),
+                      child: CircleAvatar(
+                        radius: 15,
+                        backgroundColor: _paintColor == null
+                            ? Theme.of(context).colorScheme.primary
+                            : Colors.grey.shade300,
+                        child: Icon(
+                          Icons.auto_fix_normal_outlined,
+                          size: 18,
+                          color: _paintColor == null ? Colors.white : Colors.grey.shade700,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
         TableCalendar<Schedule>(
           locale: Localizations.localeOf(context).toString(),
           firstDay: DateTime.utc(2020, 1, 1),
@@ -846,6 +907,18 @@ class _CalendarScreenState extends State<CalendarScreen> {
           eventLoader: (day) =>
               schedulesByDay[DateTime(day.year, day.month, day.day)] ?? [],
           onDaySelected: (selected, focused) {
+            if (_paintMode) {
+              // Tapping a day already in the chosen color clears it, so a
+              // mis-tap is undone with a second tap.
+              final current = _dayColors[_dayColorKey(selected)];
+              final paint = _paintColor;
+              _setDayColor(
+                selected,
+                paint == null || current?.toARGB32() == paint.toARGB32() ? null : paint,
+              );
+              setState(() => _focusedDay = focused);
+              return;
+            }
             setState(() {
               _selectedDay = selected;
               _focusedDay = focused;

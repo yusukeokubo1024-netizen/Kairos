@@ -971,6 +971,15 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get calendarPaintMode => '批量标色';
+
+  @override
+  String get calendarPaintDone => '完成';
+
+  @override
+  String get calendarPaintHint => '选择颜色后点按日期即可标色。再次点按同色日期即可清除';
+
+  @override
   String get calendarDayColorLabel => '为这天标色：';
 
   @override

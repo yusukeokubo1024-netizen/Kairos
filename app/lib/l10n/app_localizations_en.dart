@@ -1012,6 +1012,16 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get calendarPaintMode => 'Color days';
+
+  @override
+  String get calendarPaintDone => 'Done';
+
+  @override
+  String get calendarPaintHint =>
+      'Pick a color, then tap days to color them. Tap a day again to clear it.';
+
+  @override
   String get calendarDayColorLabel => 'Mark this day:';
 
   @override

@@ -1932,6 +1932,24 @@ abstract class AppLocalizations {
   /// **'午後 {emoji} {temp}°'**
   String calendarWeatherAfternoon(Object emoji, Object temp);
 
+  /// No description provided for @calendarPaintMode.
+  ///
+  /// In ja, this message translates to:
+  /// **'まとめて色付け'**
+  String get calendarPaintMode;
+
+  /// No description provided for @calendarPaintDone.
+  ///
+  /// In ja, this message translates to:
+  /// **'完了'**
+  String get calendarPaintDone;
+
+  /// No description provided for @calendarPaintHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'色を選んで日付をタップすると色が付きます。同じ色の日をもう一度タップすると消えます'**
+  String get calendarPaintHint;
+
   /// No description provided for @calendarDayColorLabel.
   ///
   /// In ja, this message translates to:

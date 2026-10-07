@@ -889,36 +889,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
         // tapped a day — otherwise this section defaults to today and shows
         // a distracting "no schedule" message before they've asked for it.
         if (_daySelectedByUser) ...[
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 6, 12, 0),
-            child: Row(
-              children: [
-                Text(l10n.calendarDayColorLabel,
-                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
-                const SizedBox(width: 8),
-                for (final color in _dayColorPalette)
-                  Padding(
-                    padding: const EdgeInsets.only(right: 6),
-                    child: GestureDetector(
-                      onTap: () {
-                        final current = _dayColors[_dayColorKey(_selectedDay)];
-                        _setDayColor(
-                          _selectedDay,
-                          current?.toARGB32() == color.toARGB32() ? null : color,
-                        );
-                      },
-                      child: CircleAvatar(
-                        radius: 10,
-                        backgroundColor: color,
-                        child: _dayColors[_dayColorKey(_selectedDay)]?.toARGB32() == color.toARGB32()
-                            ? const Icon(Icons.check, size: 12, color: Colors.white)
-                            : null,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
           if (_holidayFor(_selectedDay) case final holiday?)
             Container(
               width: double.infinity,

@@ -11,8 +11,6 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/anniversary.dart';
 import '../../models/schedule.dart';
-import '../../models/schedule_category.dart';
-import '../../models/shared_group.dart';
 import '../../models/task.dart';
 import '../../services/audit_service.dart';
 import '../../services/home_widget_service.dart';
@@ -45,20 +43,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
   Color? _paintColor = _dayColorPalette.first;
   _ViewMode _viewMode = _ViewMode.calendar;
   CalendarFormat _calendarFormat = CalendarFormat.month;
-  // Calendars (null = 個人の予定, otherwise a groupId or personal-category
-  // id) that are shown via the filter — opt-in, so a calendar the user has
-  // never explicitly checked (including every group, the first time it's
-  // seen) defaults to hidden rather than shown. Persisted to
-  // users/{uid}.visibleCalendarIds (loaded in _loadWeather) so the choice
-  // survives this screen being recreated — HomeShell deliberately gives it
-  // a fresh key/state every time the Home tab is reselected, which would
-  // otherwise silently reset back to "nothing visible" on every tab
-  // switch, not just on first-ever use.
-  final Set<String?> _visibleCalendarIds = {};
-  // null is encoded as this sentinel in Firestore, since a Firestore array
-  // can't cleanly round-trip a mix of null and String through Dart's
-  // List<String> cast.
-  static const _personalCalendarSentinel = '__personal__';
 
   // Populated from a StreamBuilder in build() before the calendar grid is
   // built, since calendarBuilders callbacks are synchronous.
@@ -128,22 +112,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
     // not shared with anyone) so loading them doesn't cost a second read.
     final rawDayColors = userDoc.data()?['dayColors'] as Map<String, dynamic>? ?? {};
 
-    // Same reuse for the calendar filter's persisted choice — absent
-    // entirely (field never saved yet) means "never configured", which
-    // intentionally leaves _visibleCalendarIds at its empty default
-    // (nothing shown) rather than seeding it with everything.
-    final rawVisible = userDoc.data()?['visibleCalendarIds'] as List?;
-
     if (mounted) {
       setState(() {
         _dayColors = rawDayColors.map((key, value) => MapEntry(key, Color(value as int)));
-        if (rawVisible != null) {
-          _visibleCalendarIds
-            ..clear()
-            ..addAll(rawVisible.map(
-              (e) => e == _personalCalendarSentinel ? null : e as String,
-            ));
-        }
       });
     }
 
@@ -578,95 +549,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
     }
   }
 
-  Future<void> _openCalendarFilter(List<SharedGroup> groups) async {
-    final visible = Set<String?>.from(_visibleCalendarIds);
-    final l10n = AppLocalizations.of(context)!;
-    await showDialog<void>(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) => AlertDialog(
-          title: Text(l10n.calendarFilterTitle),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                CheckboxListTile(
-                  secondary: const Icon(Icons.label_outline, size: 20),
-                  title: Text(personalCategoryDefaultLabel(l10n)),
-                  value: visible.contains(null),
-                  onChanged: (checked) {
-                    setDialogState(() {
-                      checked == true ? visible.add(null) : visible.remove(null);
-                    });
-                  },
-                ),
-                // "その他" はカテゴリの中で最後ではなく、グループも含めた
-                // リスト全体の一番下に来るように別枠で描画する。
-                ...personalCategories(l10n).entries.where((entry) => entry.key != 'other').map((entry) {
-                  return CheckboxListTile(
-                    secondary: const Icon(Icons.label_outline, size: 20),
-                    title: Text(entry.value),
-                    value: visible.contains(entry.key),
-                    onChanged: (checked) {
-                      setDialogState(() {
-                        checked == true ? visible.add(entry.key) : visible.remove(entry.key);
-                      });
-                    },
-                  );
-                }),
-                ...groups.map((group) {
-                  return CheckboxListTile(
-                    secondary: const Icon(Icons.groups_outlined, size: 20),
-                    title: Text('${group.name}${l10n.scheduleFormGroupSuffix}'),
-                    value: visible.contains(group.id),
-                    onChanged: (checked) {
-                      setDialogState(() {
-                        checked == true ? visible.add(group.id) : visible.remove(group.id);
-                      });
-                    },
-                  );
-                }),
-                CheckboxListTile(
-                  secondary: const Icon(Icons.label_outline, size: 20),
-                  title: Text(personalCategories(l10n)['other']!),
-                  value: visible.contains('other'),
-                  onChanged: (checked) {
-                    setDialogState(() {
-                      checked == true ? visible.add('other') : visible.remove('other');
-                    });
-                  },
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                setState(() {
-                  _visibleCalendarIds
-                    ..clear()
-                    ..addAll(visible);
-                });
-                _saveVisibleCalendarIds();
-                Navigator.pop(context);
-              },
-              child: Text(l10n.calendarFilterClose),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Future<void> _saveVisibleCalendarIds() async {
-    final uid = FirebaseAuth.instance.currentUser!.uid;
-    final encoded = _visibleCalendarIds.map((e) => e ?? _personalCalendarSentinel).toList();
-    await FirebaseFirestore.instance.collection('users').doc(uid).set({
-      'uid': uid,
-      'visibleCalendarIds': encoded,
-    }, SetOptions(merge: true));
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -675,8 +557,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
         .collection('schedules')
         .where('participantIds', arrayContains: uid)
         .orderBy('startTime');
-    final groupsQuery =
-        FirebaseFirestore.instance.collection('sharedGroups').where('memberIds', arrayContains: uid);
 
     return Scaffold(
       appBar: AppBar(
@@ -705,19 +585,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
             onPressed: () => Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const ScheduleSearchScreen()),
             ),
-          ),
-          StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-            stream: groupsQuery.snapshots(),
-            builder: (context, groupSnapshot) {
-              final groups = groupSnapshot.hasData
-                  ? groupSnapshot.data!.docs.map((doc) => SharedGroup.fromFirestore(doc)).toList()
-                  : <SharedGroup>[];
-              return IconButton(
-                icon: const Icon(Icons.filter_list),
-                tooltip: l10n.calendarFilterTooltip,
-                onPressed: () => _openCalendarFilter(groups),
-              );
-            },
           ),
           IconButton(
             icon: Icon(_viewMode == _ViewMode.calendar
@@ -753,7 +620,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
               final schedules = snapshot.hasData
                   ? (snapshot.data!.docs
                           .map((doc) => Schedule.fromFirestore(doc))
-                          .where((s) => _visibleCalendarIds.contains(s.groupId))
                           .expand(_expandRecurrences)
                           .toList()
                         // The query's orderBy('startTime') only sorted the

@@ -114,24 +114,27 @@ class ScheduleDetailScreen extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final uid = FirebaseAuth.instance.currentUser!.uid;
     final isOwner = schedule.ownerId == uid;
+    // Anyone it's shared with can edit it (see firestore.rules); only the
+    // owner can delete it.
+    final canEdit = isOwner || schedule.participantIds.contains(uid);
 
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.scheduleDetailTitle),
-        actions: isOwner
-            ? [
-                IconButton(
-                  icon: const Icon(Icons.edit_outlined),
-                  onPressed: () => Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => ScheduleFormScreen(schedule: schedule)),
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.delete_outline),
-                  onPressed: () => _delete(context),
-                ),
-              ]
-            : null,
+        actions: [
+          if (canEdit)
+            IconButton(
+              icon: const Icon(Icons.edit_outlined),
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => ScheduleFormScreen(schedule: schedule)),
+              ),
+            ),
+          if (isOwner)
+            IconButton(
+              icon: const Icon(Icons.delete_outline),
+              onPressed: () => _delete(context),
+            ),
+        ],
       ),
       body: SafeArea(
         child: Padding(
@@ -221,7 +224,7 @@ class ScheduleDetailScreen extends StatelessWidget {
                 const Divider(),
                 const SizedBox(height: 8),
                 Text(l10n.scheduleDetailPacking, style: const TextStyle(fontWeight: FontWeight.bold)),
-                _PackingChecklist(schedule: schedule, editable: isOwner),
+                _PackingChecklist(schedule: schedule, editable: canEdit),
               ],
               if (schedule.notes.isNotEmpty) ...[
                 const SizedBox(height: 16),

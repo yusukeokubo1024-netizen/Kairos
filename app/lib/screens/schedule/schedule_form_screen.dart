@@ -8,7 +8,6 @@ import 'package:flutter/material.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../../models/schedule.dart';
-import '../../models/schedule_category.dart';
 import '../../models/schedule_prep_templates.dart';
 import '../../models/shared_group.dart';
 import '../../models/task.dart';
@@ -761,17 +760,13 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
                     return DropdownButtonFormField<String?>(
                       initialValue: value,
                       items: [
+                        // Just "none" plus the user's real groups — the fixed
+                        // personal categories (仕事/家族/…) were dropped.
                         DropdownMenuItem(
                           value: null,
                           child: _CategoryOption(
-                            icon: Icons.label_outline,
-                            label: personalCategoryDefaultLabel(l10n),
-                          ),
-                        ),
-                        ...personalCategories(l10n).entries.map(
-                          (entry) => DropdownMenuItem(
-                            value: entry.key,
-                            child: _CategoryOption(icon: Icons.label_outline, label: entry.value),
+                            icon: Icons.person_outline,
+                            label: l10n.scheduleFormGroupNone,
                           ),
                         ),
                         ...groups.map(

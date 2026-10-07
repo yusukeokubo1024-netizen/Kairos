@@ -821,10 +821,13 @@ class AppLocalizationsZh extends AppLocalizations {
       '锁屏时也会全屏显示（仅限Android）。部分机型/Android版本需要在系统设置中单独允许“闹钟和提醒”权限';
 
   @override
-  String get scheduleFormCalendar => '日历';
+  String get scheduleFormCalendar => '群组';
 
   @override
-  String get scheduleFormCalendarHint => '该分类用于在主页的筛选器中切换显示/隐藏';
+  String get scheduleFormCalendarHint => '选择群组后即可与其成员共享此日程';
+
+  @override
+  String get scheduleFormGroupNone => '无';
 
   @override
   String get scheduleFormGroupSuffix => '（群组）';

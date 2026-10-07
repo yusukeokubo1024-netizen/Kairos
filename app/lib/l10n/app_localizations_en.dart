@@ -856,11 +856,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'Full-screen, even over the lock screen (Android only). Some devices/Android versions require separately allowing \"Alarms & reminders\" in system settings';
 
   @override
-  String get scheduleFormCalendar => 'Calendar';
+  String get scheduleFormCalendar => 'Group';
 
   @override
   String get scheduleFormCalendarHint =>
-      'This category is used to show/hide it via the filter on the home screen';
+      'Pick a group to share this schedule with its members';
+
+  @override
+  String get scheduleFormGroupNone => 'None';
 
   @override
   String get scheduleFormGroupSuffix => ' (group)';

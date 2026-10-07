@@ -832,10 +832,13 @@ class AppLocalizationsJa extends AppLocalizations {
       '画面ロック中でも全画面表示（Android限定）。機種やAndroidのバージョンによっては、設定アプリ側で「アラームとリマインダー」の許可が別途必要な場合があります';
 
   @override
-  String get scheduleFormCalendar => 'カレンダー';
+  String get scheduleFormCalendar => 'グループ';
 
   @override
-  String get scheduleFormCalendarHint => 'ホーム画面のフィルターで表示/非表示を切り替えるための分類です';
+  String get scheduleFormCalendarHint => 'グループを選ぶと、そのメンバーと予定を共有できます';
+
+  @override
+  String get scheduleFormGroupNone => 'なし';
 
   @override
   String get scheduleFormGroupSuffix => '（グループ）';

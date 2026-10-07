@@ -1659,14 +1659,20 @@ abstract class AppLocalizations {
   /// No description provided for @scheduleFormCalendar.
   ///
   /// In ja, this message translates to:
-  /// **'カレンダー'**
+  /// **'グループ'**
   String get scheduleFormCalendar;
 
   /// No description provided for @scheduleFormCalendarHint.
   ///
   /// In ja, this message translates to:
-  /// **'ホーム画面のフィルターで表示/非表示を切り替えるための分類です'**
+  /// **'グループを選ぶと、そのメンバーと予定を共有できます'**
   String get scheduleFormCalendarHint;
+
+  /// No description provided for @scheduleFormGroupNone.
+  ///
+  /// In ja, this message translates to:
+  /// **'なし'**
+  String get scheduleFormGroupNone;
 
   /// No description provided for @scheduleFormGroupSuffix.
   ///

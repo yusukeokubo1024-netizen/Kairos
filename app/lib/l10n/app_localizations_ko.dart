@@ -837,10 +837,13 @@ class AppLocalizationsKo extends AppLocalizations {
       '화면 잠금 중에도 전체 화면으로 표시됩니다 (Android 전용). 기기·Android 버전에 따라 설정 앱에서 \"알람 및 리마인더\" 권한을 별도로 허용해야 할 수 있습니다';
 
   @override
-  String get scheduleFormCalendar => '캘린더';
+  String get scheduleFormCalendar => '그룹';
 
   @override
-  String get scheduleFormCalendarHint => '홈 화면의 필터에서 표시/숨김을 전환하기 위한 분류입니다';
+  String get scheduleFormCalendarHint => '그룹을 선택하면 해당 멤버와 일정을 공유할 수 있습니다';
+
+  @override
+  String get scheduleFormGroupNone => '없음';
 
   @override
   String get scheduleFormGroupSuffix => '（그룹）';

@@ -1047,6 +1047,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get groupFormTitle => '그룹 만들기';
 
   @override
+  String get groupChatInfo => '그룹 정보';
+
+  @override
   String get groupRenameTitle => '그룹 이름 변경';
 
   @override

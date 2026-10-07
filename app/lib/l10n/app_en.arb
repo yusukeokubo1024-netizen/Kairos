@@ -357,6 +357,7 @@
   "@groupListMembers": { "placeholders": { "count": {} } },
   "groupJoinTooltip": "Join a group with a code",
   "groupFormTitle": "Create a group",
+  "groupChatInfo": "Group info",
   "groupRenameTitle": "Rename group",
   "groupRenameFailed": "Couldn't rename the group. Please try again.",
   "groupFormNameLabel": "Group name",

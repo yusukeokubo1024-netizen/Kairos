@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/chat_message.dart';
 import '../../models/shared_group.dart';
+import 'group_detail_screen.dart';
 import 'live_group_name.dart';
 
 class GroupChatScreen extends StatefulWidget {
@@ -287,6 +288,15 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
           initialName: widget.group.name,
           builder: (name) => Text(l10n.groupChatTitle(name)),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.menu),
+            tooltip: l10n.groupChatInfo,
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => GroupDetailScreen(group: widget.group)),
+            ),
+          ),
+        ],
       ),
       body: SafeArea(
         child: Column(

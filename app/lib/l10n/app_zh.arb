@@ -357,6 +357,7 @@
   "@groupListMembers": { "placeholders": { "count": {} } },
   "groupJoinTooltip": "使用邀请码加入群组",
   "groupFormTitle": "创建群组",
+  "groupChatInfo": "群组信息",
   "groupRenameTitle": "更改群组名称",
   "groupRenameFailed": "无法更改群组名称，请重试。",
   "groupFormNameLabel": "群组名称",

@@ -2040,6 +2040,12 @@ abstract class AppLocalizations {
   /// **'グループを作成'**
   String get groupFormTitle;
 
+  /// No description provided for @groupChatInfo.
+  ///
+  /// In ja, this message translates to:
+  /// **'グループ情報'**
+  String get groupChatInfo;
+
   /// No description provided for @groupRenameTitle.
   ///
   /// In ja, this message translates to:

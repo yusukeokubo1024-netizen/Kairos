@@ -1040,6 +1040,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get groupFormTitle => 'グループを作成';
 
   @override
+  String get groupChatInfo => 'グループ情報';
+
+  @override
   String get groupRenameTitle => 'グループ名を変更';
 
   @override

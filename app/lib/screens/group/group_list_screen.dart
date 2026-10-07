@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../../models/shared_group.dart';
-import 'group_detail_screen.dart';
+import 'group_chat_screen.dart';
 import 'group_form_screen.dart';
 import 'group_join_screen.dart';
 
@@ -94,7 +94,7 @@ class GroupListScreen extends StatelessWidget {
                   lastSeen: (chatLastSeen[group.id] as Timestamp?)?.toDate(),
                 ),
                 onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => GroupDetailScreen(group: group)),
+                  MaterialPageRoute(builder: (_) => GroupChatScreen(group: group)),
                 ),
               );
             },

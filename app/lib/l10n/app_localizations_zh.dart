@@ -1029,6 +1029,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get groupFormTitle => '创建群组';
 
   @override
+  String get groupChatInfo => '群组信息';
+
+  @override
   String get groupRenameTitle => '更改群组名称';
 
   @override

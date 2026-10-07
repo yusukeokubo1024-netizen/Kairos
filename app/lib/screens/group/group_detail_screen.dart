@@ -10,7 +10,6 @@ import '../../l10n/app_localizations.dart';
 import '../../main.dart';
 import '../../models/shared_group.dart';
 import '../../services/audit_service.dart';
-import 'group_chat_screen.dart';
 import 'live_group_name.dart';
 
 // Characters chosen to avoid look-alikes when read or typed by hand
@@ -108,7 +107,8 @@ class GroupDetailScreen extends StatelessWidget {
       data: group.toCreateMap(),
     );
     await FirebaseFirestore.instance.collection('groupInvitePreviews').doc(group.id).delete();
-    if (context.mounted) Navigator.of(context).pop();
+    // Back past the deleted group's chat (this screen is opened from it).
+    if (context.mounted) Navigator.of(context).popUntil((route) => route.isFirst);
 
     rootScaffoldMessengerKey.currentState?.clearSnackBars();
     // Material 3's SnackBar pauses its auto-dismiss timer while hovered
@@ -235,8 +235,10 @@ class GroupDetailScreen extends StatelessWidget {
       });
       await _decrementPreviewCount();
       if (context.mounted) {
-        Navigator.of(context).pop();
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.groupLeft)));
+        final messenger = ScaffoldMessenger.of(context);
+        // Back past the left group's chat (this screen is opened from it).
+        Navigator.of(context).popUntil((route) => route.isFirst);
+        messenger.showSnackBar(SnackBar(content: Text(l10n.groupLeft)));
       }
     } catch (_) {
       if (context.mounted) {
@@ -428,13 +430,6 @@ class GroupDetailScreen extends StatelessWidget {
                 )),
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => GroupChatScreen(group: group)),
-        ),
-        icon: const Icon(Icons.chat_bubble_outline),
-        label: Text(l10n.groupDetailChat),
       ),
     );
   }

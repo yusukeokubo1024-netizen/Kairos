@@ -1071,6 +1071,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get groupFormTitle => 'Create a group';
 
   @override
+  String get groupChatInfo => 'Group info';
+
+  @override
   String get groupRenameTitle => 'Rename group';
 
   @override

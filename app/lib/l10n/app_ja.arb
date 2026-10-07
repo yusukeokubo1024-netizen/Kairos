@@ -357,6 +357,7 @@
   "@groupListMembers": { "placeholders": { "count": {} } },
   "groupJoinTooltip": "コードでグループに参加",
   "groupFormTitle": "グループを作成",
+  "groupChatInfo": "グループ情報",
   "groupRenameTitle": "グループ名を変更",
   "groupRenameFailed": "グループ名を変更できませんでした。もう一度お試しください。",
   "groupFormNameLabel": "グループ名",

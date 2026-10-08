@@ -54,6 +54,8 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
   int? _reminderMinutes;
   // Which group calendar this schedule is categorized under (null = 個人の予定).
   // Used only for show/hide filtering on the home calendar.
+  // No longer user-editable (the group/category picker was removed) — kept
+  // only so editing an existing schedule doesn't wipe the value it had.
   String? _groupId;
   String _recurrence = Schedule.noRecurrence;
   DateTime? _recurrenceEndDate;
@@ -738,64 +740,6 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
                   ],
                 ),
                 const SizedBox(height: 16),
-                Text(l10n.scheduleFormCalendar, style: const TextStyle(fontWeight: FontWeight.bold)),
-                Text(
-                  l10n.scheduleFormCalendarHint,
-                  style: const TextStyle(fontSize: 12, color: Colors.grey),
-                ),
-                const SizedBox(height: 8),
-                StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-                  stream: groupsQuery.snapshots(),
-                  builder: (context, snapshot) {
-                    final groups = snapshot.hasData
-                        ? snapshot.data!.docs.map((doc) => SharedGroup.fromFirestore(doc)).toList()
-                        : <SharedGroup>[];
-                    // Keep the current value selectable even if its group
-                    // hasn't loaded into the stream yet.
-                    final groupIds = groups.map((g) => g.id).toSet();
-                    final value = (_groupId == null || groupIds.contains(_groupId))
-                        ? _groupId
-                        : null;
-
-                    return DropdownButtonFormField<String?>(
-                      initialValue: value,
-                      items: [
-                        // Just "none" plus the user's real groups — the fixed
-                        // personal categories (仕事/家族/…) were dropped.
-                        DropdownMenuItem(
-                          value: null,
-                          child: _CategoryOption(
-                            icon: Icons.person_outline,
-                            label: l10n.scheduleFormGroupNone,
-                          ),
-                        ),
-                        ...groups.map(
-                          (group) => DropdownMenuItem(
-                            value: group.id,
-                            child: _CategoryOption(
-                              icon: Icons.groups_outlined,
-                              label: '${group.name}${l10n.scheduleFormGroupSuffix}',
-                            ),
-                          ),
-                        ),
-                      ],
-                      onChanged: (selected) {
-                        setState(() {
-                          _groupId = selected;
-                          for (final group in groups) {
-                            if (group.id == selected) {
-                              // Selecting a group defaults its members into
-                              // the share list; existing selections are kept.
-                              _selectedPersonIds.addAll(group.memberIds.where((id) => id != uid));
-                              break;
-                            }
-                          }
-                        });
-                      },
-                    );
-                  },
-                ),
-                const SizedBox(height: 16),
                 Text(l10n.scheduleFormShareWith, style: const TextStyle(fontWeight: FontWeight.bold)),
                 Text(
                   l10n.scheduleFormShareWithHint,
@@ -896,28 +840,6 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
           ),
         ),
       ),
-    );
-  }
-}
-
-/// A dropdown item label with a small icon distinguishing a personal
-/// category from an actual shared group — they can share the same name
-/// (e.g. a "家族" category and a "家族" group) so the icon avoids confusion.
-class _CategoryOption extends StatelessWidget {
-  final IconData icon;
-  final String label;
-
-  const _CategoryOption({required this.icon, required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 16, color: Colors.grey),
-        const SizedBox(width: 8),
-        Text(label),
-      ],
     );
   }
 }

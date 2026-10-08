@@ -297,6 +297,10 @@ class WeatherService {
     // plenty for an icon+temp), but the *worst-case* (max) precipitation
     // chance across the whole period, since "will it rain at some point
     // this morning" matters more for planning than one hour's number.
+    // Rounded to the nearest 10% (0/10/20/…), like Japanese forecasts —
+    // e.g. 2% shows as 0%, 75% as 80%.
+    int? roundTo10(num? p) => p == null ? null : (((p + 5) ~/ 10) * 10).clamp(0, 100);
+
     WeatherPeriod? periodFor(DateTime date, int startHour, int endHourExclusive) {
       if (hourlyTimes == null || hourlyCodes == null || hourlyTemps == null) return null;
       final midHour = (startHour + endHourExclusive - 1) ~/ 2;
@@ -318,7 +322,7 @@ class WeatherService {
       return WeatherPeriod(
         weatherCode: hourlyCodes[midIndex] as int,
         temp: (hourlyTemps[midIndex] as num).toDouble(),
-        precipitationProbability: hasPrecip ? maxPrecip : null,
+        precipitationProbability: hasPrecip ? roundTo10(maxPrecip) : null,
       );
     }
 
@@ -329,7 +333,7 @@ class WeatherService {
           weatherCode: codes[i] as int,
           maxTemp: (maxTemps[i] as num).toDouble(),
           minTemp: (minTemps[i] as num).toDouble(),
-          precipitationProbability: (precipitationChances?[i] as num?)?.toInt(),
+          precipitationProbability: roundTo10(precipitationChances?[i] as num?),
           morning: periodFor(DateTime.parse(dates[i] as String), 6, 12),
           afternoon: periodFor(DateTime.parse(dates[i] as String), 12, 18),
         ),

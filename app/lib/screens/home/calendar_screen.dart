@@ -935,11 +935,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                 Text(
                                   l10n.calendarWeatherMorning(
                                           weather.morning!.emoji, weather.morning!.temp.round()) +
-                                      // Only worth calling out once there's a
-                                      // meaningful chance of rain — 30% is the
-                                      // usual "bring an umbrella" threshold in
-                                      // Japanese forecasts.
-                                      ((weather.morning!.precipitationProbability ?? 0) >= 30
+                                      // Always shown (even 0%) whenever the
+                                      // forecast has a value — hiding it below
+                                      // 30% made it look like it had vanished.
+                                      (weather.morning!.precipitationProbability != null
                                           ? l10n.calendarWeatherPrecipitation(
                                               weather.morning!.precipitationProbability!)
                                           : ''),
@@ -948,7 +947,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                 Text(
                                   l10n.calendarWeatherAfternoon(weather.afternoon!.emoji,
                                           weather.afternoon!.temp.round()) +
-                                      ((weather.afternoon!.precipitationProbability ?? 0) >= 30
+                                      (weather.afternoon!.precipitationProbability != null
                                           ? l10n.calendarWeatherPrecipitation(
                                               weather.afternoon!.precipitationProbability!)
                                           : ''),
@@ -959,7 +958,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                           : Text(
                               '${weather.emoji} '
                               '${l10n.calendarWeatherLine(weather.maxTemp.round(), weather.minTemp.round())}'
-                              '${(weather.precipitationProbability ?? 0) >= 30 ? l10n.calendarWeatherPrecipitation(weather.precipitationProbability!) : ''}',
+                              '${weather.precipitationProbability != null ? l10n.calendarWeatherPrecipitation(weather.precipitationProbability!) : ''}',
                               style: const TextStyle(color: Color(0xFF2563EB)),
                             ),
                     ),

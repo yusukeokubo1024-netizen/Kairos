@@ -89,7 +89,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
       // Best-effort — worst case it reverts next time this screen reloads.
     }
   }
-  String? _tenkiKeyword;
+  // The user's weather location, for the Weathernews deep link.
+  num? _weatherLat;
+  num? _weatherLon;
   // Populated at the top of _buildCalendarView so _buildDayCell (called by
   // table_calendar's synchronous builders) can look up each day's events.
   Map<DateTime, List<Schedule>> _schedulesByDay = {};
@@ -105,7 +107,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
     final userDoc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
     final lat = userDoc.data()?['weather_lat'] as num?;
     final lon = userDoc.data()?['weather_lon'] as num?;
-    _tenkiKeyword = userDoc.data()?['weather_tenki_keyword'] as String?;
+    _weatherLat = lat;
+    _weatherLon = lon;
 
     // Reuses this same doc fetch for the personal day-color markers
     // (users/{uid}.dayColors — a private "no schedule needed" memo mark,
@@ -137,15 +140,16 @@ class _CalendarScreenState extends State<CalendarScreen> {
     return null;
   }
 
-  /// Opens tenki.jp for more detail than the app's own simple high/low/rain
-  /// summary shows — deep-linked to the user's own region when known
-  /// (tenki.jp resolves wards our free geocoder has no data for at all,
-  /// like 大正区/浪速区), otherwise just the general weekly forecast.
+  /// Opens Weathernews for more detail than the app's own simple
+  /// high/low/rain summary shows. Its lat/lon page resolves to the right
+  /// city by itself (e.g. 34.685/135.805 → 奈良県奈良市), so this works for
+  /// any location the user set; otherwise its general top page.
   Future<void> _openDetailedForecast() async {
-    final keyword = _tenkiKeyword;
-    final uri = (keyword == null || keyword.isEmpty)
-        ? Uri.parse('https://tenki.jp/week/')
-        : Uri.https('tenki.jp', '/search/', {'keyword': keyword});
+    final lat = _weatherLat, lon = _weatherLon;
+    final uri = (lat == null || lon == null)
+        ? Uri.parse('https://weathernews.jp/onebox/')
+        : Uri.parse('https://weathernews.jp/onebox/'
+            '${lat.toStringAsFixed(4)}/${lon.toStringAsFixed(4)}/temp=c&lang=ja');
     await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 

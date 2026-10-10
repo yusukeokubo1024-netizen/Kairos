@@ -38,6 +38,14 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
   // doesn't re-send the same write.
   final Set<String> _markedRead = {};
   bool _readReceiptsEnabled = true;
+  // Created once: a new .snapshots() stream on every build made the list
+  // re-subscribe whenever anything on screen changed.
+  late final Stream<QuerySnapshot<Map<String, dynamic>>> _messagesStream = FirebaseFirestore.instance
+      .collection('sharedGroups')
+      .doc(widget.group.id)
+      .collection('messages')
+      .orderBy('createdAt', descending: true)
+      .snapshots();
 
   @override
   void initState() {
@@ -275,11 +283,6 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final uid = FirebaseAuth.instance.currentUser!.uid;
-    final messagesQuery = FirebaseFirestore.instance
-        .collection('sharedGroups')
-        .doc(widget.group.id)
-        .collection('messages')
-        .orderBy('createdAt', descending: true);
 
     return Scaffold(
       appBar: AppBar(
@@ -303,7 +306,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
           children: [
             Expanded(
               child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-                stream: messagesQuery.snapshots(),
+                stream: _messagesStream,
                 builder: (context, snapshot) {
                   if (!snapshot.hasData) {
                     return const Center(child: CircularProgressIndicator());
@@ -327,6 +330,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                         isMine: isMine,
                         currentUid: uid,
                         resolveName: _resolveName,
+                        cachedName: (uid) => _nameCache[uid],
                         onLongPress: () => _openReactionPicker(message),
                         onReactionTap: (emoji) => _toggleReaction(message, emoji),
                       );
@@ -375,6 +379,10 @@ class _MessageBubble extends StatelessWidget {
   final bool isMine;
   final String currentUid;
   final Future<String> Function(String uid) resolveName;
+  // Already-known names, shown straight away — otherwise every rebuild
+  // (e.g. read receipts being written when the chat opens) flashed each
+  // sender's name to "..." for a frame while the FutureBuilder restarted.
+  final String? Function(String uid) cachedName;
   final VoidCallback onLongPress;
   final ValueChanged<String> onReactionTap;
 
@@ -383,6 +391,7 @@ class _MessageBubble extends StatelessWidget {
     required this.isMine,
     required this.currentUid,
     required this.resolveName,
+    required this.cachedName,
     required this.onLongPress,
     required this.onReactionTap,
   });
@@ -402,6 +411,7 @@ class _MessageBubble extends StatelessWidget {
           if (!isMine)
             FutureBuilder<String>(
               future: resolveName(message.senderId),
+              initialData: cachedName(message.senderId),
               builder: (context, snapshot) => Padding(
                 padding: const EdgeInsets.only(left: 8, bottom: 2),
                 child: Text(

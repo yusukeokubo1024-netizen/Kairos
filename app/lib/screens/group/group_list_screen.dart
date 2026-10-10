@@ -66,6 +66,18 @@ class GroupListScreen extends StatelessWidget {
         builder: (context, userSnapshot) {
           final chatLastSeen =
               userSnapshot.data?.data()?['chatLastSeen'] as Map<String, dynamic>? ?? {};
+          // Closing a chat writes chatLastSeen as a server timestamp, which
+          // reads back as null until the server confirms it — that made every
+          // message count as unread for a moment, so the badge flashed. A
+          // pending (null) entry means "just seen", i.e. now.
+          final hasPendingWrites = userSnapshot.data?.metadata.hasPendingWrites ?? false;
+          DateTime? lastSeenFor(String groupId) {
+            final seen = (chatLastSeen[groupId] as Timestamp?)?.toDate();
+            if (seen == null && hasPendingWrites && chatLastSeen.containsKey(groupId)) {
+              return DateTime.now();
+            }
+            return seen;
+          }
           return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
         stream: groupsQuery.snapshots(),
         builder: (context, snapshot) {
@@ -91,7 +103,7 @@ class GroupListScreen extends StatelessWidget {
                 trailing: _UnreadBadge(
                   groupId: group.id,
                   uid: uid,
-                  lastSeen: (chatLastSeen[group.id] as Timestamp?)?.toDate(),
+                  lastSeen: lastSeenFor(group.id),
                 ),
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => GroupChatScreen(group: group)),

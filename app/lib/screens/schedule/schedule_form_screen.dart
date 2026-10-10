@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'schedule_detail_screen.dart' show deleteScheduleWithUndo;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -528,6 +529,21 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(_isEditing ? l10n.scheduleFormTitleEdit : l10n.scheduleFormTitleNew),
+        actions: [
+          // Only the owner can delete (see firestore.rules).
+          if (_isEditing &&
+              widget.schedule!.ownerId == FirebaseAuth.instance.currentUser?.uid)
+            IconButton(
+              icon: const Icon(Icons.delete_outline),
+              tooltip: l10n.commonDelete,
+              onPressed: () async {
+                if (await deleteScheduleWithUndo(context, widget.schedule!) && context.mounted) {
+                  // true tells a detail screen underneath to close as well.
+                  Navigator.of(context).pop(true);
+                }
+              },
+            ),
+        ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(

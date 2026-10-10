@@ -10,67 +10,78 @@ import '../../services/audit_service.dart';
 import '../../services/notification_service.dart';
 import 'schedule_form_screen.dart';
 
+/// Asks for confirmation, then moves [schedule] to the trash (undoable for
+/// 5 seconds via a snackbar) and cancels its reminder. Returns whether it
+/// was deleted; the caller handles navigating away. Shared by the detail
+/// screen and the edit form (a calendar tap opens the form directly, so it
+/// needs its own delete button).
+Future<bool> deleteScheduleWithUndo(BuildContext context, Schedule schedule) async {
+  final l10n = AppLocalizations.of(context)!;
+  final confirmed = await showDialog<bool>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: Text(l10n.scheduleDeleteConfirmTitle),
+      content: Text(l10n.scheduleDeleteConfirmBody),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(context, false), child: Text(l10n.commonCancel)),
+        TextButton(onPressed: () => Navigator.pop(context, true), child: Text(l10n.commonDelete)),
+      ],
+    ),
+  );
+  if (confirmed != true) return false;
+
+  // [schedule] may be one virtual occurrence of a recurring series (see
+  // CalendarScreen._expandRecurrences) with its startTime/endTime shifted
+  // to that occurrence's date, not the series' real anchor date. Deleting
+  // by id is safe either way (same document), but snapshotting/recreating
+  // from the shifted copy would silently re-anchor the whole series (or
+  // the trash/undo record) to whichever date the user happened to tap —
+  // discarding the series' real start. Re-read the canonical document so
+  // the trash record and undo always use its true stored dates.
+  final canonicalDoc =
+      await FirebaseFirestore.instance.collection('schedules').doc(schedule.id).get();
+  final canonical = canonicalDoc.exists ? Schedule.fromFirestore(canonicalDoc) : schedule;
+
+  await AuditService.instance.softDelete(
+    collection: 'schedules',
+    targetId: canonical.id,
+    data: canonical.toUpdateMap(),
+  );
+  await NotificationService.instance.cancelForSchedule(canonical.id);
+
+  rootScaffoldMessengerKey.currentState?.clearSnackBars();
+  // Material 3's SnackBar pauses its auto-dismiss timer while hovered
+  // (desktop/web), so close it explicitly to guarantee it goes away after
+  // 5 seconds regardless of the pointer.
+  final snackBarController = rootScaffoldMessengerKey.currentState?.showSnackBar(
+    SnackBar(
+      content: Text(l10n.scheduleDeleted),
+      duration: const Duration(seconds: 5),
+      action: SnackBarAction(
+        label: l10n.commonUndo,
+        onPressed: () async {
+          await FirebaseFirestore.instance
+              .collection('schedules')
+              .doc(canonical.id)
+              .set(canonical.toCreateMap());
+          await NotificationService.instance.scheduleForSchedule(canonical);
+        },
+      ),
+    ),
+  );
+  Future.delayed(const Duration(seconds: 5), () => snackBarController?.close());
+  return true;
+}
+
 class ScheduleDetailScreen extends StatelessWidget {
   final Schedule schedule;
 
   const ScheduleDetailScreen({super.key, required this.schedule});
 
   Future<void> _delete(BuildContext context) async {
-    final l10n = AppLocalizations.of(context)!;
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.scheduleDeleteConfirmTitle),
-        content: Text(l10n.scheduleDeleteConfirmBody),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(l10n.commonCancel)),
-          TextButton(onPressed: () => Navigator.pop(context, true), child: Text(l10n.commonDelete)),
-        ],
-      ),
-    );
-    if (confirmed != true) return;
-
-    // [schedule] may be one virtual occurrence of a recurring series (see
-    // CalendarScreen._expandRecurrences) with its startTime/endTime shifted
-    // to that occurrence's date, not the series' real anchor date. Deleting
-    // by id is safe either way (same document), but snapshotting/recreating
-    // from the shifted copy would silently re-anchor the whole series (or
-    // the trash/undo record) to whichever date the user happened to tap —
-    // discarding the series' real start. Re-read the canonical document so
-    // the trash record and undo always use its true stored dates.
-    final canonicalDoc =
-        await FirebaseFirestore.instance.collection('schedules').doc(schedule.id).get();
-    final canonical = canonicalDoc.exists ? Schedule.fromFirestore(canonicalDoc) : schedule;
-
-    await AuditService.instance.softDelete(
-      collection: 'schedules',
-      targetId: canonical.id,
-      data: canonical.toUpdateMap(),
-    );
-    await NotificationService.instance.cancelForSchedule(canonical.id);
-    if (context.mounted) Navigator.of(context).pop();
-
-    rootScaffoldMessengerKey.currentState?.clearSnackBars();
-    // Material 3's SnackBar pauses its auto-dismiss timer while hovered
-    // (desktop/web), so close it explicitly to guarantee it goes away after
-    // 5 seconds regardless of the pointer.
-    final snackBarController = rootScaffoldMessengerKey.currentState?.showSnackBar(
-      SnackBar(
-        content: Text(l10n.scheduleDeleted),
-        duration: const Duration(seconds: 5),
-        action: SnackBarAction(
-          label: l10n.commonUndo,
-          onPressed: () async {
-            await FirebaseFirestore.instance
-                .collection('schedules')
-                .doc(canonical.id)
-                .set(canonical.toCreateMap());
-            await NotificationService.instance.scheduleForSchedule(canonical);
-          },
-        ),
-      ),
-    );
-    Future.delayed(const Duration(seconds: 5), () => snackBarController?.close());
+    if (await deleteScheduleWithUndo(context, schedule) && context.mounted) {
+      Navigator.of(context).pop();
+    }
   }
 
   String _formatDateTime(DateTime dt) {
@@ -125,9 +136,12 @@ class ScheduleDetailScreen extends StatelessWidget {
           if (canEdit)
             IconButton(
               icon: const Icon(Icons.edit_outlined),
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => ScheduleFormScreen(schedule: schedule)),
-              ),
+              onPressed: () async {
+                final deleted = await Navigator.of(context).push<bool>(
+                  MaterialPageRoute(builder: (_) => ScheduleFormScreen(schedule: schedule)),
+                );
+                if (deleted == true && context.mounted) Navigator.of(context).pop();
+              },
             ),
           if (isOwner)
             IconButton(

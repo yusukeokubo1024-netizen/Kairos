@@ -2046,6 +2046,222 @@ abstract class AppLocalizations {
   /// **'グループを作成'**
   String get groupFormTitle;
 
+  /// No description provided for @chatAttachCamera.
+  ///
+  /// In ja, this message translates to:
+  /// **'カメラ'**
+  String get chatAttachCamera;
+
+  /// No description provided for @chatAttachPhoto.
+  ///
+  /// In ja, this message translates to:
+  /// **'写真'**
+  String get chatAttachPhoto;
+
+  /// No description provided for @chatAttachLocation.
+  ///
+  /// In ja, this message translates to:
+  /// **'位置情報'**
+  String get chatAttachLocation;
+
+  /// No description provided for @chatAttachPoll.
+  ///
+  /// In ja, this message translates to:
+  /// **'日程調整'**
+  String get chatAttachPoll;
+
+  /// No description provided for @chatAttachTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'追加'**
+  String get chatAttachTooltip;
+
+  /// No description provided for @chatSending.
+  ///
+  /// In ja, this message translates to:
+  /// **'送信中…'**
+  String get chatSending;
+
+  /// No description provided for @chatSendFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'送信できませんでした。もう一度お試しください'**
+  String get chatSendFailed;
+
+  /// No description provided for @chatLocationTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'位置情報'**
+  String get chatLocationTitle;
+
+  /// No description provided for @chatLocationOpen.
+  ///
+  /// In ja, this message translates to:
+  /// **'地図で開く'**
+  String get chatLocationOpen;
+
+  /// No description provided for @chatLocationServiceOff.
+  ///
+  /// In ja, this message translates to:
+  /// **'位置情報サービスがオフになっています。設定アプリでオンにしてください'**
+  String get chatLocationServiceOff;
+
+  /// No description provided for @chatLocationDenied.
+  ///
+  /// In ja, this message translates to:
+  /// **'位置情報の利用が許可されていません。設定アプリで Kairos に許可してください'**
+  String get chatLocationDenied;
+
+  /// No description provided for @chatImageFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'写真を読み込めませんでした'**
+  String get chatImageFailed;
+
+  /// No description provided for @chatVoiceTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'ボイスメッセージ'**
+  String get chatVoiceTooltip;
+
+  /// No description provided for @chatVoiceRecording.
+  ///
+  /// In ja, this message translates to:
+  /// **'録音中'**
+  String get chatVoiceRecording;
+
+  /// No description provided for @chatVoiceCancel.
+  ///
+  /// In ja, this message translates to:
+  /// **'キャンセル'**
+  String get chatVoiceCancel;
+
+  /// No description provided for @chatVoiceSend.
+  ///
+  /// In ja, this message translates to:
+  /// **'送信'**
+  String get chatVoiceSend;
+
+  /// No description provided for @chatMicDenied.
+  ///
+  /// In ja, this message translates to:
+  /// **'マイクの利用が許可されていません。設定アプリで Kairos に許可してください'**
+  String get chatMicDenied;
+
+  /// No description provided for @chatDictationTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'音声入力'**
+  String get chatDictationTooltip;
+
+  /// No description provided for @chatDictationUnavailable.
+  ///
+  /// In ja, this message translates to:
+  /// **'音声入力を利用できません。設定アプリで Kairos にマイクと音声認識を許可してください'**
+  String get chatDictationUnavailable;
+
+  /// No description provided for @chatDictationListening.
+  ///
+  /// In ja, this message translates to:
+  /// **'聞き取り中…もう一度マイクを押すと終了します'**
+  String get chatDictationListening;
+
+  /// No description provided for @pollCreateTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'日程調整を作成'**
+  String get pollCreateTitle;
+
+  /// No description provided for @pollTitleLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'タイトル'**
+  String get pollTitleLabel;
+
+  /// No description provided for @pollTitleHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'例：忘年会'**
+  String get pollTitleHint;
+
+  /// No description provided for @pollOptionsLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'候補日'**
+  String get pollOptionsLabel;
+
+  /// No description provided for @pollAddOption.
+  ///
+  /// In ja, this message translates to:
+  /// **'候補を追加'**
+  String get pollAddOption;
+
+  /// No description provided for @pollIncludeTime.
+  ///
+  /// In ja, this message translates to:
+  /// **'時刻を指定する'**
+  String get pollIncludeTime;
+
+  /// No description provided for @pollCreateButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'作成して送る'**
+  String get pollCreateButton;
+
+  /// No description provided for @pollNeedTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'タイトルを入力してください'**
+  String get pollNeedTitle;
+
+  /// No description provided for @pollNeedOptions.
+  ///
+  /// In ja, this message translates to:
+  /// **'候補を1つ以上追加してください'**
+  String get pollNeedOptions;
+
+  /// No description provided for @pollCardLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'日程調整'**
+  String get pollCardLabel;
+
+  /// No description provided for @pollDecide.
+  ///
+  /// In ja, this message translates to:
+  /// **'この日に決定'**
+  String get pollDecide;
+
+  /// No description provided for @pollDecideConfirm.
+  ///
+  /// In ja, this message translates to:
+  /// **'{date} に決定して、メンバー全員の予定に追加しますか？'**
+  String pollDecideConfirm(String date);
+
+  /// No description provided for @pollDecideButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'決定する'**
+  String get pollDecideButton;
+
+  /// No description provided for @pollDecided.
+  ///
+  /// In ja, this message translates to:
+  /// **'決定：{date}（全員の予定に追加しました）'**
+  String pollDecided(String date);
+
+  /// No description provided for @pollVotersTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'回答'**
+  String get pollVotersTitle;
+
+  /// No description provided for @pollNoVotes.
+  ///
+  /// In ja, this message translates to:
+  /// **'まだ回答がありません'**
+  String get pollNoVotes;
+
   /// No description provided for @groupChatInfo.
   ///
   /// In ja, this message translates to:

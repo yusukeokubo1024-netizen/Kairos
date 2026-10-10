@@ -1074,6 +1074,122 @@ class AppLocalizationsEn extends AppLocalizations {
   String get groupFormTitle => 'Create a group';
 
   @override
+  String get chatAttachCamera => 'Camera';
+
+  @override
+  String get chatAttachPhoto => 'Photos';
+
+  @override
+  String get chatAttachLocation => 'Location';
+
+  @override
+  String get chatAttachPoll => 'Find a date';
+
+  @override
+  String get chatAttachTooltip => 'Attach';
+
+  @override
+  String get chatSending => 'Sending…';
+
+  @override
+  String get chatSendFailed => 'Couldn\'t send. Please try again.';
+
+  @override
+  String get chatLocationTitle => 'Location';
+
+  @override
+  String get chatLocationOpen => 'Open in Maps';
+
+  @override
+  String get chatLocationServiceOff =>
+      'Location services are off. Turn them on in Settings.';
+
+  @override
+  String get chatLocationDenied =>
+      'Location access isn\'t allowed. Allow it for Kairos in Settings.';
+
+  @override
+  String get chatImageFailed => 'Couldn\'t load the photo';
+
+  @override
+  String get chatVoiceTooltip => 'Voice message';
+
+  @override
+  String get chatVoiceRecording => 'Recording';
+
+  @override
+  String get chatVoiceCancel => 'Cancel';
+
+  @override
+  String get chatVoiceSend => 'Send';
+
+  @override
+  String get chatMicDenied =>
+      'Microphone access isn\'t allowed. Allow it for Kairos in Settings.';
+
+  @override
+  String get chatDictationTooltip => 'Voice input';
+
+  @override
+  String get chatDictationUnavailable =>
+      'Voice input isn\'t available. Allow microphone and speech recognition for Kairos in Settings.';
+
+  @override
+  String get chatDictationListening => 'Listening… tap the mic again to stop';
+
+  @override
+  String get pollCreateTitle => 'New date poll';
+
+  @override
+  String get pollTitleLabel => 'Title';
+
+  @override
+  String get pollTitleHint => 'e.g. Year-end party';
+
+  @override
+  String get pollOptionsLabel => 'Candidate dates';
+
+  @override
+  String get pollAddOption => 'Add a date';
+
+  @override
+  String get pollIncludeTime => 'Set a time';
+
+  @override
+  String get pollCreateButton => 'Create and send';
+
+  @override
+  String get pollNeedTitle => 'Enter a title';
+
+  @override
+  String get pollNeedOptions => 'Add at least one date';
+
+  @override
+  String get pollCardLabel => 'Date poll';
+
+  @override
+  String get pollDecide => 'Decide on this date';
+
+  @override
+  String pollDecideConfirm(String date) {
+    return 'Decide on $date and add it to every member\'s calendar?';
+  }
+
+  @override
+  String get pollDecideButton => 'Decide';
+
+  @override
+  String pollDecided(String date) {
+    return 'Decided: $date (added to everyone\'s calendar)';
+  }
+
+  @override
+  String get pollVotersTitle => 'Answers';
+
+  @override
+  String get pollNoVotes => 'No answers yet';
+
+  @override
   String get groupChatInfo => 'Group info';
 
   @override

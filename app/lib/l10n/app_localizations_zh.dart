@@ -1032,6 +1032,118 @@ class AppLocalizationsZh extends AppLocalizations {
   String get groupFormTitle => '创建群组';
 
   @override
+  String get chatAttachCamera => '相机';
+
+  @override
+  String get chatAttachPhoto => '照片';
+
+  @override
+  String get chatAttachLocation => '位置';
+
+  @override
+  String get chatAttachPoll => '日程调整';
+
+  @override
+  String get chatAttachTooltip => '添加';
+
+  @override
+  String get chatSending => '发送中…';
+
+  @override
+  String get chatSendFailed => '发送失败，请重试';
+
+  @override
+  String get chatLocationTitle => '位置';
+
+  @override
+  String get chatLocationOpen => '在地图中打开';
+
+  @override
+  String get chatLocationServiceOff => '定位服务已关闭，请在设置中开启';
+
+  @override
+  String get chatLocationDenied => '未允许访问位置，请在设置中为 Kairos 开启';
+
+  @override
+  String get chatImageFailed => '无法加载照片';
+
+  @override
+  String get chatVoiceTooltip => '语音消息';
+
+  @override
+  String get chatVoiceRecording => '录音中';
+
+  @override
+  String get chatVoiceCancel => '取消';
+
+  @override
+  String get chatVoiceSend => '发送';
+
+  @override
+  String get chatMicDenied => '未允许使用麦克风，请在设置中为 Kairos 开启';
+
+  @override
+  String get chatDictationTooltip => '语音输入';
+
+  @override
+  String get chatDictationUnavailable => '无法使用语音输入，请在设置中为 Kairos 开启麦克风和语音识别';
+
+  @override
+  String get chatDictationListening => '正在聆听…再次点按麦克风即可结束';
+
+  @override
+  String get pollCreateTitle => '创建日程调整';
+
+  @override
+  String get pollTitleLabel => '标题';
+
+  @override
+  String get pollTitleHint => '例如：年终聚会';
+
+  @override
+  String get pollOptionsLabel => '候选日期';
+
+  @override
+  String get pollAddOption => '添加候选';
+
+  @override
+  String get pollIncludeTime => '指定时间';
+
+  @override
+  String get pollCreateButton => '创建并发送';
+
+  @override
+  String get pollNeedTitle => '请输入标题';
+
+  @override
+  String get pollNeedOptions => '请至少添加一个候选';
+
+  @override
+  String get pollCardLabel => '日程调整';
+
+  @override
+  String get pollDecide => '确定这一天';
+
+  @override
+  String pollDecideConfirm(String date) {
+    return '确定为 $date 并添加到所有成员的日程吗？';
+  }
+
+  @override
+  String get pollDecideButton => '确定';
+
+  @override
+  String pollDecided(String date) {
+    return '已确定：$date（已添加到所有人的日程）';
+  }
+
+  @override
+  String get pollVotersTitle => '回答';
+
+  @override
+  String get pollNoVotes => '还没有回答';
+
+  @override
   String get groupChatInfo => '群组信息';
 
   @override

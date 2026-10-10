@@ -1,12 +1,21 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:record/record.dart';
+import 'package:speech_to_text/speech_to_text.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../../models/chat_message.dart';
 import '../../models/shared_group.dart';
+import '../../services/chat_media_service.dart';
+import '../../services/locale_service.dart';
+import 'chat_message_content.dart';
 import 'group_detail_screen.dart';
 import 'live_group_name.dart';
+import 'poll_create_screen.dart';
 
 class GroupChatScreen extends StatefulWidget {
   final SharedGroup group;
@@ -34,6 +43,17 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
   final _scrollController = ScrollController();
   final Map<String, String> _nameCache = {};
   bool _isSending = false;
+  bool _hasText = false;
+  // Voice input (speech-to-text into the text field).
+  final _speech = SpeechToText();
+  bool _speechReady = false;
+  bool _listening = false;
+  String _textBeforeDictation = '';
+  // Voice messages.
+  final _recorder = AudioRecorder();
+  DateTime? _recordingSince;
+  Timer? _recordingTicker;
+  static const _maxRecording = Duration(minutes: 3);
   // Messages this session has already marked as read, so a snapshot rebuild
   // doesn't re-send the same write.
   final Set<String> _markedRead = {};
@@ -51,6 +71,10 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
   void initState() {
     super.initState();
     _loadReadReceiptsSetting();
+    _textController.addListener(() {
+      final hasText = _textController.text.trim().isNotEmpty;
+      if (hasText != _hasText) setState(() => _hasText = hasText);
+    });
     _markChatSeen();
   }
 
@@ -110,6 +134,9 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
   void dispose() {
     _markChatSeen();
     _textController.dispose();
+    _speech.cancel();
+    _recordingTicker?.cancel();
+    _recorder.dispose();
     _scrollController.dispose();
     super.dispose();
   }
@@ -139,7 +166,12 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     final uid = FirebaseAuth.instance.currentUser!.uid;
     setState(() => _isSending = true);
     try {
-      final message = ChatMessage(id: '', senderId: uid, text: text, isStamp: isStamp);
+      final message = ChatMessage(
+        id: '',
+        senderId: uid,
+        text: text,
+        type: isStamp ? ChatMessageType.stamp : ChatMessageType.text,
+      );
       await FirebaseFirestore.instance
           .collection('sharedGroups')
           .doc(widget.group.id)
@@ -148,6 +180,183 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     } finally {
       if (mounted) setState(() => _isSending = false);
     }
+  }
+
+  void _showError(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  /// Runs a media send with the "sending" state and a generic error message.
+  Future<void> _runSend(Future<void> Function() send) async {
+    setState(() => _isSending = true);
+    try {
+      await send();
+    } catch (_) {
+      if (mounted) _showError(AppLocalizations.of(context)!.chatSendFailed);
+    } finally {
+      if (mounted) setState(() => _isSending = false);
+    }
+  }
+
+  void _openAttachMenu() {
+    final l10n = AppLocalizations.of(context)!;
+    final groupId = widget.group.id;
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (sheetContext) {
+        void pick(Future<void> Function() action) {
+          Navigator.of(sheetContext).pop();
+          action();
+        }
+
+        return SafeArea(
+          child: Wrap(
+            children: [
+              ListTile(
+                leading: const Icon(Icons.photo_camera_outlined),
+                title: Text(l10n.chatAttachCamera),
+                onTap: () => pick(() => _runSend(
+                    () => ChatMediaService.instance.sendPhotos(groupId, fromCamera: true))),
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library_outlined),
+                title: Text(l10n.chatAttachPhoto),
+                onTap: () => pick(() => _runSend(
+                    () => ChatMediaService.instance.sendPhotos(groupId, fromCamera: false))),
+              ),
+              ListTile(
+                leading: const Icon(Icons.location_on_outlined),
+                title: Text(l10n.chatAttachLocation),
+                onTap: () => pick(() => _runSend(() async {
+                  final failure = await ChatMediaService.instance.sendCurrentLocation(groupId);
+                  if (failure == LocationFailure.serviceOff) _showError(l10n.chatLocationServiceOff);
+                  if (failure == LocationFailure.denied) _showError(l10n.chatLocationDenied);
+                })),
+              ),
+              ListTile(
+                leading: const Icon(Icons.event_available_outlined),
+                title: Text(l10n.chatAttachPoll),
+                onTap: () => pick(() => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => PollCreateScreen(groupId: groupId)),
+                    )),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  String get _speechLocaleId => switch (LocaleService.instance.locale.value.languageCode) {
+        'en' => 'en_US',
+        'ko' => 'ko_KR',
+        'zh' => 'zh_CN',
+        _ => 'ja_JP',
+      };
+
+  /// Speech-to-text into the text field; tap again to stop.
+  Future<void> _toggleDictation() async {
+    if (_listening) {
+      await _speech.stop();
+      if (mounted) setState(() => _listening = false);
+      return;
+    }
+    if (!_speechReady) {
+      _speechReady = await _speech.initialize(
+        onStatus: (status) {
+          if ((status == 'done' || status == 'notListening') && mounted) {
+            setState(() => _listening = false);
+          }
+        },
+        onError: (_) {
+          if (mounted) setState(() => _listening = false);
+        },
+      );
+    }
+    if (!_speechReady) {
+      if (mounted) _showError(AppLocalizations.of(context)!.chatDictationUnavailable);
+      return;
+    }
+    final before = _textController.text;
+    _textBeforeDictation = before.isEmpty || before.endsWith(' ') ? before : '$before ';
+    setState(() => _listening = true);
+    await _speech.listen(
+      listenOptions: SpeechListenOptions(partialResults: true, localeId: _speechLocaleId),
+      onResult: (result) {
+        final text = _textBeforeDictation + result.recognizedWords;
+        _textController.value = TextEditingValue(
+          text: text,
+          selection: TextSelection.collapsed(offset: text.length),
+        );
+      },
+    );
+  }
+
+  Future<void> _startRecording() async {
+    if (_listening) await _toggleDictation();
+    if (!await _recorder.hasPermission()) {
+      if (mounted) _showError(AppLocalizations.of(context)!.chatMicDenied);
+      return;
+    }
+    final path = '${Directory.systemTemp.path}/voice_${DateTime.now().millisecondsSinceEpoch}.m4a';
+    await _recorder.start(
+      const RecordConfig(encoder: AudioEncoder.aacLc, bitRate: 64000, numChannels: 1),
+      path: path,
+    );
+    setState(() => _recordingSince = DateTime.now());
+    _recordingTicker = Timer.periodic(const Duration(milliseconds: 250), (_) {
+      if (!mounted) return;
+      if (DateTime.now().difference(_recordingSince!) >= _maxRecording) {
+        _finishRecording(send: true);
+      } else {
+        setState(() {});
+      }
+    });
+  }
+
+  Future<void> _finishRecording({required bool send}) async {
+    final since = _recordingSince;
+    if (since == null) return;
+    _recordingTicker?.cancel();
+    _recordingTicker = null;
+    final duration = DateTime.now().difference(since);
+    setState(() => _recordingSince = null);
+    final path = await _recorder.stop();
+    if (path == null) return;
+    final file = File(path);
+    // Under a second is almost always an accidental tap.
+    if (!send || duration < const Duration(seconds: 1)) {
+      if (await file.exists()) await file.delete();
+      return;
+    }
+    await _runSend(() async {
+      await ChatMediaService.instance.sendVoice(widget.group.id, file, duration);
+      if (await file.exists()) await file.delete();
+    });
+  }
+
+  Widget _buildRecordingBar(AppLocalizations l10n) {
+    final elapsed = DateTime.now().difference(_recordingSince!);
+    final label =
+        '${elapsed.inMinutes}:${(elapsed.inSeconds % 60).toString().padLeft(2, '0')}';
+    return Row(
+      children: [
+        const Icon(Icons.fiber_manual_record, color: Colors.red),
+        const SizedBox(width: 8),
+        Text('${l10n.chatVoiceRecording} $label'),
+        const Spacer(),
+        TextButton(
+          onPressed: () => _finishRecording(send: false),
+          child: Text(l10n.chatVoiceCancel),
+        ),
+        FilledButton.icon(
+          onPressed: () => _finishRecording(send: true),
+          icon: const Icon(Icons.send),
+          label: Text(l10n.chatVoiceSend),
+        ),
+      ],
+    );
   }
 
   Future<void> _reportMessage(ChatMessage message) async {
@@ -331,6 +540,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                         currentUid: uid,
                         resolveName: _resolveName,
                         cachedName: (uid) => _nameCache[uid],
+                        groupId: widget.group.id,
                         onLongPress: () => _openReactionPicker(message),
                         onReactionTap: (emoji) => _toggleReaction(message, emoji),
                       );
@@ -340,32 +550,57 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
               ),
             ),
             const Divider(height: 1),
+            if (_isSending) const LinearProgressIndicator(minHeight: 2),
             Padding(
               padding: const EdgeInsets.all(8),
-              child: Row(
-                children: [
-                  IconButton(
-                    onPressed: _openStampPicker,
-                    icon: const Icon(Icons.emoji_emotions_outlined),
-                    tooltip: l10n.groupChatStampTooltip,
-                  ),
-                  Expanded(
-                    child: TextField(
-                      controller: _textController,
-                      decoration: InputDecoration(hintText: l10n.groupChatInputHint),
-                      minLines: 1,
-                      maxLines: 4,
-                      textInputAction: TextInputAction.send,
-                      onSubmitted: (_) => _send(),
+              child: _recordingSince != null
+                  ? _buildRecordingBar(l10n)
+                  : Row(
+                      children: [
+                        IconButton(
+                          onPressed: _isSending ? null : _openAttachMenu,
+                          icon: const Icon(Icons.add_circle_outline),
+                          tooltip: l10n.chatAttachTooltip,
+                        ),
+                        IconButton(
+                          onPressed: _openStampPicker,
+                          icon: const Icon(Icons.emoji_emotions_outlined),
+                          tooltip: l10n.groupChatStampTooltip,
+                        ),
+                        Expanded(
+                          child: TextField(
+                            controller: _textController,
+                            decoration: InputDecoration(
+                              hintText: _listening
+                                  ? l10n.chatDictationListening
+                                  : l10n.groupChatInputHint,
+                              suffixIcon: IconButton(
+                                icon: Icon(_listening ? Icons.mic : Icons.mic_none,
+                                    color: _listening ? Colors.red : null),
+                                tooltip: l10n.chatDictationTooltip,
+                                onPressed: _toggleDictation,
+                              ),
+                            ),
+                            minLines: 1,
+                            maxLines: 4,
+                            textInputAction: TextInputAction.send,
+                            onSubmitted: (_) => _send(),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        // Send when there's text; otherwise record a voice message.
+                        _hasText
+                            ? IconButton.filled(
+                                onPressed: _isSending ? null : _send,
+                                icon: const Icon(Icons.send),
+                              )
+                            : IconButton.filledTonal(
+                                onPressed: _isSending ? null : _startRecording,
+                                icon: const Icon(Icons.keyboard_voice),
+                                tooltip: l10n.chatVoiceTooltip,
+                              ),
+                      ],
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  IconButton.filled(
-                    onPressed: _isSending ? null : _send,
-                    icon: const Icon(Icons.send),
-                  ),
-                ],
-              ),
             ),
           ],
         ),
@@ -383,6 +618,7 @@ class _MessageBubble extends StatelessWidget {
   // (e.g. read receipts being written when the chat opens) flashed each
   // sender's name to "..." for a frame while the FutureBuilder restarted.
   final String? Function(String uid) cachedName;
+  final String groupId;
   final VoidCallback onLongPress;
   final ValueChanged<String> onReactionTap;
 
@@ -392,6 +628,7 @@ class _MessageBubble extends StatelessWidget {
     required this.currentUid,
     required this.resolveName,
     required this.cachedName,
+    required this.groupId,
     required this.onLongPress,
     required this.onReactionTap,
   });
@@ -444,9 +681,20 @@ class _MessageBubble extends StatelessWidget {
               ],
               GestureDetector(
                 onLongPress: onLongPress,
-                child: message.isStamp
-                    ? Text(message.text, style: const TextStyle(fontSize: 48))
-                    : ConstrainedBox(
+                child: switch (message.type) {
+                  ChatMessageType.stamp =>
+                    Text(message.text, style: const TextStyle(fontSize: 48)),
+                  ChatMessageType.image => ChatImageContent(message: message),
+                  ChatMessageType.location =>
+                    ChatLocationContent(message: message, isMine: isMine),
+                  ChatMessageType.voice => ChatVoiceContent(message: message, isMine: isMine),
+                  ChatMessageType.poll => ChatPollContent(
+                      message: message,
+                      groupId: groupId,
+                      currentUid: currentUid,
+                      resolveName: resolveName,
+                    ),
+                  ChatMessageType.text => ConstrainedBox(
                         constraints:
                             BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.7),
                         child: Container(
@@ -465,6 +713,7 @@ class _MessageBubble extends StatelessWidget {
                           ),
                         ),
                       ),
+                },
               ),
               if (!isMine) ...[
                 const SizedBox(width: 4),

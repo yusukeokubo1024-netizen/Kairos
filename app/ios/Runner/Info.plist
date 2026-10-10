@@ -33,6 +33,16 @@
 	<false/>
 	<key>NSAlarmKitUsageDescription</key>
 	<string>アラーム・タイマー・アラーム形式の予定を、マナーモード中やアプリを閉じているときでも時間どおりに鳴らすために使用します。</string>
+	<key>NSCameraUsageDescription</key>
+	<string>グループのトークで写真を撮って送るために使用します。</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>グループのトークで写真を選んで送るために使用します。</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>グループのトークで現在地を送るために使用します。送るボタンを押したときだけ取得します。</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>グループのトークでボイスメッセージを録音したり、音声で文字を入力したりするために使用します。</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>グループのトークで、話した言葉を文字に変換して入力するために使用します。</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>Kairosを開くときに、パスワードの代わりにFace IDでご本人確認を行うために使用します。</string>
 	<key>CFBundleURLTypes</key>

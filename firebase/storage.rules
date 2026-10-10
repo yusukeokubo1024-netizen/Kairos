@@ -1,0 +1,29 @@
+rules_version = '2';
+
+// Cloud Storage: photos and voice messages sent in group chats, stored at
+// chat/{groupId}/{fileName}. Only members of that group (per Firestore's
+// sharedGroups/{groupId}.memberIds) can upload or read them.
+service firebase.storage {
+  match /b/{bucket}/o {
+    function isGroupMember(groupId) {
+      return request.auth != null &&
+        request.auth.uid in
+          firestore.get(/databases/(default)/documents/sharedGroups/$(groupId)).data.memberIds;
+    }
+
+    match /chat/{groupId}/{fileName} {
+      allow read: if isGroupMember(groupId);
+      // Photos are resized before upload and voice messages are short, so
+      // 10 MB is plenty; only images and audio are accepted.
+      allow create: if isGroupMember(groupId) &&
+        request.resource.size < 10 * 1024 * 1024 &&
+        request.resource.contentType.matches('(image|audio)/.*');
+      allow update, delete: if false;
+    }
+
+    // Nothing else is readable or writable.
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

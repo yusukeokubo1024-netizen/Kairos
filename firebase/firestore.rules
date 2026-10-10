@@ -183,7 +183,19 @@ service cloud.firestore {
           // メッセージには readBy 自体が無いので get(..., []) で補う。
           (request.auth.uid != resource.data.senderId &&
             request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readBy']) &&
-            request.resource.data.readBy == resource.data.get('readBy', []).concat([request.auth.uid]))
+            request.resource.data.readBy == resource.data.get('readBy', []).concat([request.auth.uid])) ||
+          // 日程調整の投票: メンバーは votes の中の「自分のUID」の項目だけを
+          // 書き換えられる（他人の○△×は変更不可）。決定済みなら投票不可。
+          (resource.data.get('type', '') == 'poll' &&
+            resource.data.get('decidedOption', null) == null &&
+            request.resource.data.diff(resource.data).affectedKeys().hasOnly(['votes']) &&
+            request.resource.data.votes.diff(resource.data.get('votes', {})).affectedKeys()
+              .hasOnly([request.auth.uid])) ||
+          // 日程調整の決定: 作成者だけが、決定した候補と作った予定のIDを書ける。
+          (resource.data.get('type', '') == 'poll' &&
+            request.auth.uid == resource.data.senderId &&
+            request.resource.data.diff(resource.data).affectedKeys()
+              .hasOnly(['decidedOption', 'decidedScheduleId']))
         );
         allow delete: if isAuthenticated() && resource.data.senderId == request.auth.uid;
       }

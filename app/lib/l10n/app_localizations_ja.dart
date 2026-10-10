@@ -1043,6 +1043,119 @@ class AppLocalizationsJa extends AppLocalizations {
   String get groupFormTitle => 'グループを作成';
 
   @override
+  String get chatAttachCamera => 'カメラ';
+
+  @override
+  String get chatAttachPhoto => '写真';
+
+  @override
+  String get chatAttachLocation => '位置情報';
+
+  @override
+  String get chatAttachPoll => '日程調整';
+
+  @override
+  String get chatAttachTooltip => '追加';
+
+  @override
+  String get chatSending => '送信中…';
+
+  @override
+  String get chatSendFailed => '送信できませんでした。もう一度お試しください';
+
+  @override
+  String get chatLocationTitle => '位置情報';
+
+  @override
+  String get chatLocationOpen => '地図で開く';
+
+  @override
+  String get chatLocationServiceOff => '位置情報サービスがオフになっています。設定アプリでオンにしてください';
+
+  @override
+  String get chatLocationDenied => '位置情報の利用が許可されていません。設定アプリで Kairos に許可してください';
+
+  @override
+  String get chatImageFailed => '写真を読み込めませんでした';
+
+  @override
+  String get chatVoiceTooltip => 'ボイスメッセージ';
+
+  @override
+  String get chatVoiceRecording => '録音中';
+
+  @override
+  String get chatVoiceCancel => 'キャンセル';
+
+  @override
+  String get chatVoiceSend => '送信';
+
+  @override
+  String get chatMicDenied => 'マイクの利用が許可されていません。設定アプリで Kairos に許可してください';
+
+  @override
+  String get chatDictationTooltip => '音声入力';
+
+  @override
+  String get chatDictationUnavailable =>
+      '音声入力を利用できません。設定アプリで Kairos にマイクと音声認識を許可してください';
+
+  @override
+  String get chatDictationListening => '聞き取り中…もう一度マイクを押すと終了します';
+
+  @override
+  String get pollCreateTitle => '日程調整を作成';
+
+  @override
+  String get pollTitleLabel => 'タイトル';
+
+  @override
+  String get pollTitleHint => '例：忘年会';
+
+  @override
+  String get pollOptionsLabel => '候補日';
+
+  @override
+  String get pollAddOption => '候補を追加';
+
+  @override
+  String get pollIncludeTime => '時刻を指定する';
+
+  @override
+  String get pollCreateButton => '作成して送る';
+
+  @override
+  String get pollNeedTitle => 'タイトルを入力してください';
+
+  @override
+  String get pollNeedOptions => '候補を1つ以上追加してください';
+
+  @override
+  String get pollCardLabel => '日程調整';
+
+  @override
+  String get pollDecide => 'この日に決定';
+
+  @override
+  String pollDecideConfirm(String date) {
+    return '$date に決定して、メンバー全員の予定に追加しますか？';
+  }
+
+  @override
+  String get pollDecideButton => '決定する';
+
+  @override
+  String pollDecided(String date) {
+    return '決定：$date（全員の予定に追加しました）';
+  }
+
+  @override
+  String get pollVotersTitle => '回答';
+
+  @override
+  String get pollNoVotes => 'まだ回答がありません';
+
+  @override
   String get groupChatInfo => 'グループ情報';
 
   @override

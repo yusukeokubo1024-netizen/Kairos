@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'place_autocomplete_field.dart';
 import 'schedule_detail_screen.dart' show deleteScheduleWithUndo;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -618,12 +619,9 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
                     },
                   ),
                 const SizedBox(height: 16),
-                TextFormField(
+                PlaceAutocompleteField(
                   controller: _locationController,
-                  decoration: InputDecoration(
-                    labelText: l10n.scheduleFormLocation,
-                    prefixIcon: const Icon(Icons.location_on_outlined),
-                  ),
+                  labelText: l10n.scheduleFormLocation,
                 ),
                 const SizedBox(height: 16),
                 TextFormField(

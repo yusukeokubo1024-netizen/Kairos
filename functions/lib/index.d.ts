@@ -2,6 +2,7 @@ import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 export { sendDueReminders } from "./scheduledReminders";
 export { sendChatMessageNotification } from "./chatNotifications";
+export { placesAutocomplete } from "./placesAutocomplete";
 export declare const healthCheck: functions.https.HttpsFunction;
 export declare const testAuth: functions.https.CallableFunction<any, Promise<{
     success: boolean;

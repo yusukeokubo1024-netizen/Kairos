@@ -33,7 +33,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getMySubscription = exports.getSubscriptionPlans = exports.sendScheduleInvitation = exports.unregisterDeviceToken = exports.registerDeviceToken = exports.listSharedLocations = exports.setLocationSharing = exports.getLocation = exports.updateLocation = exports.addGroupMember = exports.listGroups = exports.deleteGroup = exports.updateGroup = exports.getGroup = exports.createGroup = exports.listTasks = exports.deleteTask = exports.updateTask = exports.getTask = exports.createTask = exports.updateParticipantStatus = exports.listSchedules = exports.deleteSchedule = exports.updateSchedule = exports.getSchedule = exports.createSchedule = exports.getUserProfile = exports.createUserProfile = exports.onUserDelete = exports.onUserCreate = exports.testAuth = exports.healthCheck = exports.sendChatMessageNotification = exports.sendDueReminders = void 0;
+exports.getMySubscription = exports.getSubscriptionPlans = exports.sendScheduleInvitation = exports.unregisterDeviceToken = exports.registerDeviceToken = exports.listSharedLocations = exports.setLocationSharing = exports.getLocation = exports.updateLocation = exports.addGroupMember = exports.listGroups = exports.deleteGroup = exports.updateGroup = exports.getGroup = exports.createGroup = exports.listTasks = exports.deleteTask = exports.updateTask = exports.getTask = exports.createTask = exports.updateParticipantStatus = exports.listSchedules = exports.deleteSchedule = exports.updateSchedule = exports.getSchedule = exports.createSchedule = exports.getUserProfile = exports.createUserProfile = exports.onUserDelete = exports.onUserCreate = exports.testAuth = exports.healthCheck = exports.placesAutocomplete = exports.sendChatMessageNotification = exports.sendDueReminders = void 0;
 const functions = __importStar(require("firebase-functions"));
 const admin = __importStar(require("firebase-admin"));
 const errors_1 = require("./utils/errors");
@@ -55,6 +55,8 @@ var scheduledReminders_1 = require("./scheduledReminders");
 Object.defineProperty(exports, "sendDueReminders", { enumerable: true, get: function () { return scheduledReminders_1.sendDueReminders; } });
 var chatNotifications_1 = require("./chatNotifications");
 Object.defineProperty(exports, "sendChatMessageNotification", { enumerable: true, get: function () { return chatNotifications_1.sendChatMessageNotification; } });
+var placesAutocomplete_1 = require("./placesAutocomplete");
+Object.defineProperty(exports, "placesAutocomplete", { enumerable: true, get: function () { return placesAutocomplete_1.placesAutocomplete; } });
 // For auth triggers, we need to use v1 SDK
 const v1Functions = require("firebase-functions/v1");
 // Initialize Firebase Admin

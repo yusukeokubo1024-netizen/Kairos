@@ -17,6 +17,7 @@ import { SubscriptionService } from "./services/subscriptionService";
 // sendDueReminders' deploy too, even though it's unrelated.
 export { sendDueReminders } from "./scheduledReminders";
 export { sendChatMessageNotification } from "./chatNotifications";
+export { placesAutocomplete } from "./placesAutocomplete";
 
 // For auth triggers, we need to use v1 SDK
 const v1Functions = require("firebase-functions/v1");

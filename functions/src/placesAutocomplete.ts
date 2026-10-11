@@ -1,0 +1,62 @@
+import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { defineSecret } from "firebase-functions/params";
+import * as logger from "firebase-functions/logger";
+
+/** Server-only Google Places API key (Secret Manager), restricted to the
+ * Places API — never shipped inside the app. */
+const placesApiKey = defineSecret("PLACES_API_KEY");
+
+const LANGUAGES = new Set(["ja", "en", "ko", "zh"]);
+
+/** Place suggestions for the schedule form's location field, via Google
+ * Places Autocomplete (New). Signed-in users only. Optionally biased toward
+ * the user's area (their saved weather location). */
+export const placesAutocomplete = onCall(
+  { region: "asia-northeast1", secrets: [placesApiKey] },
+  async (request) => {
+    if (!request.auth) throw new HttpsError("unauthenticated", "Sign in required");
+    const data = (request.data ?? {}) as Record<string, unknown>;
+    const input = String(data.input ?? "").trim().slice(0, 100);
+    if (input.length === 0) return { suggestions: [] };
+
+    const language = LANGUAGES.has(String(data.language)) ? String(data.language) : "ja";
+    const sessionToken =
+      typeof data.sessionToken === "string" ? data.sessionToken.slice(0, 64) : undefined;
+    const lat = typeof data.lat === "number" ? data.lat : undefined;
+    const lng = typeof data.lng === "number" ? data.lng : undefined;
+
+    const body: Record<string, unknown> = { input, languageCode: language };
+    if (sessionToken) body.sessionToken = sessionToken;
+    if (lat !== undefined && lng !== undefined) {
+      body.locationBias = { circle: { center: { latitude: lat, longitude: lng }, radius: 50000 } };
+    }
+
+    const response = await fetch("https://places.googleapis.com/v1/places:autocomplete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Goog-Api-Key": placesApiKey.value() },
+      body: JSON.stringify(body),
+    });
+    if (!response.ok) {
+      logger.warn(`placesAutocomplete: Places API ${response.status}`, await response.text());
+      throw new HttpsError("unavailable", "Place search is unavailable");
+    }
+    const json = (await response.json()) as {
+      suggestions?: Array<{
+        placePrediction?: {
+          placeId?: string;
+          structuredFormat?: { mainText?: { text?: string }; secondaryText?: { text?: string } };
+        };
+      }>;
+    };
+    const suggestions = (json.suggestions ?? [])
+      .map((s) => s.placePrediction)
+      .filter((p) => p?.structuredFormat?.mainText?.text)
+      .slice(0, 8)
+      .map((p) => ({
+        placeId: p!.placeId ?? "",
+        main: p!.structuredFormat!.mainText!.text!,
+        secondary: p!.structuredFormat?.secondaryText?.text ?? "",
+      }));
+    return { suggestions };
+  }
+);

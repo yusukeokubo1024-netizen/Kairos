@@ -37,6 +37,7 @@ exports.sendDueReminders = void 0;
 const scheduler_1 = require("firebase-functions/v2/scheduler");
 const logger = __importStar(require("firebase-functions/logger"));
 const admin = __importStar(require("firebase-admin"));
+const pushText_1 = require("./utils/pushText");
 // Mirrors NotificationService.scheduleForSchedule in the Flutter app
 // (lib/services/notification_service.dart), but as a server-side push so
 // reminders still arrive when the app isn't running. Schedules are always
@@ -126,12 +127,14 @@ async function sendReminder(db, scheduleId, data) {
     // Only ever one recipient (the owner — see above), so there's exactly
     // one channel choice to look up, not a per-recipient grouping problem.
     let channelId = "schedule_reminders";
+    let locale = (0, pushText_1.pushLocale)(undefined);
     recipientIds.forEach((uid, i) => {
         const notificationsEnabled = userDocs[i].data()?.notifications_enabled ?? true;
         if (!notificationsEnabled)
             return;
         channelId =
             userDocs[i].data()?.notificationChannels?.schedule ?? channelId;
+        locale = (0, pushText_1.pushLocale)(userDocs[i].data()?.locale);
         const docTokens = tokenDocs[i].data()?.tokens ?? [];
         tokens.push(...docTokens);
     });
@@ -141,7 +144,7 @@ async function sendReminder(db, scheduleId, data) {
         tokens,
         notification: {
             title: data.title,
-            body: "まもなく予定の時間です",
+            body: (0, pushText_1.pushText)("reminderSoon", locale),
         },
         // Without an explicit Android channel/sound, FCM delivers through a
         // generic default channel on some devices/OEMs that doesn't play a

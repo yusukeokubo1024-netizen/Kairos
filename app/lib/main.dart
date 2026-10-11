@@ -158,6 +158,8 @@ class _BiometricGateState extends State<BiometricGate> {
     PushNotificationService.instance.init();
     // Moves a birthday saved by an older version off the public profile.
     BirthdayService.instance.migrateFromPublicProfile();
+    // So server-sent pushes use the app's language (see LocaleService).
+    LocaleService.instance.saveToAccount();
   }
 
   Future<void> _checkLock() async {

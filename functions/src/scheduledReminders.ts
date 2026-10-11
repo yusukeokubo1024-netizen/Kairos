@@ -1,6 +1,7 @@
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import * as logger from "firebase-functions/logger";
 import * as admin from "firebase-admin";
+import { pushLocale, pushText } from "./utils/pushText";
 
 // Mirrors NotificationService.scheduleForSchedule in the Flutter app
 // (lib/services/notification_service.dart), but as a server-side push so
@@ -122,11 +123,13 @@ async function sendReminder(
   // Only ever one recipient (the owner — see above), so there's exactly
   // one channel choice to look up, not a per-recipient grouping problem.
   let channelId = "schedule_reminders";
+  let locale = pushLocale(undefined);
   recipientIds.forEach((uid, i) => {
     const notificationsEnabled = userDocs[i].data()?.notifications_enabled ?? true;
     if (!notificationsEnabled) return;
     channelId =
       (userDocs[i].data()?.notificationChannels?.schedule as string | undefined) ?? channelId;
+    locale = pushLocale(userDocs[i].data()?.locale);
     const docTokens = (tokenDocs[i].data()?.tokens as string[] | undefined) ?? [];
     tokens.push(...docTokens);
   });
@@ -136,7 +139,7 @@ async function sendReminder(
     tokens,
     notification: {
       title: data.title,
-      body: "まもなく予定の時間です",
+      body: pushText("reminderSoon", locale),
     },
     // Without an explicit Android channel/sound, FCM delivers through a
     // generic default channel on some devices/OEMs that doesn't play a

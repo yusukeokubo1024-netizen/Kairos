@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -26,5 +28,19 @@ class LocaleService {
     locale.value = newLocale;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_prefsKey, newLocale.languageCode);
+    await saveToAccount();
+  }
+
+  /// Mirrors the language to users/{uid}.locale so push notifications sent
+  /// by the server (chat messages, reminders) use it too. Best-effort.
+  Future<void> saveToAccount() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+    try {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .set({'locale': locale.value.languageCode}, SetOptions(merge: true));
+    } catch (_) {}
   }
 }

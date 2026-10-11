@@ -21,10 +21,11 @@ const _geminiApiKey = String.fromEnvironment('GEMINI_API_KEY');
 // A stray space/newline pasted into the CI variable would otherwise make
 // the request header itself invalid.
 final _geminiApiKeyTrimmed = _geminiApiKey.trim();
-const _geminiModel = 'gemini-flash-latest';
-// Used once the main model keeps answering 503 "high demand" — the lite
-// model is usually still available when flash is overloaded.
-const _geminiFallbackModel = 'gemini-flash-lite-latest';
+// The lite model answers in ~1s versus 6-12s for flash (measured), which
+// is plenty for support questions; flash is only the fallback when lite
+// keeps answering 503 "high demand".
+const _geminiModel = 'gemini-flash-lite-latest';
+const _geminiFallbackModel = 'gemini-flash-latest';
 
 class SupportScreen extends StatefulWidget {
   const SupportScreen({super.key});
@@ -286,7 +287,7 @@ $faqText''';
         throw _GeminiRequestError(response.statusCode, response.body);
       }
       setState(() => _status = l10n.supportAiRetrying(attempt, maxAttempts));
-      await Future.delayed(Duration(milliseconds: 1200 * attempt));
+      await Future.delayed(Duration(milliseconds: 500 * attempt));
     }
     throw Exception('unreachable');
   }

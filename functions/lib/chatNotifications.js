@@ -37,6 +37,7 @@ exports.sendChatMessageNotification = void 0;
 const firestore_1 = require("firebase-functions/v2/firestore");
 const logger = __importStar(require("firebase-functions/logger"));
 const admin = __importStar(require("firebase-admin"));
+const pushText_1 = require("./utils/pushText");
 /** Pushes an FCM notification to every other member of a group the moment
  * a chat message is created — unlike schedule reminders, group membership
  * already requires the recipient's consent (join request + owner
@@ -62,9 +63,10 @@ exports.sendChatMessageNotification = (0, firestore_1.onDocumentCreated)({ docum
         Promise.all(recipientIds.map((uid) => db.collection("deviceTokens").doc(uid).get())),
     ]);
     // Different recipients may have picked different notification sounds
-    // (NotificationSoundService), each living on its own Android channel —
-    // FCM only lets one android.notification.channelId per send, so group
-    // tokens by the recipient's chosen channel and send once per group.
+    // (NotificationSoundService), each living on its own Android channel,
+    // and use different app languages — FCM only takes one channelId and
+    // one body per send, so group tokens by (channel, language) and send
+    // once per group.
     const tokensByChannel = new Map();
     recipientIds.forEach((uid, i) => {
         const notificationsEnabled = userDocs[i].data()?.notifications_enabled ?? true;
@@ -77,7 +79,11 @@ exports.sendChatMessageNotification = (0, firestore_1.onDocumentCreated)({ docum
         const docTokens = tokenDocs[i].data()?.tokens ?? [];
         if (docTokens.length === 0)
             return;
-        tokensByChannel.set(channelId, [...(tokensByChannel.get(channelId) ?? []), ...docTokens]);
+        const locale = (0, pushText_1.pushLocale)(userDocs[i].data()?.locale);
+        const key = `${channelId}|${locale}`;
+        const entry = tokensByChannel.get(key) ?? { channelId, locale, tokens: [] };
+        entry.tokens.push(...docTokens);
+        tokensByChannel.set(key, entry);
     });
     if (tokensByChannel.size === 0) {
         logger.info(`sendChatMessageNotification: group ${groupId} — no recipient to notify ` +
@@ -90,10 +96,10 @@ exports.sendChatMessageNotification = (0, firestore_1.onDocumentCreated)({ docum
     // this visible to people who aren't in the conversation.
     try {
         const staleTokens = [];
-        for (const [channelId, tokens] of tokensByChannel) {
+        for (const { channelId, locale, tokens } of tokensByChannel.values()) {
             const response = await admin.messaging().sendEachForMulticast({
                 tokens,
-                notification: { title: group.name ?? "Kairos", body: "新しいメッセージが届きました" },
+                notification: { title: group.name ?? "Kairos", body: (0, pushText_1.pushText)("newChatMessage", locale) },
                 android: { notification: { channelId, sound: "default" }, priority: "high" },
                 apns: { payload: { aps: { sound: "default" } } },
                 data: { type: "groupChat", groupId },

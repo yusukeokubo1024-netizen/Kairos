@@ -13,6 +13,7 @@ import '../../models/anniversary.dart';
 import '../../models/schedule.dart';
 import '../../models/task.dart';
 import '../../services/audit_service.dart';
+import '../../services/locale_service.dart';
 import '../../services/home_widget_service.dart';
 import '../../services/notification_service.dart';
 import '../../utils/business_day.dart';
@@ -144,12 +145,19 @@ class _CalendarScreenState extends State<CalendarScreen> {
   /// high/low/rain summary shows. Its lat/lon page resolves to the right
   /// city by itself (e.g. 34.685/135.805 → 奈良県奈良市), so this works for
   /// any location the user set; otherwise its general top page.
+  // Weathernews has ja/en/zh pages (no Korean — English instead).
+  String get _weathernewsLang => switch (LocaleService.instance.locale.value.languageCode) {
+        'ja' => 'ja',
+        'zh' => 'zh',
+        _ => 'en',
+      };
+
   Future<void> _openDetailedForecast() async {
     final lat = _weatherLat, lon = _weatherLon;
     final uri = (lat == null || lon == null)
         ? Uri.parse('https://weathernews.jp/onebox/')
         : Uri.parse('https://weathernews.jp/onebox/'
-            '${lat.toStringAsFixed(4)}/${lon.toStringAsFixed(4)}/temp=c&lang=ja');
+            '${lat.toStringAsFixed(4)}/${lon.toStringAsFixed(4)}/temp=c&lang=$_weathernewsLang');
     await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 

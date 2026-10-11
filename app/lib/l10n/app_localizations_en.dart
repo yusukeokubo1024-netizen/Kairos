@@ -1190,6 +1190,50 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pollNoVotes => 'No answers yet';
 
   @override
+  String get chatUnsend => 'Unsend';
+
+  @override
+  String get chatUnsendConfirm =>
+      'Unsend this message? It will disappear for everyone.';
+
+  @override
+  String get chatUnsent => 'This message was unsent';
+
+  @override
+  String get chatDeleteForMe => 'Delete';
+
+  @override
+  String get chatDeleteForMeConfirm =>
+      'Delete this message? It\'s removed only from your chat; others still see it.';
+
+  @override
+  String get chatActionFailed => 'That didn\'t work. Please try again.';
+
+  @override
+  String get chatReply => 'Reply';
+
+  @override
+  String get chatForward => 'Forward';
+
+  @override
+  String get chatForwardTo => 'Forward to';
+
+  @override
+  String get chatForwarded => 'Forwarded';
+
+  @override
+  String get chatPreviewPhoto => '📷 Photo';
+
+  @override
+  String get chatPreviewLocation => '📍 Location';
+
+  @override
+  String get chatPreviewVoice => '🎤 Voice message';
+
+  @override
+  String get chatPreviewPoll => '📅';
+
+  @override
   String get groupChatInfo => 'Group info';
 
   @override

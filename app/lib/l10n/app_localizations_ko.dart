@@ -1163,6 +1163,49 @@ class AppLocalizationsKo extends AppLocalizations {
   String get pollNoVotes => '아직 응답이 없습니다';
 
   @override
+  String get chatUnsend => '전송 취소';
+
+  @override
+  String get chatUnsendConfirm => '전송을 취소할까요? 상대방 화면에서도 사라집니다';
+
+  @override
+  String get chatUnsent => '메시지 전송을 취소했습니다';
+
+  @override
+  String get chatDeleteForMe => '삭제';
+
+  @override
+  String get chatDeleteForMeConfirm =>
+      '이 메시지를 삭제할까요? 내 화면에서만 사라지고 상대방 화면에는 남습니다';
+
+  @override
+  String get chatActionFailed => '실패했습니다. 다시 시도해 주세요';
+
+  @override
+  String get chatReply => '답장';
+
+  @override
+  String get chatForward => '전달';
+
+  @override
+  String get chatForwardTo => '전달할 그룹';
+
+  @override
+  String get chatForwarded => '전달했습니다';
+
+  @override
+  String get chatPreviewPhoto => '📷 사진';
+
+  @override
+  String get chatPreviewLocation => '📍 위치';
+
+  @override
+  String get chatPreviewVoice => '🎤 음성 메시지';
+
+  @override
+  String get chatPreviewPoll => '📅';
+
+  @override
   String get groupChatInfo => '그룹 정보';
 
   @override

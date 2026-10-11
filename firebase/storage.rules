@@ -18,7 +18,11 @@ service firebase.storage {
       allow create: if isGroupMember(groupId) &&
         request.resource.size < 10 * 1024 * 1024 &&
         request.resource.contentType.matches('(image|audio)/.*');
-      allow update, delete: if false;
+      // 送信取り消し: uploaded as {time}_{uid}.{ext}, so only the uploader
+      // can delete their own file.
+      allow delete: if request.auth != null &&
+        fileName.matches('[0-9]+_' + request.auth.uid + '[.][a-z0-9]+');
+      allow update: if false;
     }
 
     // Nothing else is readable or writable.

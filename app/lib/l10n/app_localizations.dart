@@ -2262,6 +2262,90 @@ abstract class AppLocalizations {
   /// **'まだ回答がありません'**
   String get pollNoVotes;
 
+  /// No description provided for @chatUnsend.
+  ///
+  /// In ja, this message translates to:
+  /// **'送信取り消し'**
+  String get chatUnsend;
+
+  /// No description provided for @chatUnsendConfirm.
+  ///
+  /// In ja, this message translates to:
+  /// **'送信を取り消しますか？相手の画面からも消えます'**
+  String get chatUnsendConfirm;
+
+  /// No description provided for @chatUnsent.
+  ///
+  /// In ja, this message translates to:
+  /// **'メッセージの送信を取り消しました'**
+  String get chatUnsent;
+
+  /// No description provided for @chatDeleteForMe.
+  ///
+  /// In ja, this message translates to:
+  /// **'削除'**
+  String get chatDeleteForMe;
+
+  /// No description provided for @chatDeleteForMeConfirm.
+  ///
+  /// In ja, this message translates to:
+  /// **'このメッセージを削除しますか？自分の画面からだけ消え、相手の画面には残ります'**
+  String get chatDeleteForMeConfirm;
+
+  /// No description provided for @chatActionFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'うまくいきませんでした。もう一度お試しください'**
+  String get chatActionFailed;
+
+  /// No description provided for @chatReply.
+  ///
+  /// In ja, this message translates to:
+  /// **'リプライ'**
+  String get chatReply;
+
+  /// No description provided for @chatForward.
+  ///
+  /// In ja, this message translates to:
+  /// **'転送'**
+  String get chatForward;
+
+  /// No description provided for @chatForwardTo.
+  ///
+  /// In ja, this message translates to:
+  /// **'転送先のグループ'**
+  String get chatForwardTo;
+
+  /// No description provided for @chatForwarded.
+  ///
+  /// In ja, this message translates to:
+  /// **'転送しました'**
+  String get chatForwarded;
+
+  /// No description provided for @chatPreviewPhoto.
+  ///
+  /// In ja, this message translates to:
+  /// **'📷 写真'**
+  String get chatPreviewPhoto;
+
+  /// No description provided for @chatPreviewLocation.
+  ///
+  /// In ja, this message translates to:
+  /// **'📍 位置情報'**
+  String get chatPreviewLocation;
+
+  /// No description provided for @chatPreviewVoice.
+  ///
+  /// In ja, this message translates to:
+  /// **'🎤 ボイスメッセージ'**
+  String get chatPreviewVoice;
+
+  /// No description provided for @chatPreviewPoll.
+  ///
+  /// In ja, this message translates to:
+  /// **'📅'**
+  String get chatPreviewPoll;
+
   /// No description provided for @groupChatInfo.
   ///
   /// In ja, this message translates to:

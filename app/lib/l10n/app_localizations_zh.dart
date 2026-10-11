@@ -1144,6 +1144,48 @@ class AppLocalizationsZh extends AppLocalizations {
   String get pollNoVotes => '还没有回答';
 
   @override
+  String get chatUnsend => '撤回';
+
+  @override
+  String get chatUnsendConfirm => '要撤回这条消息吗？对方的画面中也会消失';
+
+  @override
+  String get chatUnsent => '已撤回一条消息';
+
+  @override
+  String get chatDeleteForMe => '删除';
+
+  @override
+  String get chatDeleteForMeConfirm => '要删除这条消息吗？只会从你的画面中删除，对方仍能看到';
+
+  @override
+  String get chatActionFailed => '操作失败，请重试';
+
+  @override
+  String get chatReply => '回复';
+
+  @override
+  String get chatForward => '转发';
+
+  @override
+  String get chatForwardTo => '转发到';
+
+  @override
+  String get chatForwarded => '已转发';
+
+  @override
+  String get chatPreviewPhoto => '📷 照片';
+
+  @override
+  String get chatPreviewLocation => '📍 位置';
+
+  @override
+  String get chatPreviewVoice => '🎤 语音消息';
+
+  @override
+  String get chatPreviewPoll => '📅';
+
+  @override
   String get groupChatInfo => '群组信息';
 
   @override

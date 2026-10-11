@@ -57,6 +57,10 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
   // Messages this session has already marked as read, so a snapshot rebuild
   // doesn't re-send the same write.
   final Set<String> _markedRead = {};
+  // Messages this user deleted from their own view (削除), by message id.
+  final Set<String> _hiddenMessageIds = {};
+  // The message being replied to (shown above the input), if any.
+  ChatMessage? _replyingTo;
   bool _readReceiptsEnabled = true;
   // Created once: a new .snapshots() stream on every build made the list
   // re-subscribe whenever anything on screen changed.
@@ -95,6 +99,12 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     try {
       final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
       _readReceiptsEnabled = doc.data()?['read_receipts_enabled'] as bool? ?? true;
+      final prefix = '${widget.group.id}/';
+      final hidden = (doc.data()?['hiddenChatMessages'] as List? ?? [])
+          .whereType<String>()
+          .where((key) => key.startsWith(prefix))
+          .map((key) => key.substring(prefix.length));
+      if (mounted) setState(() => _hiddenMessageIds.addAll(hidden));
     } catch (_) {
       _readReceiptsEnabled = true;
     }
@@ -166,12 +176,17 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     final uid = FirebaseAuth.instance.currentUser!.uid;
     setState(() => _isSending = true);
     try {
+      final reply = _replyingTo;
       final message = ChatMessage(
         id: '',
         senderId: uid,
         text: text,
         type: isStamp ? ChatMessageType.stamp : ChatMessageType.text,
+        replyToId: reply?.id,
+        replyToSenderId: reply?.senderId,
+        replyToPreview: reply == null ? null : _previewOf(reply),
       );
+      if (reply != null && mounted) setState(() => _replyingTo = null);
       await FirebaseFirestore.instance
           .collection('sharedGroups')
           .doc(widget.group.id)
@@ -359,6 +374,95 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     );
   }
 
+  /// One-line summary of a message, for reply quotes.
+  String _previewOf(ChatMessage message) {
+    final l10n = AppLocalizations.of(context)!;
+    final text = switch (message.type) {
+      ChatMessageType.text || ChatMessageType.stamp => message.text,
+      ChatMessageType.image => l10n.chatPreviewPhoto,
+      ChatMessageType.location => l10n.chatPreviewLocation,
+      ChatMessageType.voice => l10n.chatPreviewVoice,
+      ChatMessageType.poll => '${l10n.chatPreviewPoll} ${message.text}',
+    };
+    final oneLine = text.replaceAll('\n', ' ');
+    return oneLine.length > 60 ? '${oneLine.substring(0, 60)}…' : oneLine;
+  }
+
+  Future<void> _forward(ChatMessage message) async {
+    final l10n = AppLocalizations.of(context)!;
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+    final groups = await FirebaseFirestore.instance
+        .collection('sharedGroups')
+        .where('memberIds', arrayContains: uid)
+        .get();
+    if (!mounted) return;
+    final targetId = await showModalBottomSheet<String>(
+      context: context,
+      builder: (context) => SafeArea(
+        child: ListView(
+          shrinkWrap: true,
+          children: [
+            ListTile(
+              title: Text(l10n.chatForwardTo, style: const TextStyle(fontWeight: FontWeight.bold)),
+            ),
+            for (final doc in groups.docs)
+              ListTile(
+                leading: const Icon(Icons.groups_outlined),
+                title: Text(doc.data()['name'] as String? ?? ''),
+                onTap: () => Navigator.of(context).pop(doc.id),
+              ),
+          ],
+        ),
+      ),
+    );
+    if (targetId == null) return;
+    try {
+      await ChatMediaService.instance.forward(targetId, message);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.chatForwarded)));
+      }
+    } catch (_) {
+      _showError(l10n.chatActionFailed);
+    }
+  }
+
+  Future<bool> _confirm(String body, String action) async {
+    final l10n = AppLocalizations.of(context)!;
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        content: Text(body),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(l10n.commonCancel)),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: Text(action)),
+        ],
+      ),
+    );
+    return ok == true;
+  }
+
+  Future<void> _unsend(ChatMessage message) async {
+    final l10n = AppLocalizations.of(context)!;
+    if (!await _confirm(l10n.chatUnsendConfirm, l10n.chatUnsend)) return;
+    try {
+      await ChatMediaService.instance.unsend(widget.group.id, message);
+    } catch (_) {
+      _showError(l10n.chatActionFailed);
+    }
+  }
+
+  Future<void> _hideForMe(ChatMessage message) async {
+    final l10n = AppLocalizations.of(context)!;
+    if (!await _confirm(l10n.chatDeleteForMeConfirm, l10n.chatDeleteForMe)) return;
+    setState(() => _hiddenMessageIds.add(message.id));
+    try {
+      await ChatMediaService.instance.hideForMe(widget.group.id, message.id);
+    } catch (_) {
+      if (mounted) setState(() => _hiddenMessageIds.remove(message.id));
+      _showError(l10n.chatActionFailed);
+    }
+  }
+
   Future<void> _reportMessage(ChatMessage message) async {
     final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
@@ -437,8 +541,44 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                     ),
                 ],
               ),
-              if (!isMine) ...[
-                const Divider(),
+              const Divider(),
+              if (!message.unsent) ...[
+                ListTile(
+                  leading: const Icon(Icons.reply),
+                  title: Text(l10n.chatReply),
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    setState(() => _replyingTo = message);
+                  },
+                ),
+                if (message.type != ChatMessageType.poll)
+                  ListTile(
+                    leading: const Icon(Icons.forward),
+                    title: Text(l10n.chatForward),
+                    onTap: () {
+                      Navigator.of(context).pop();
+                      _forward(message);
+                    },
+                  ),
+              ],
+              if (isMine && !message.unsent)
+                ListTile(
+                  leading: const Icon(Icons.undo),
+                  title: Text(l10n.chatUnsend),
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    _unsend(message);
+                  },
+                ),
+              ListTile(
+                leading: const Icon(Icons.delete_outline),
+                title: Text(l10n.chatDeleteForMe),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  _hideForMe(message);
+                },
+              ),
+              if (!isMine)
                 ListTile(
                   leading: const Icon(Icons.flag_outlined),
                   title: Text(l10n.groupChatReport),
@@ -447,7 +587,6 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                     _reportMessage(message);
                   },
                 ),
-              ],
             ],
           ),
         ),
@@ -520,8 +659,10 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                   if (!snapshot.hasData) {
                     return const Center(child: CircularProgressIndicator());
                   }
-                  final messages =
-                      snapshot.data!.docs.map((doc) => ChatMessage.fromFirestore(doc)).toList();
+                  final messages = snapshot.data!.docs
+                      .map((doc) => ChatMessage.fromFirestore(doc))
+                      .where((m) => !_hiddenMessageIds.contains(m.id))
+                      .toList();
                   if (messages.isEmpty) {
                     return Center(child: Text(l10n.groupChatEmpty));
                   }
@@ -551,6 +692,33 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
             ),
             const Divider(height: 1),
             if (_isSending) const LinearProgressIndicator(minHeight: 2),
+            if (_replyingTo case final reply?)
+              Container(
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                padding: const EdgeInsets.fromLTRB(12, 4, 4, 4),
+                child: Row(
+                  children: [
+                    const Icon(Icons.reply, size: 18),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: FutureBuilder<String>(
+                        future: _resolveName(reply.senderId),
+                        initialData: _nameCache[reply.senderId],
+                        builder: (context, snapshot) => Text(
+                          '${snapshot.data ?? '...'}: ${_previewOf(reply)}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontSize: 12),
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close, size: 18),
+                      onPressed: () => setState(() => _replyingTo = null),
+                    ),
+                  ],
+                ),
+              ),
             Padding(
               padding: const EdgeInsets.all(8),
               child: _recordingSince != null
@@ -657,6 +825,25 @@ class _MessageBubble extends StatelessWidget {
                 ),
               ),
             ),
+          if (message.replyToPreview != null && !message.unsent)
+            Container(
+              margin: const EdgeInsets.only(bottom: 2),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.6),
+              decoration: BoxDecoration(
+                border: Border(left: BorderSide(color: Colors.grey.shade400, width: 3)),
+              ),
+              child: FutureBuilder<String>(
+                future: resolveName(message.replyToSenderId ?? ''),
+                initialData: cachedName(message.replyToSenderId ?? ''),
+                builder: (context, snapshot) => Text(
+                  '${snapshot.data ?? '...'}: ${message.replyToPreview}',
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontSize: 11, color: Colors.grey),
+                ),
+              ),
+            ),
           Row(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.end,
@@ -681,7 +868,20 @@ class _MessageBubble extends StatelessWidget {
               ],
               GestureDetector(
                 onLongPress: onLongPress,
-                child: switch (message.type) {
+                child: message.unsent
+                    ? Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey.shade400),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          AppLocalizations.of(context)!.chatUnsent,
+                          style: const TextStyle(
+                              fontStyle: FontStyle.italic, color: Colors.grey, fontSize: 12),
+                        ),
+                      )
+                    : switch (message.type) {
                   ChatMessageType.stamp =>
                     Text(message.text, style: const TextStyle(fontSize: 48)),
                   ChatMessageType.image => ChatImageContent(message: message),

@@ -1156,6 +1156,48 @@ class AppLocalizationsJa extends AppLocalizations {
   String get pollNoVotes => 'まだ回答がありません';
 
   @override
+  String get chatUnsend => '送信取り消し';
+
+  @override
+  String get chatUnsendConfirm => '送信を取り消しますか？相手の画面からも消えます';
+
+  @override
+  String get chatUnsent => 'メッセージの送信を取り消しました';
+
+  @override
+  String get chatDeleteForMe => '削除';
+
+  @override
+  String get chatDeleteForMeConfirm => 'このメッセージを削除しますか？自分の画面からだけ消え、相手の画面には残ります';
+
+  @override
+  String get chatActionFailed => 'うまくいきませんでした。もう一度お試しください';
+
+  @override
+  String get chatReply => 'リプライ';
+
+  @override
+  String get chatForward => '転送';
+
+  @override
+  String get chatForwardTo => '転送先のグループ';
+
+  @override
+  String get chatForwarded => '転送しました';
+
+  @override
+  String get chatPreviewPhoto => '📷 写真';
+
+  @override
+  String get chatPreviewLocation => '📍 位置情報';
+
+  @override
+  String get chatPreviewVoice => '🎤 ボイスメッセージ';
+
+  @override
+  String get chatPreviewPoll => '📅';
+
+  @override
   String get groupChatInfo => 'グループ情報';
 
   @override

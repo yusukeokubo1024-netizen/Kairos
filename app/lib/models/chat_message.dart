@@ -50,6 +50,14 @@ class ChatMessage {
   final Map<String, Map<String, PollAnswer>> votes;
   final int? decidedOption;
   final String? decidedScheduleId;
+  // The sender took it back (送信取り消し): its content is gone for everyone
+  // and it shows as a placeholder.
+  final bool unsent;
+  // リプライ: the quoted message (snapshot of who sent it and a one-line
+  // preview, taken when replying).
+  final String? replyToId;
+  final String? replyToSenderId;
+  final String? replyToPreview;
 
   ChatMessage({
     required this.id,
@@ -68,6 +76,10 @@ class ChatMessage {
     this.votes = const {},
     this.decidedOption,
     this.decidedScheduleId,
+    this.unsent = false,
+    this.replyToId,
+    this.replyToSenderId,
+    this.replyToPreview,
   });
 
   bool get isStamp => type == ChatMessageType.stamp;
@@ -111,6 +123,10 @@ class ChatMessage {
           )),
       decidedOption: data['decidedOption'] as int?,
       decidedScheduleId: data['decidedScheduleId'] as String?,
+      unsent: data['unsent'] as bool? ?? false,
+      replyToId: data['replyToId'] as String?,
+      replyToSenderId: data['replyToSenderId'] as String?,
+      replyToPreview: data['replyToPreview'] as String?,
     );
   }
 
@@ -126,6 +142,11 @@ class ChatMessage {
       if (mediaPath != null) 'mediaPath': mediaPath,
       if (duration != null) 'durationMs': duration!.inMilliseconds,
       if (latitude != null) 'latitude': latitude,
+      if (replyToId != null) ...{
+        'replyToId': replyToId,
+        'replyToSenderId': replyToSenderId,
+        'replyToPreview': replyToPreview,
+      },
       if (longitude != null) 'longitude': longitude,
       if (type == ChatMessageType.poll) ...{
         'pollOptions': pollOptions.map((o) => o.toMap()).toList(),

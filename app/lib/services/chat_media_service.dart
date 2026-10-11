@@ -168,6 +168,61 @@ class ChatMediaService {
     return _messages(groupId).doc(poll.id).update({'votes.$_uid': mine});
   }
 
+  /// 転送: sends a copy of [message] to another group the user belongs to.
+  /// The photo/recording is shared by URL rather than re-uploaded, and the
+  /// copy carries no Storage path, so unsending the copy can't delete the
+  /// original's file.
+  Future<void> forward(String targetGroupId, ChatMessage message) => _add(
+        targetGroupId,
+        ChatMessage(
+          id: '',
+          senderId: _uid,
+          text: message.text,
+          type: message.type,
+          mediaUrl: message.mediaUrl,
+          duration: message.duration,
+          latitude: message.latitude,
+          longitude: message.longitude,
+        ),
+      );
+
+  /// 送信取り消し: blanks the message for everyone (it stays as an "unsent"
+  /// placeholder) and deletes its photo/recording. Sender only.
+  Future<void> unsend(String groupId, ChatMessage message) async {
+    await _messages(groupId).doc(message.id).update({
+      'unsent': true,
+      'type': ChatMessageType.text.name,
+      'text': '',
+      'isStamp': false,
+      'reactions': <String, dynamic>{},
+      for (final field in [
+        'mediaUrl',
+        'mediaPath',
+        'durationMs',
+        'latitude',
+        'longitude',
+        'pollOptions',
+        'votes',
+      ])
+        field: FieldValue.delete(),
+    });
+    final path = message.mediaPath;
+    if (path != null) {
+      try {
+        await FirebaseStorage.instance.ref(path).delete();
+      } catch (_) {
+        // Best-effort — the message itself no longer points at the file.
+      }
+    }
+  }
+
+  /// 削除: hides a message from the signed-in user's own chat only.
+  Future<void> hideForMe(String groupId, String messageId) {
+    return FirebaseFirestore.instance.collection('users').doc(_uid).update({
+      'hiddenChatMessages': FieldValue.arrayUnion(['$groupId/$messageId']),
+    });
+  }
+
   /// Turns the chosen option into a schedule shared with every group member
   /// and marks the poll as decided. Only the poll's creator can do this.
   Future<void> decide(String groupId, ChatMessage poll, int option) async {

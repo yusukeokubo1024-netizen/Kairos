@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../../l10n/app_localizations.dart';
+import 'invite_qr.dart';
 
 /// Lets a user request to join a group by entering its invite code — either
 /// the short 8-character code shown in GroupDetailScreen (resolved via
@@ -39,6 +40,15 @@ class _GroupJoinScreenState extends State<GroupJoinScreen> {
   void dispose() {
     _codeController.dispose();
     super.dispose();
+  }
+
+  Future<void> _scanQr() async {
+    final code = await Navigator.of(context).push<String>(
+      MaterialPageRoute(builder: (_) => const InviteQrScanScreen()),
+    );
+    if (code == null || !mounted) return;
+    _codeController.text = code;
+    await _lookupCode();
   }
 
   Future<void> _lookupCode() async {
@@ -172,6 +182,12 @@ class _GroupJoinScreenState extends State<GroupJoinScreen> {
             children: [
               Text(l10n.groupJoinInstructions),
               const SizedBox(height: 16),
+              OutlinedButton.icon(
+                onPressed: _isLoading ? null : _scanQr,
+                icon: const Icon(Icons.qr_code_scanner),
+                label: Text(l10n.groupInviteQrScan),
+              ),
+              const SizedBox(height: 12),
               TextField(
                 controller: _codeController,
                 decoration: InputDecoration(labelText: l10n.groupJoinCodeLabel),

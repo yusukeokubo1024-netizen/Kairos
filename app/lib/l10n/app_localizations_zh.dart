@@ -1186,6 +1186,21 @@ class AppLocalizationsZh extends AppLocalizations {
   String get chatPreviewPoll => '📅';
 
   @override
+  String get groupInviteQrTitle => '邀请二维码';
+
+  @override
+  String get groupInviteQrHint => '请对方在「群组」→「加入群组」→「扫描二维码」中扫描';
+
+  @override
+  String get groupInviteQrScan => '扫描二维码';
+
+  @override
+  String get groupInviteQrScanHint => '请将相机对准群组的邀请二维码';
+
+  @override
+  String get groupInviteQrNotKairos => '这不是 Kairos 的群组邀请二维码';
+
+  @override
   String get groupChatInfo => '群组信息';
 
   @override

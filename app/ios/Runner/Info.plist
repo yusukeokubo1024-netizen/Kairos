@@ -34,7 +34,7 @@
 	<key>NSAlarmKitUsageDescription</key>
 	<string>アラーム・タイマー・アラーム形式の予定を、マナーモード中やアプリを閉じているときでも時間どおりに鳴らすために使用します。</string>
 	<key>NSCameraUsageDescription</key>
-	<string>グループのトークで写真を撮って送るために使用します。</string>
+	<string>グループのトークで写真を撮って送ったり、グループの招待QRコードを読み取ったりするために使用します。</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>グループのトークで写真を選んで送るために使用します。</string>
 	<key>NSLocationWhenInUseUsageDescription</key>

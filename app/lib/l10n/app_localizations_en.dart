@@ -1234,6 +1234,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chatPreviewPoll => '📅';
 
   @override
+  String get groupInviteQrTitle => 'Invite QR code';
+
+  @override
+  String get groupInviteQrHint =>
+      'Ask them to open Groups › Join › Scan QR code and scan this.';
+
+  @override
+  String get groupInviteQrScan => 'Scan QR code';
+
+  @override
+  String get groupInviteQrScanHint =>
+      'Point the camera at the group\'s invite QR code';
+
+  @override
+  String get groupInviteQrNotKairos =>
+      'That isn\'t a Kairos group invite QR code';
+
+  @override
   String get groupChatInfo => 'Group info';
 
   @override

@@ -1206,6 +1206,21 @@ class AppLocalizationsKo extends AppLocalizations {
   String get chatPreviewPoll => '📅';
 
   @override
+  String get groupInviteQrTitle => '초대 QR 코드';
+
+  @override
+  String get groupInviteQrHint => '상대에게 「그룹」→「그룹 참여」→「QR 코드 읽기」로 스캔하게 해 주세요';
+
+  @override
+  String get groupInviteQrScan => 'QR 코드 읽기';
+
+  @override
+  String get groupInviteQrScanHint => '그룹 초대 QR 코드에 카메라를 비춰 주세요';
+
+  @override
+  String get groupInviteQrNotKairos => 'Kairos 그룹 초대 QR 코드가 아닙니다';
+
+  @override
   String get groupChatInfo => '그룹 정보';
 
   @override

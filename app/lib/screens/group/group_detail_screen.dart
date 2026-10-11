@@ -10,6 +10,7 @@ import '../../l10n/app_localizations.dart';
 import '../../main.dart';
 import '../../models/shared_group.dart';
 import '../../services/audit_service.dart';
+import 'invite_qr.dart';
 import 'live_group_name.dart';
 
 // Characters chosen to avoid look-alikes when read or typed by hand
@@ -365,9 +366,20 @@ class GroupDetailScreen extends StatelessWidget {
                       ? const TextStyle(fontSize: 20, letterSpacing: 2, fontWeight: FontWeight.bold)
                       : null,
                 ),
-                trailing: IconButton(
-                  icon: const Icon(Icons.copy_outlined),
-                  onPressed: () => _copyInviteCode(context),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.qr_code_2),
+                      tooltip: l10n.groupInviteQrTitle,
+                      onPressed: () =>
+                          showInviteQrDialog(context, inviteCode: group.shortCode ?? group.id),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.copy_outlined),
+                      onPressed: () => _copyInviteCode(context),
+                    ),
+                  ],
                 ),
               ),
             ),

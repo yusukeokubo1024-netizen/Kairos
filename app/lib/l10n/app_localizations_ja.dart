@@ -1198,6 +1198,22 @@ class AppLocalizationsJa extends AppLocalizations {
   String get chatPreviewPoll => '📅';
 
   @override
+  String get groupInviteQrTitle => '招待QRコード';
+
+  @override
+  String get groupInviteQrHint =>
+      '相手に「グループ」→「グループに参加」→「QRコードを読み取る」で読み取ってもらってください';
+
+  @override
+  String get groupInviteQrScan => 'QRコードを読み取る';
+
+  @override
+  String get groupInviteQrScanHint => 'グループの招待QRコードにカメラを向けてください';
+
+  @override
+  String get groupInviteQrNotKairos => 'Kairos のグループ招待QRコードではありません';
+
+  @override
   String get groupChatInfo => 'グループ情報';
 
   @override

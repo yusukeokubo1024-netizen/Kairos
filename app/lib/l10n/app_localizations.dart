@@ -2346,6 +2346,36 @@ abstract class AppLocalizations {
   /// **'📅'**
   String get chatPreviewPoll;
 
+  /// No description provided for @groupInviteQrTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'招待QRコード'**
+  String get groupInviteQrTitle;
+
+  /// No description provided for @groupInviteQrHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'相手に「グループ」→「グループに参加」→「QRコードを読み取る」で読み取ってもらってください'**
+  String get groupInviteQrHint;
+
+  /// No description provided for @groupInviteQrScan.
+  ///
+  /// In ja, this message translates to:
+  /// **'QRコードを読み取る'**
+  String get groupInviteQrScan;
+
+  /// No description provided for @groupInviteQrScanHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'グループの招待QRコードにカメラを向けてください'**
+  String get groupInviteQrScanHint;
+
+  /// No description provided for @groupInviteQrNotKairos.
+  ///
+  /// In ja, this message translates to:
+  /// **'Kairos のグループ招待QRコードではありません'**
+  String get groupInviteQrNotKairos;
+
   /// No description provided for @groupChatInfo.
   ///
   /// In ja, this message translates to:

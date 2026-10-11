@@ -1,0 +1,8 @@
+/* Permission prompts (en). */
+"NSAlarmKitUsageDescription" = "Used to ring your alarms, timers and alarm-style events on time, even on silent or when the app is closed.";
+"NSCameraUsageDescription" = "Used to take and send photos in group chats and to scan group invite QR codes.";
+"NSPhotoLibraryUsageDescription" = "Used to choose photos to send in group chats.";
+"NSLocationWhenInUseUsageDescription" = "Used to send your current location in a group chat — only when you tap to send it.";
+"NSMicrophoneUsageDescription" = "Used to record voice messages and for voice input in group chats.";
+"NSSpeechRecognitionUsageDescription" = "Used to turn what you say into text in group chats.";
+"NSFaceIDUsageDescription" = "Used to confirm it's you with Face ID instead of your password when opening Kairos.";

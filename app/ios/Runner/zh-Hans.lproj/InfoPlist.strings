@@ -1,0 +1,8 @@
+/* Permission prompts (zh-Hans). */
+"NSAlarmKitUsageDescription" = "用于在静音模式或关闭应用时，也能准时响起闹钟、计时器和闹钟式日程。";
+"NSCameraUsageDescription" = "用于在群聊中拍摄并发送照片，以及扫描群组邀请二维码。";
+"NSPhotoLibraryUsageDescription" = "用于选择要在群聊中发送的照片。";
+"NSLocationWhenInUseUsageDescription" = "用于在群聊中发送当前位置，仅在你点按发送时获取。";
+"NSMicrophoneUsageDescription" = "用于在群聊中录制语音消息和进行语音输入。";
+"NSSpeechRecognitionUsageDescription" = "用于在群聊中将你说的话转换为文字输入。";
+"NSFaceIDUsageDescription" = "用于在打开 Kairos 时以 Face ID 代替密码确认是你本人。";

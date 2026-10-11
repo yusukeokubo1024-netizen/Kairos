@@ -1,0 +1,8 @@
+/* Permission prompts (ko). */
+"NSAlarmKitUsageDescription" = "알람, 타이머, 알람형 일정을 무음 모드이거나 앱을 닫아 두어도 제시간에 울리기 위해 사용합니다.";
+"NSCameraUsageDescription" = "그룹 채팅에서 사진을 찍어 보내거나 그룹 초대 QR 코드를 읽기 위해 사용합니다.";
+"NSPhotoLibraryUsageDescription" = "그룹 채팅에서 보낼 사진을 고르기 위해 사용합니다.";
+"NSLocationWhenInUseUsageDescription" = "그룹 채팅에서 현재 위치를 보내기 위해 사용합니다. 보내기를 누를 때만 가져옵니다.";
+"NSMicrophoneUsageDescription" = "그룹 채팅에서 음성 메시지를 녹음하거나 음성으로 입력하기 위해 사용합니다.";
+"NSSpeechRecognitionUsageDescription" = "그룹 채팅에서 말한 내용을 글자로 바꿔 입력하기 위해 사용합니다.";
+"NSFaceIDUsageDescription" = "Kairos를 열 때 비밀번호 대신 Face ID로 본인 확인을 하기 위해 사용합니다.";

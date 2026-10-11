@@ -1,0 +1,8 @@
+/* Permission prompts (ja). */
+"NSAlarmKitUsageDescription" = "アラーム・タイマー・アラーム形式の予定を、マナーモード中やアプリを閉じているときでも時間どおりに鳴らすために使用します。";
+"NSCameraUsageDescription" = "グループのトークで写真を撮って送ったり、グループの招待QRコードを読み取ったりするために使用します。";
+"NSPhotoLibraryUsageDescription" = "グループのトークで写真を選んで送るために使用します。";
+"NSLocationWhenInUseUsageDescription" = "グループのトークで現在地を送るために使用します。送るボタンを押したときだけ取得します。";
+"NSMicrophoneUsageDescription" = "グループのトークでボイスメッセージを録音したり、音声で文字を入力したりするために使用します。";
+"NSSpeechRecognitionUsageDescription" = "グループのトークで、話した言葉を文字に変換して入力するために使用します。";
+"NSFaceIDUsageDescription" = "Kairosを開くときに、パスワードの代わりにFace IDでご本人確認を行うために使用します。";

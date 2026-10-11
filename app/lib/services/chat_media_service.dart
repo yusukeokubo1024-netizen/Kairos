@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -49,34 +50,34 @@ class ChatMediaService {
   /// Picks photo(s) from the camera or library, shrinks them and sends each
   /// as its own message. Returns how many were sent (0 if cancelled).
   Future<int> sendPhotos(String groupId, {required bool fromCamera}) async {
-    // Resized on-device so uploads stay small (and cheap) — plenty for a
-    // phone screen.
-    const maxSide = 1600.0;
-    const quality = 80;
+    // Picked at full size and re-encoded below, rather than using the
+    // picker's own resizing, which can carry the original metadata over.
     final List<XFile> picked;
     if (fromCamera) {
-      final photo = await _picker.pickImage(
-        source: ImageSource.camera,
-        maxWidth: maxSide,
-        maxHeight: maxSide,
-        imageQuality: quality,
-      );
+      final photo = await _picker.pickImage(source: ImageSource.camera);
       picked = photo == null ? [] : [photo];
     } else {
-      picked = await _picker.pickMultiImage(
-        maxWidth: maxSide,
-        maxHeight: maxSide,
-        imageQuality: quality,
-        limit: 10,
-      );
+      picked = await _picker.pickMultiImage(limit: 10);
     }
+    var sent = 0;
     for (final photo in picked) {
-      final uploaded = await _upload(
-        groupId,
-        File(photo.path),
-        extension: 'jpg',
-        contentType: 'image/jpeg',
+      // Re-encoded without Exif, so the photo carries no GPS location (or
+      // camera/device details) — phone photos usually embed where they were
+      // taken. Also shrinks it (phone screen size is plenty) to keep uploads
+      // small. If re-encoding fails the photo is skipped rather than sent
+      // with its metadata intact.
+      final bytes = await FlutterImageCompress.compressWithFile(
+        photo.path,
+        minWidth: 1600,
+        minHeight: 1600,
+        quality: 80,
+        format: CompressFormat.jpeg,
+        keepExif: false,
       );
+      if (bytes == null) continue;
+      final path = 'chat/$groupId/${DateTime.now().millisecondsSinceEpoch}_$_uid.jpg';
+      final ref = FirebaseStorage.instance.ref(path);
+      await ref.putData(bytes, SettableMetadata(contentType: 'image/jpeg'));
       await _add(
         groupId,
         ChatMessage(
@@ -84,12 +85,13 @@ class ChatMediaService {
           senderId: _uid,
           text: '',
           type: ChatMessageType.image,
-          mediaUrl: uploaded.url,
-          mediaPath: uploaded.path,
+          mediaUrl: await ref.getDownloadURL(),
+          mediaPath: path,
         ),
       );
+      sent++;
     }
-    return picked.length;
+    return sent;
   }
 
   /// Sends the device's current location, asking for permission if needed.
